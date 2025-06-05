@@ -22,18 +22,21 @@ class EmployeeRequest extends FormRequest
     public function rules(): array
     {
         $rules = 'required|unique:employees,name';
-        $rule_rate = 'required|unique:employees,rate';
+        $rule_rate = 'required|numeric|min:0';
         $rule_payment_type = 'required|in:hourly,monthly,per_project';
 
         if ($this->method() != 'POST') {
             $rules = 'required|unique:employees,name,' . $this->employee->id;
-            $rule_rate = 'required|unique:employees,rate,' . $this->employee->id;
-            $rule_payment_type = 'required|in:hourly,monthly,per_project,' . $this->employee->id;
+            // معدل الأجر يبقى شرطه كما هو (ليس unique)
+            $rule_rate = 'required|numeric|min:0';
+            // شرط نوع الدفع لا يتغير
+            $rule_payment_type = 'required|in:hourly,monthly,per_project';
         }
+
         return [
             'name' => $rules,
             'rate' => $rule_rate,
-            "payment_type"=> $rule_payment_type,
+            'payment_type' => $rule_payment_type,
         ];
     }
 }

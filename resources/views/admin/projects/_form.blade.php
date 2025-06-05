@@ -11,9 +11,18 @@
     <x-form.input label="Total Amount" name="total_amount" placeholder="Enter Project Total Amount" :oldval="$project->total_amount" />
 </div>
 
-<div class="mb-3">
-    <x-form.file label="Attachment" name="attachment" :oldimage=" optional($project->attachments->first()) ? asset('storage/' . $project->attachments->first()->file_path) : null" can_delete="true"/>
-</div>
+@php
+    $firstAttachment = optional($project->attachments)->first();
+    $oldImage = $firstAttachment ? asset('storage/' . $firstAttachment->file_path) : null;
+@endphp
+
+<x-form.file
+    label="Attachment"
+    name="attachment"
+    :oldimage="$oldImage"
+    can_delete="true"
+/>
+
 
 <div class="mb-3">
     <x-form.select label="User" name="user_id" placeholder='Select User' :options="$users"

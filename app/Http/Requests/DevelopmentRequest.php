@@ -22,13 +22,14 @@ class DevelopmentRequest extends FormRequest
     public function rules(): array
     {
         $rules = 'required|unique:developments,description';
-        $rule_rate = 'required|unique:developments,amount';
-        $rule_payment_type = 'required|in:hourly,monthly,per_project';
+        $rule_rate = 'required|numeric|min:0';
 
         if ($this->method() != 'POST') {
             $rules = 'required|unique:developments,description,' . $this->development->id;
-            $rule_rate = 'required|unique:developments,amount,' . $this->development->id;
+            // فقط تحقق من الرقم ولا تجبره أن يكون فريدًا
+            $rule_rate = 'required|numeric|min:0';
         }
+
         return [
             'description' => $rules,
             'amount' => $rule_rate,

@@ -22,20 +22,19 @@ class InvoiceRequest extends FormRequest
     public function rules(): array
     {
         $rule_number = 'required|unique:invoices,invoice_number';
-        $rule_amount = 'required|unique:invoices,invoice_number';
-        $invoice = 'required|unique:invoices,invoice_number';
-        $due = 'unique:invoices,invoice_number';
-        if ($this->method() != 'POST') {
+        $rule_amount = 'required|numeric|min:0';
+        $rule_invoice_date = 'required|date';
+        $rule_due_date = 'nullable|date|after_or_equal:invoice_date';
+
+        if ($this->method() !== 'POST') {
             $rule_number = 'required|unique:invoices,invoice_number,' . $this->invoice->id;
-            $rule_amount = 'required|unique:invoices,invoice_number,' . $this->invoice->id;
-            $invoice= 'required|unique:invoices,invoice_number,' . $this->invoice->id;
-            $due= 'unique:invoices,invoice_number,' . $this->invoice->id;
         }
+
         return [
             'invoice_number' => $rule_number,
             'amount' => $rule_amount,
-            'invoice_date' => $invoice,
-            'due_date' => $due,
+            'invoice_date' => $rule_invoice_date,
+            'due_date' => $rule_due_date,
         ];
     }
 }

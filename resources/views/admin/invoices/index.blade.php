@@ -46,7 +46,7 @@
                                 <td>{{ $invoice->invoice_number }}</td>
                                 <td>{{ $invoice->amount }}</td>
                                 <td>{{ $invoice->invoice_date->diffForHumans() }}</td>
-                                <td>{{ $invoice->due_date?->diffForHumans() }}</td>
+                                <td>{{ $invoice->due_date?->diffForHumans()?? '_' }}</td>
                                 <td>{{ $invoice->is_paid ? 'Paid' : 'Unpaid' }}</td>
                                 <td>{{ $invoice->project->name ?? '_'}}</td>
                                 <td>{{ $invoice->client->name ?? '_'}}</td>

@@ -15,7 +15,7 @@
                             <th>Name</th>
                             <th>Description</th>
                             <th>Total Amount</th>
-                            <th>Attachment</th>
+                            <th>Attachments</th>
                             <th>User Name</th>
                             <th>Client Name</th>
                             <th>Employee Name</th>
@@ -30,7 +30,7 @@
                             <th>Name</th>
                             <th>Description</th>
                             <th>Total Amount</th>
-                            <th>Attachment</th>
+                            <th>Attachments</th>
                             <th>User Name</th>
                             <th>Client Name</th>
                             <th>Employee Name</th>
@@ -48,16 +48,33 @@
                                 <td>{{ $project->total_amount }}</td>
                                 {{-- <td>{{ $project->attachments->first()->file_name ?? '_'}}</td> --}}
                                 <td>
-                                    @if($project->attachments->first())
-                                        <a href="{{ asset('storage/' . $project->attachments->first()->file_path) }}"
-                                            target="_blank" title="file">Upload</a>
+                                    @php
+                                        $x = 1
+                                    @endphp
+                                    @if($project->attachments->isNotEmpty())
+                                        @foreach($project->attachments as $attachment)
+                                            <div>
+                                                <a href="{{ asset('storage/' . $attachment->file_path) }}" target="_blank"
+                                                    title="{{ basename($attachment->file_path) }}">
+                                                    {{-- {{ basename($attachment->file_path) }} --}}
+                                                    Uploaded File{{ $x++ }}
+                                                </a>
+                                            </div>
+                                        @endforeach
                                     @else
                                         _
                                     @endif
                                 </td>
+
                                 <td>{{ $project->user->name ?? '_'}}</td>
                                 <td>{{ $project->client->name ?? '_'}}</td>
-                                <td>{{ $project->employee->name ?? '_'}}</td>
+                                <td>
+                                    @if($project->employees && $project->employees->isNotEmpty())
+                                        {{ $project->employees->pluck('name')->join(', ') }}
+                                    @else
+                                        _
+                                    @endif
+                                </td>
                                 <td>{{ $project->created_at->diffForHumans() }}</td>
                                 <td>{{ $project->updated_at->diffForHumans() }}</td>
                                 <td>

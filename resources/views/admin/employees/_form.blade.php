@@ -2,8 +2,11 @@
     <x-form.input label="Name" name="name" placeholder="Enter Employee Name" :oldval="$employee->name" />
 </div>
 
+@php
+    $contactPhone = optional($employee->contact)->phone ?? '';
+@endphp
 <div class="mb-3">
-    <x-form.input label="Phone" name="phone" placeholder="Enter Employee Phone" :oldval="$employee->phone" />
+    <x-form.input label="Phone" name="phone" placeholder="Enter Employee Phone" :oldval="$contactPhone" />
 </div>
 <div class="mb-3">
     <x-form.input label="Email" name="email" placeholder="Enter Employee Email" :oldval="$employee->email" />

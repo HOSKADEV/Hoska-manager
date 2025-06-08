@@ -22,11 +22,11 @@ class ClientRequest extends FormRequest
     public function rules(): array
     {
         $rules = 'required|unique:clients,name';
-        $rule = 'required|unique:clients,notes';
+        $rule = 'nullable|unique:clients,notes';
 
         if ($this->method() != 'POST') {
             $rules = 'required|unique:clients,name,' . $this->client->id;
-            $rule = 'required|unique:clients,notes,' . $this->client->id;
+            $rule = 'nullable|unique:clients,notes,' . $this->client->id;
         }
         return [
             'name' => $rules,

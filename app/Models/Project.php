@@ -13,9 +13,9 @@ class Project extends Model
     {
         return $this->belongsTo(User::class);
     }
-    public function employee()
+    public function employees()
     {
-        return $this->belongsTo(Employee::class);
+        return $this->belongsToMany(Employee::class, 'employee_project');
     }
     public function client()
     {

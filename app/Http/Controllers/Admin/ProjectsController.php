@@ -42,31 +42,39 @@ class ProjectsController extends Controller
      */
     public function store(ProjectRequest $request)
     {
+
+        // التحقق من صحة الطلب
         $data = $request->validated();
-        $request->validate([
-            'attachment' => 'required|file|max:10240', // 10 MB مثلاً
-        ]);
+
         $data['user_id'] = $request->user_id;
         $data['client_id'] = $request->client_id;
-        $data['employee_id'] = $request->employee_id;
 
-        unset($data['attachment']);
+        // إزالة الحقول غير المرتبطة مباشرة بـ Project
+        unset($data['attachment'], $data['employee_id']);
 
         // إنشاء المشروع
         $project = Project::create($data);
 
-        // تخزين الملف
-        if ($request->hasFile('attachment')) {
-            $file = $request->file('attachment');
-            $filename = rand() . time() . $file->getClientOriginalName();
-            $path = $file->store('attachments', 'public');
-            // إنشاء سجل attachment
-            $project->attachments()->create([
-                'file_name' => $filename,
-                'file_path' => $path,
-            ]);
+        // استخراج employee_ids من الطلب
+        $employeeIds = $request->input('employee_id', []);
+
+        // ربط الموظفين بالمشروع
+        if (!empty($employeeIds)) {
+            $project->employees()->sync($employeeIds);
         }
 
+        // رفع الملفات وربطها بالمشروع
+        if ($request->hasFile('attachment')) {
+            foreach ($request->file('attachment') as $file) {
+                $filename = rand() . time() . $file->getClientOriginalName();
+                $path = $file->store('attachments', 'public');
+
+                $project->attachments()->create([
+                    'file_name' => $filename,
+                    'file_path' => $path,
+                ]);
+            }
+        }
 
         flash()->success('Project created successfully');
         return redirect()->route('admin.projects.index');
@@ -96,43 +104,57 @@ class ProjectsController extends Controller
      */
     public function update(ProjectRequest $request, Project $project)
     {
+
         $data = $request->validated();
+
         $data['user_id'] = $request->user_id;
         $data['client_id'] = $request->client_id;
-        $data['employee_id'] = $request->employee_id;
-        unset($data['attachment']);
+
+        unset($data['attachment']); // نحذف المرفقات من البيانات الرئيسية
+        unset($data['employee_id']); // لأننا سنستخدم employee_ids للمزامنة
+
+        // تحديث بيانات المشروع
         $project->update($data);
 
+        // استخرج مصفوفة الموظفين من الطلب
+        $employeeIds = $request->input('employee_id', []);
 
+        // مزامنة الموظفين (إضافة وحذف تلقائي حسب المصفوفة)
+        if (!empty($employeeIds)) {
+            $project->employees()->sync($employeeIds);
+        } else {
+            // لو المصفوفة فارغة، تفريغ العلاقة:
+            $project->employees()->sync([]);
+        }
 
-        if ($request->hasFile('attachment')) {
-            // جلب أول مرفق مرتبط بالمشروع
-            $oldAttachment = $project->attachments()->first();
-
-            if ($oldAttachment) {
-                // التحقق من وجود الملف فعليًا قبل حذفه
-                if (Storage::disk('public')->exists($oldAttachment->file_path)) {
-                    Storage::disk('public')->delete($oldAttachment->file_path);
+        // حذف المرفقات المختارة من المستخدم
+        if ($request->has('delete_attachments')) {
+            foreach ($request->delete_attachments as $attachmentId) {
+                $attachment = $project->attachments()->find($attachmentId);
+                if ($attachment && Storage::disk('public')->exists($attachment->file_path)) {
+                    Storage::disk('public')->delete($attachment->file_path);
                 }
-
-                // حذف السجل من قاعدة البيانات
-                $oldAttachment->delete();
+                $attachment?->delete();
             }
+        }
 
-            // رفع الملف الجديد
-            $file = $request->file('attachment');
-            $filename = rand() . time() . $file->getClientOriginalName();
-            $path = $file->storeAs('attachments', $filename, 'public');
+        // رفع ملفات جديدة (إن وجدت)
+        if ($request->hasFile('attachment')) {
+            foreach ($request->file('attachment') as $file) {
+                $filename = rand() . time() . $file->getClientOriginalName();
+                $path = $file->storeAs('attachments', $filename, 'public');
 
-            $project->attachments()->create([
-                'file_name' => $filename,
-                'file_path' => $path,
-            ]);
+                $project->attachments()->create([
+                    'file_name' => $filename,
+                    'file_path' => $path,
+                ]);
+            }
         }
 
         flash()->success('Project updated successfully');
         return redirect()->route('admin.projects.index');
     }
+
 
     /**
      * Remove the specified resource from storage.

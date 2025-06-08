@@ -16,7 +16,6 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // علاقة مع user
-            $table->foreignId('employee_id')->nullable()->constrained()->nullOnDelete(); // علاقة مع employee
             $table->foreignId('client_id')->constrained()->cascadeOnDelete(); // علاقة مع clients
             $table->decimal('total_amount', 10, 2);
             $table->timestamps();

@@ -8,20 +8,16 @@
 </div>
 
 <div class="mb-3">
-    <x-form.input label="Total Amount" name="total_amount" placeholder="Enter Project Total Amount" :oldval="$project->total_amount" />
+    <x-form.input label="Total Amount" name="total_amount" placeholder="Enter Project Total Amount"
+        :oldval="$project->total_amount" />
 </div>
 
 @php
-    $firstAttachment = optional($project->attachments)->first();
-    $oldImage = $firstAttachment ? asset('storage/' . $firstAttachment->file_path) : null;
+    $oldFiles = optional($project->attachments)->map(fn($file) => 'storage/' . $file->file_path)->toArray();
 @endphp
 
-<x-form.file
-    label="Attachment"
-    name="attachment"
-    :oldimage="$oldImage"
-    can_delete="true"
-/>
+<x-form.file label="Attachments" name="attachment" :oldfiles="$oldFiles" can_delete="true" multiple="true" />
+
 
 
 <div class="mb-3">
@@ -35,7 +31,11 @@
 </div>
 
 <div class="mb-3">
-    <x-form.select label="Employee" name="employee_id" placeholder='Select Employee' :options="$employees"
-        :oldval="$project->employee_id" />
+    @php
+        $selectedEmployees = optional($project)->employees ? $project->employees->pluck('id')->toArray() : [];
+
+    @endphp
+
+    <x-form.select-multiple label="Employees" name="employee_id" :options="$employees" :oldval="$selectedEmployees"  multiple="true" placeholder="Select Employees" />
 </div>
 

@@ -38,7 +38,7 @@ class EmployeesController extends Controller
     public function store(EmployeeRequest $request)
     {
         $data = $request->validated();
-        $data['user_id'] = $request->user_id;
+        $data['user_id'] = Auth::user()->id; // استخدام معرف المستخدم الحالي بدلاً من معرف المستخدم من الطلب
         $employee = Employee::create($data);
 
         // إضافة بيانات الاتصال مرتبطة بالعميل
@@ -75,7 +75,7 @@ class EmployeesController extends Controller
     public function update(EmployeeRequest $request, Employee $employee)
     {
         $data = $request->validated();
-        $data['user_id'] = $request->user_id;
+        $data['user_id'] = Auth::user()->id; // استخدام معرف المستخدم الحالي بدلاً من معرف المستخدم من الطلب
         $employee->update($data);
         // إضافة بيانات الاتصال مرتبطة بالعميل
         $employee->contacts()->create([

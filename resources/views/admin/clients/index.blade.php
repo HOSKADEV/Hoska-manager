@@ -45,7 +45,7 @@
                                 <td>{{ $client->contacts->first()->phone ?? '-' }}</td>
                                 <td>{{ $client->contacts->first()->email ?? '-' }}</td>
                                 <td>{{ $client->contacts->first()->address ?? '-' }}</td>
-                                <td>{{ $client->notes }}</td>
+                                <td>{{ $client->notes?? '_' }}</td>
                                 <td>{{ $client->user->name ?? '_' }}</td>
                                 <td>{{ $client->created_at->diffForHumans() }}</td>
                                 <td>{{ $client->updated_at->diffForHumans() }}</td>

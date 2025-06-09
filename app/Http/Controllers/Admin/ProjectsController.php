@@ -45,8 +45,7 @@ class ProjectsController extends Controller
 
         // التحقق من صحة الطلب
         $data = $request->validated();
-
-        $data['user_id'] = $request->user_id;
+        $data['user_id'] = Auth::user()->id; // استخدام معرف المستخدم الحالي بدلاً من معرف المستخدم من الطلب
         $data['client_id'] = $request->client_id;
 
         // إزالة الحقول غير المرتبطة مباشرة بـ Project
@@ -106,8 +105,7 @@ class ProjectsController extends Controller
     {
 
         $data = $request->validated();
-
-        $data['user_id'] = $request->user_id;
+        $data['user_id'] = Auth::user()->id; // استخدام معرف المستخدم الحالي بدلاً من معرف المستخدم من الطلب
         $data['client_id'] = $request->client_id;
 
         unset($data['attachment']); // نحذف المرفقات من البيانات الرئيسية

@@ -2,17 +2,14 @@
     <x-form.input label="Name" name="name" placeholder="Enter Employee Name" :oldval="$employee->name" />
 </div>
 
-@php
-    $contactPhone = optional($employee->contact)->phone ?? '';
-@endphp
 <div class="mb-3">
-    <x-form.input label="Phone" name="phone" placeholder="Enter Employee Phone" :oldval="$contactPhone" />
+    <x-form.input label="Phone" name="phone" placeholder="Enter Employee Phone" :oldval="$employee->contacts->first()->phone ?? ''" />
 </div>
 <div class="mb-3">
-    <x-form.input label="Email" name="email" placeholder="Enter Employee Email" :oldval="$employee->email" />
+    <x-form.input label="Email" name="email" placeholder="Enter Employee Email" :oldval="$employee->contacts->first()->email ?? ''" />
 </div>
 <div class="mb-3">
-    <x-form.input label="Address" name="address" placeholder="Enter Employee Address" :oldval="$employee->address" />
+    <x-form.input label="Address" name="address" placeholder="Enter Employee Address" :oldval="$employee->contacts->first()->address ?? ''" />
 </div>
 
 
@@ -41,10 +38,4 @@
             </option>
         @endforeach
     </select>
-</div>
-
-
-<div class="mb-3 col-md-12">
-    <x-form.select label="User" name="user_id" placeholder='Select User' :options="$users"
-        :oldval="$employee->user_id" />
 </div>

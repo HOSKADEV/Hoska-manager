@@ -16,9 +16,9 @@
                             <th>Description</th>
                             <th>Total Amount</th>
                             <th>Attachments</th>
-                            <th>User Name</th>
                             <th>Client Name</th>
                             <th>Employee Name</th>
+                            <th>User Name</th>
                             <th>Created At</th>
                             <th>Updated At</th>
                             <th>Actions</th>
@@ -31,9 +31,9 @@
                             <th>Description</th>
                             <th>Total Amount</th>
                             <th>Attachments</th>
-                            <th>User Name</th>
                             <th>Client Name</th>
                             <th>Employee Name</th>
+                            <th>User Name</th>
                             <th>Created At</th>
                             <th>Updated At</th>
                             <th>Actions</th>
@@ -55,7 +55,8 @@
                                         @foreach($project->attachments as $attachment)
                                             <div>
                                                 <a href="{{ asset('storage/' . $attachment->file_path) }}" target="_blank"
-                                                    title="{{ basename($attachment->file_path) }}" download="{{ basename($attachment->file_path) }}">
+                                                    title="{{ basename($attachment->file_path) }}"
+                                                    download="{{ basename($attachment->file_path) }}">
                                                     {{-- {{ basename($attachment->file_path) }} --}}
                                                     Uploaded File{{ $x++ }}
                                                 </a>
@@ -66,7 +67,6 @@
                                     @endif
                                 </td>
 
-                                <td>{{ $project->user->name ?? '_'}}</td>
                                 <td>{{ $project->client->name ?? '_'}}</td>
                                 <td>
                                     @if($project->employees && $project->employees->isNotEmpty())
@@ -75,6 +75,7 @@
                                         _
                                     @endif
                                 </td>
+                                <td>{{ $project->user->name ?? '_'}}</td>
                                 <td>{{ $project->created_at->diffForHumans() }}</td>
                                 <td>{{ $project->updated_at->diffForHumans() }}</td>
                                 <td>

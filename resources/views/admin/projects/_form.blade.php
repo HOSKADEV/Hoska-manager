@@ -12,17 +12,12 @@
         :oldval="$project->total_amount" />
 </div>
 
-@php
-    $oldFiles = optional($project->attachments)->map(fn($file) => 'storage/' . $file->file_path)->toArray();
-@endphp
-
-<x-form.file label="Attachments" name="attachment" :oldfiles="$oldFiles" can_delete="true" multiple="true" />
-
-
-
 <div class="mb-3">
-    <x-form.select label="User" name="user_id" placeholder='Select User' :options="$users"
-        :oldval="$project->user_id" />
+    @php
+        $oldFiles = optional($project->attachments)->map(fn($file) => 'storage/' . $file->file_path)->toArray();
+    @endphp
+
+    <x-form.file label="Attachments" name="attachment" :oldfiles="$oldFiles" can_delete="true" multiple="true" />
 </div>
 
 <div class="mb-3">

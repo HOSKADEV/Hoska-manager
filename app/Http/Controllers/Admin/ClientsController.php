@@ -38,8 +38,7 @@ class ClientsController extends Controller
     public function store(ClientRequest $request)
     {
         $data = $request->validated();
-        $data['user_id'] = $request->user_id;
-
+        $data['user_id'] = Auth::user()->id; // استخدام معرف المستخدم الحالي بدلاً من معرف المستخدم من الطلب
         $client = Client::create($data);
 
 
@@ -77,7 +76,7 @@ class ClientsController extends Controller
     public function update(ClientRequest $request, Client $client)
     {
         $data = $request->validated();
-        $data['user_id'] = $request->user_id;
+        $data['user_id'] = Auth::user()->id; // استخدام معرف المستخدم الحالي بدلاً من معرف المستخدم من الطلب
         $client->update($data);
 
         // تحديث جهة الاتصال إذا وجدت أو إنشاء جديدة

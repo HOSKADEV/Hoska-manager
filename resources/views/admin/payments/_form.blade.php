@@ -1,6 +1,11 @@
+
+@if (isset($payment) && $payment->exists)
 <div class="mb-3">
-    <x-form.input label="amount" name="amount" placeholder="Enter Payment amount" :oldval="$payment->amount" />
+    <x-form.input label="Amount" name="amount" placeholder="Enter Payment amount"
+        :oldval="$payment->invoice->amount ?? ''" readonly />
 </div>
+@endif
+
 
 <div class="mb-3">
     <x-form.input type="datetime-local" label="Payment Date" name="payment_date" placeholder="Enter Payment Date" :oldval="$payment->payment_date" />

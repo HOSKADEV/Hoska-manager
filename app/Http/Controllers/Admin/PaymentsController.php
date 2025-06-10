@@ -40,7 +40,9 @@ class PaymentsController extends Controller
     public function store(PaymentRequest $request)
     {
         $data = $request->validated();
+        $invoice = Invoice::findOrFail($request->invoice_id);
         $data['invoice_id'] = $request->invoice_id;
+        $data['amount'] = $invoice->amount; // استخدام خاصية المبلغ من الكائن
         Payment::create($data);
 
         flash()->success('Payment created successfully');

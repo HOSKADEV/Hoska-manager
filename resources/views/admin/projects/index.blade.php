@@ -55,10 +55,9 @@
                                         @foreach($project->attachments as $attachment)
                                             <div>
                                                 <a href="{{ asset('storage/' . $attachment->file_path) }}" target="_blank"
-                                                    title="{{ basename($attachment->file_path) }}"
-                                                    download="{{ basename($attachment->file_path) }}">
+                                                    title="{{ basename($attachment->file_path) }}">
                                                     {{-- {{ basename($attachment->file_path) }} --}}
-                                                    Uploaded File{{ $x++ }}
+                                                    View File{{ $x++ }}
                                                 </a>
                                             </div>
                                         @endforeach

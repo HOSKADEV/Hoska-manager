@@ -25,7 +25,7 @@ class PaymentRequest extends FormRequest
         $paymentId = $this->payment->id ?? null;
 
         return [
-            'amount' => ['required'],
+            // 'amount' => ['required'],
             'payment_date' => ['required', 'date'],
             'note' => [
                 'required',

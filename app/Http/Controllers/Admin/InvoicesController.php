@@ -43,7 +43,18 @@ class InvoicesController extends Controller
         $data = $request->validated();
         $data['is_paid'] = $request->is_paid;
         $data['project_id'] = $request->project_id;
-        $data['client_id'] = $request->client_id;
+
+        // ✅ استخراج العميل المرتبط بالمشروع
+        $project = Project::with('client')->findOrFail($request->project_id);
+
+        if (!$project->client) {
+            return back()->withErrors(['project_id' => 'هذا المشروع لا يحتوي على عميل مرتبط.']);
+        }
+
+        $data['client_id'] = $project->client->id;
+
+        $data['amount'] = $project->total_amount;
+
         Invoice::create($data);
 
         flash()->success('Invoice created successfully');
@@ -76,7 +87,17 @@ class InvoicesController extends Controller
         $data = $request->validated();
         $data['is_paid'] = $request->is_paid;
         $data['project_id'] = $request->project_id;
-        $data['client_id'] = $request->client_id;
+
+        // ✅ استخراج العميل والمبلغ من المشروع المرتبط
+        $project = Project::with('client')->findOrFail($request->project_id);
+
+        if (!$project->client) {
+            return back()->withErrors(['project_id' => 'هذا المشروع لا يحتوي على عميل مرتبط.']);
+        }
+
+        $data['client_id'] = $project->client->id;
+        $data['amount'] = $project->total_amount;
+
         $invoice->update($data);
 
         flash()->success('Invoice updated successfully');

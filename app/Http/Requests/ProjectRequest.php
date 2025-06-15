@@ -35,7 +35,7 @@ class ProjectRequest extends FormRequest
             'description' => $rule_desc,
             'total_amount' => 'required|numeric',
             'attachment' => $this->isMethod('post') ? 'required|array' : 'nullable|array',
-            'attachment.*' => 'file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,.zip,.rar|max:10240',
+            'attachment.*' => 'file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,ppt,pptx,zip,rar|max:10240',
             'employee_id' => 'required|array',
             'employee_id.*' => 'exists:employees,id',
         ];

@@ -41,8 +41,20 @@ class TasksController extends Controller
     public function store(TaskRequest $request)
     {
         $data = $request->validated();
-        $data['project_id'] = $request->project_id;
+        // $data['project_id'] = $request->project_id;
         $data['employee_id'] = $request->employee_id;
+
+        // استخراج المشاريع المرتبطة بالموظف
+        $employee = Employee::with('projects')->findOrFail($request->employee_id);
+
+        // تحقق من وجود مشاريع مرتبطة
+        if ($employee->projects->isEmpty()) {
+            return back()->withErrors(['employee_id' => 'هذا الموظف لا يحتوي على مشروع مرتبط.']);
+        }
+
+        // إذا كنت تريد أول مشروع فقط
+        $data['project_id'] = $employee->projects->first()->id;
+
         Task::create($data);
 
         flash()->success('Task created successfully');
@@ -54,7 +66,12 @@ class TasksController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $task = Task::with([
+            'employee.projects.client',
+            'project.client',
+        ])->findOrFail($id);
+
+        return view('admin.tasks.show', compact('task'));
     }
 
     /**
@@ -73,8 +90,21 @@ class TasksController extends Controller
     public function update(TaskRequest $request, Task $task)
     {
         $data = $request->validated();
-        $data['project_id'] = $request->project_id;
+        // $data['project_id'] = $request->project_id;
         $data['employee_id'] = $request->employee_id;
+
+        // استخراج المشاريع المرتبطة بالموظف
+        $employee = Employee::with('projects')->findOrFail($request->employee_id);
+
+        // تحقق من وجود مشاريع مرتبطة
+        if ($employee->projects->isEmpty()) {
+            return back()->withErrors(['employee_id' => 'هذا الموظف لا يحتوي على مشروع مرتبط.']);
+        }
+
+        // إذا كنت تريد أول مشروع فقط
+        $data['project_id'] = $employee->projects->first()->id;
+
+
         $task->update($data);
 
         flash()->success('Task updated successfully');

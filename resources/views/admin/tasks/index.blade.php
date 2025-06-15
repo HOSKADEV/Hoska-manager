@@ -14,8 +14,12 @@
                             <th>ID</th>
                             <th>Title</th>
                             <th>Description</th>
-                            <th>Status</th>
-                            <th>Due Date</th>
+                            {{-- <th>Status</th> --}}
+                            {{-- <th>Due Date</th> --}}
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>duration</th>
+                            {{-- <th>Cost</th> --}}
                             <th>Budget Amount</th>
                             <th>Project ID</th>
                             <th>Employee ID</th>
@@ -29,8 +33,12 @@
                             <th>ID</th>
                             <th>Title</th>
                             <th>Description</th>
-                            <th>Status</th>
-                            <th>Due Date</th>
+                            {{-- <th>Status</th> --}}
+                            {{-- <th>Due Date</th> --}}
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>duration</th>
+                            {{-- <th>Cost</th> --}}
                             <th>Budget Amount</th>
                             <th>Project ID</th>
                             <th>Employee ID</th>
@@ -45,16 +53,25 @@
                                 <td>{{ $task->id }}</td>
                                 <td>{{ $task->title }}</td>
                                 <td>{{ $task->description }}</td>
-                                <td>{{ $task->status }}</td>
-                                <td>{{ $task->due_date->diffForHumans() }}</td>
-                                <td>{{ $task->budget_amount }}</td>
-                                <td>{{ $task->project->name ?? '-' }}</td>
+                                {{-- <td>{{ $task->status }}</td> --}}
+                                {{-- <td>{{ $task->due_date->diffForHumans() }}</td> --}}
+                                <td>{{ $task->start_time->diffForHumans() }}</td>
+                                <td>{{ $task->end_time?->diffForHumans() ?? '-' }}</td>
+                                <td>{{ $task->duration_in_hours }}</td>
+                                <td>{{ number_format($task->cost, 2) }} $</td>
+                                {{-- <td>{{ $task->budget_amount }}</td> --}}
+                                <td>{{ $task->employee->projects->first()->name ?? 'N/A' }}</td>
                                 <td>{{ $task->employee->name ?? '-' }}</td>
+                                {{-- <td>{{ $task->employee->name ?? '-' }}</td> --}}
                                 <td>{{ $task->created_at->diffForHumans() }}</td>
                                 <td>{{ $task->updated_at->diffForHumans() }}</td>
-                                <td>
+                                <td class="col-md-3">
+                                    <a href="{{ route('admin.tasks.show', $task->id) }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
                                     <a href="{{ route('admin.tasks.edit', $task->id) }}" class="btn btn-sm btn-primary"><i
-                                            class='fas fa-edit'></i></a>
+                                            class='fas fa-edit'></i>
+                                    </a>
                                     <form action="{{ route('admin.tasks.destroy', $task->id) }}" method="POST"
                                         style="display: inline-block">
                                         @csrf
@@ -66,7 +83,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="11" class="text-center">No Data Found</td>
+                                <td colspan="15" class="text-center">No Data Found</td>
                             </tr>
                         @endforelse
                     </tbody>

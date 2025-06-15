@@ -42,9 +42,24 @@ class TimesheetsController extends Controller
     {
         $data = $request->validated();
         $data['work_date'] = $request->work_date;
-        $data['hours_worked'] = $request->hours_worked;
+        // $data['hours_worked'] = $request->hours_worked;
         $data['employee_id'] = $request->employee_id;
-        $data['project_id'] = $request->project_id;
+        // $data['project_id'] = $request->project_id;
+
+        // استخراج المشاريع المرتبطة بالموظف
+        $employee = Employee::with('projects', 'tasks')->findOrFail($request->employee_id);
+
+        // تحقق من وجود مشاريع مرتبطة
+        if ($employee->projects->isEmpty()) {
+            return back()->withErrors(['employee_id' => 'هذا الموظف لا يحتوي على مشروع مرتبط.']);
+        }
+
+        // إذا كنت تريد أول مشروع فقط
+        $data['project_id'] = $employee->projects->first()->id;
+
+        // حساب مجموع ساعات العمل من المهام - وتخزينها في الحقل hours_worked تلقائياً
+        $data['hours_worked'] = $employee->tasks->sum('duration_in_hours');
+
         Timesheet::create($data);
 
         flash()->success('Timesheet created successfully');
@@ -76,7 +91,19 @@ class TimesheetsController extends Controller
     {
         $data = $request->validated();
         $data['employee_id'] = $request->employee_id;
-        $data['project_id'] = $request->project_id;
+
+        // جلب الموظف مع المشاريع والمهام معًا
+        $employee = Employee::with(['projects', 'tasks'])->findOrFail($request->employee_id);
+
+        if ($employee->projects->isEmpty()) {
+            return back()->withErrors(['employee_id' => 'هذا الموظف لا يحتوي على مشروع مرتبط.']);
+        }
+
+        $data['project_id'] = $employee->projects->first()->id;
+
+        // حساب مجموع ساعات العمل من المهام
+        $data['hours_worked'] = $employee->tasks->sum('duration_in_hours');
+
         $timesheet->update($data);
 
         flash()->success('Timesheet updated successfully');

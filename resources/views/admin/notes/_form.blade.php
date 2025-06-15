@@ -3,9 +3,3 @@
         :oldval="$note->note" />
 </div>
 
-<div class="mb-3">
-    <x-form.select label="User" name="user_id" placeholder='Select User' :options="$users"
-        :oldval="$note->user_id" />
-</div>
-
-

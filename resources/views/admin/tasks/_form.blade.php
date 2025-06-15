@@ -30,18 +30,38 @@
     </select>
 </div>
 
-<div class="mb-3">
-    <x-form.input type="datetime-local" label="Due Date" name="due_date" placeholder="Enter Task Due Date" :oldval="$task->due_date" />
-</div>
+{{-- <div class="mb-3">
+    <x-form.input type="datetime-local" label="Due Date" name="due_date" placeholder="Enter Task Due Date"
+        :oldval="$task->due_date" />
+</div> --}}
 
 <div class="mb-3">
-    <x-form.input label="Budget Amount" name="budget_amount" placeholder="Enter Task Budget Amount" :oldval="$task->budget_amount" />
+    <x-form.input type="datetime-local" label="Start Time" name="start_time" placeholder="Enter Task Start Time"
+        :oldval="$task->start_time" />
 </div>
 
-<div class="mb-3 col-md-12">
-    <x-form.select label="Project" name="project_id" placeholder='Select User' :options="$projects" :oldval="$task->project_id" />
+<div class="mb-3">
+    <x-form.input type="datetime-local" label="End Time" name="end_time" placeholder="Enter Task End Time"
+        :oldval="$task->end_time" />
 </div>
 
+{{-- <div class="mb-3">
+    <x-form.input label="Budget Amount" name="budget_amount" placeholder="Enter Task Budget Amount"
+        :oldval="$task->budget_amount" />
+</div> --}}
+
 <div class="mb-3 col-md-12">
-    <x-form.select label="Employee" name="employee_id" placeholder='Select User' :options="$employees" :oldval="$task->employee_id" />
+    <x-form.select label="Employee" name="employee_id" placeholder='Select Employee' :options="$employees"
+        :oldval="$task->employee_id" />
 </div>
+
+@if (isset($task) && $task->exists)
+    <div class="mb-3 col-md-12">
+        <x-form.input label="Project" name="project_name" :oldval="$task->employee->projects->first()->name ?? 'N/A'" readonly/>
+    </div>
+@endif
+
+{{-- <div class="mb-3 col-md-12">
+    <x-form.select-multiple label="Employees" name="employee_name" :oldval="$task->project->employee->name ?? 'N/A'"
+        readonly multiple="true" placeholder="Select Employees" />
+</div> --}}

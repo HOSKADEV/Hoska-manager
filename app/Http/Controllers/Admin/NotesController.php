@@ -38,9 +38,9 @@ class NotesController extends Controller
     public function store(NoteRequest $request)
     {
         $data = $request->validated();
-        $data['notable_id'] = User::find($request->user_id)->id; // Assuming the notable ID is the user ID
+        $data['notable_id'] = Auth::user()->id; // Assuming the notable ID is the user ID
         $data['notable_type'] = User::class; // Assuming the notable type is User
-        $data['user_id'] = $request->user_id;
+        $data['user_id'] = Auth::user()->id; // استخدام معرف المستخدم الحالي بدلاً من معرف المستخدم من الطلب
         Note::create($data, );
 
         flash()->success('Note created successfully');
@@ -70,7 +70,7 @@ class NotesController extends Controller
     public function update(NoteRequest $request, Note $note)
     {
         $data = $request->validated();
-        $data['user_id'] = $request->user_id;
+        $data['user_id'] = Auth::user()->id; // استخدام معرف المستخدم الحالي بدلاً من معرف المستخدم من الطلب
         $note->update($data);
 
         flash()->success('Note updated successfully');

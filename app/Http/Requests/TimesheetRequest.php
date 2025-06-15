@@ -25,7 +25,7 @@ class TimesheetRequest extends FormRequest
 
         return [
             'work_date' => ['required', 'date'],
-            'hours_worked' => ['required'],
+            'hours_worked' => ['nullable'],
         ];
     }
 }

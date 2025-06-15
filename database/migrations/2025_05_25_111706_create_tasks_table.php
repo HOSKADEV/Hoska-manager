@@ -20,6 +20,8 @@ return new class extends Migration
             $table->decimal('budget_amount',10,2)->nullable();
             $table->foreignId('project_id')->constrained()->onDelete('cascade');
             $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
+            $table->timestamp('start_time');
+            $table->timestamp('end_time')->nullable();
             $table->timestamps();
         });
     }

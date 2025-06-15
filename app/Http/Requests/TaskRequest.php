@@ -22,25 +22,6 @@ class TaskRequest extends FormRequest
      */
     public function rules(): array
     {
-        //     $rule_title = 'required|unique:tasks,title';
-        //     $rule_description = 'required|unique:tasks,description';
-        //     $rule_status = 'required|in:pending,in_progress,completed';
-        //     $rule_due_date = 'required|date';
-        //     $rule_budget_amount = 'required';
-        // if ($this->method() != 'POST') {
-        //     $rule_title = 'required|unique:tasks,title,'  . $this->task->id;
-        //     $rule_description = 'required|unique:tasks,description,'  . $this->task->id;
-        //     $rule_status = 'required|in:pending,in_progress,completed,'  . $this->task->id;
-        //     $rule_due_date = 'required|date,'  . $this->task->id;
-        //     $rule_budget_amount = 'required,'  . $this->task->id;
-        // }
-        // return [
-        //     'title' => $rule_title,
-        //     'description' => $rule_description,
-        //     "status" => $rule_status,
-        //     'due_date' => $rule_due_date,
-        //     'budget_amount' => $rule_budget_amount,
-        // ];
 
         $taskId = $this->task->id ?? null;
 
@@ -57,8 +38,10 @@ class TaskRequest extends FormRequest
                 'required',
                 Rule::in(['pending', 'in_progress', 'completed']),
             ],
-            'due_date' => ['required', 'date'],
-            'budget_amount' => ['required'],
+            // 'due_date' => ['required', 'date'],
+            'start_time' => ['required', 'date'],
+            'end_time' => ['nullable', 'date', 'after:start_time'],
+            // 'budget_amount' => ['required'],
         ];
     }
 }

@@ -5,9 +5,7 @@
 @endif
 
 <textarea type="text" class="form-control {{ $tiny ? 'tinyeditor' : '' }} @error($name) is-invalid @enderror"
-    id="{{ $name }}" name="{{ $name }}" placeholder="{{ $placeholder }}" rows="5">
-    {{ old($name, $oldval) }}
-</textarea>
+    id="{{ $name }}" name="{{ $name }}" placeholder="{{ $placeholder }}" rows="5">{{ old($name, $oldval) }}</textarea>
 @error($name)
     <div class="invalid-feedback">{{ $message }}</div>
 @enderror

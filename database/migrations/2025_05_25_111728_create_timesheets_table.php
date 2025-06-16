@@ -16,7 +16,8 @@ return new class extends Migration
             $table->date('work_date');
             $table->decimal('hours_worked', 5, 2);
             $table->foreignId('employee_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('project_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('project_id')->nullable()->constrained()->nullOnDelete();
+            $table->unique(['employee_id', 'work_date']);
             $table->timestamps();
         });
     }

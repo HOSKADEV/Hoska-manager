@@ -27,20 +27,20 @@ class TaskRequest extends FormRequest
 
         return [
             'title' => [
-                'required',
+                'nullable',
                 Rule::unique('tasks', 'title')->ignore($taskId),
             ],
             'description' => [
-                'required',
-                Rule::unique('tasks', 'description')->ignore($taskId),
+                'nullable',
+                // Rule::unique('tasks', 'description')->ignore($taskId),
             ],
             'status' => [
-                'required',
+                'nullable',
                 Rule::in(['pending', 'in_progress', 'completed']),
             ],
             // 'due_date' => ['required', 'date'],
-            'start_time' => ['required', 'date'],
-            'end_time' => ['nullable', 'date', 'after:start_time'],
+            'start_time' => ['nullable', 'date'],
+            'end_time' => ['nullable', 'date', 'after_or_equal:start_time'],
             // 'budget_amount' => ['required'],
         ];
     }

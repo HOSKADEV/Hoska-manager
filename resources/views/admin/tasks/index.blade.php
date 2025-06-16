@@ -16,9 +16,9 @@
                             <th>Description</th>
                             {{-- <th>Status</th> --}}
                             {{-- <th>Due Date</th> --}}
-                            <th>Start Time</th>
-                            <th>End Time</th>
-                            <th>duration</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Duration</th>
                             {{-- <th>Cost</th> --}}
                             <th>Budget Amount</th>
                             <th>Project ID</th>
@@ -35,9 +35,9 @@
                             <th>Description</th>
                             {{-- <th>Status</th> --}}
                             {{-- <th>Due Date</th> --}}
-                            <th>Start Time</th>
-                            <th>End Time</th>
-                            <th>duration</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Duration</th>
                             {{-- <th>Cost</th> --}}
                             <th>Budget Amount</th>
                             <th>Project ID</th>
@@ -52,7 +52,7 @@
                             <tr>
                                 <td>{{ $task->id }}</td>
                                 <td>{{ $task->title }}</td>
-                                <td>{{ $task->description }}</td>
+                                <td class="col-md-3">{{ $task->description }}</td>
                                 {{-- <td>{{ $task->status }}</td> --}}
                                 {{-- <td>{{ $task->due_date->diffForHumans() }}</td> --}}
                                 <td>{{ $task->start_time->diffForHumans() }}</td>
@@ -65,7 +65,7 @@
                                 {{-- <td>{{ $task->employee->name ?? '-' }}</td> --}}
                                 <td>{{ $task->created_at->diffForHumans() }}</td>
                                 <td>{{ $task->updated_at->diffForHumans() }}</td>
-                                <td class="col-md-3">
+                                <td class="col-md-4">
                                     <a href="{{ route('admin.tasks.show', $task->id) }}" class="btn btn-sm btn-info">
                                         <i class="fas fa-eye"></i>
                                     </a>
@@ -77,7 +77,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <button onclick="return confirm('Are you sure?!')" type="submit"
-                                            class="btn btn-sm btn-danger"><i class='fas fa-trash'></i></button>
+                                            class="btn btn-sm btn-danger mt-2"><i class='fas fa-trash'></i></button>
                                     </form>
                                 </td>
                             </tr>

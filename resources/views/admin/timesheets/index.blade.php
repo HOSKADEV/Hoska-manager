@@ -2,7 +2,7 @@
     <!-- Page Heading -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-gray-800">All Timesheets</h1>
-        <a href="{{ route('admin.timesheets.create') }}" class="btn btn-info"><i class="fas fa-plus"></i>Add New</a>
+        {{-- <a href="{{ route('admin.timesheets.create') }}" class="btn btn-info"><i class="fas fa-plus"></i>Add New</a> --}}
     </div>
 
     <div class="card">
@@ -15,7 +15,7 @@
                             <th>Work Date</th>
                             <th>Hours Worked</th>
                             <th>Employee Name</th>
-                            <th>Project Name</th>
+                            {{-- <th>Project Name</th> --}}
                             <th>Created At</th>
                             <th>Updated At</th>
                             <th>Actions</th>
@@ -27,7 +27,7 @@
                             <th>Work Date</th>
                             <th>Hours Worked</th>
                             <th>Employee Name</th>
-                            <th>Project Name</th>
+                            {{-- <th>Project Name</th> --}}
                             <th>Created At</th>
                             <th>Updated At</th>
                             <th>Actions</th>
@@ -40,19 +40,12 @@
                                 <td>{{ $timesheet->work_date->diffForHumans() }}</td>
                                 <td>{{ $timesheet->hours_worked }}</td>
                                 <td>{{ $timesheet->employee->name ?? '_'}}</td>
-                                <td>{{ $timesheet->project->name ?? '_'}}</td>
+                                {{-- <td>{{ $timesheet->project->name ?? '_'}}</td> --}}
                                 <td>{{ $timesheet->created_at->diffForHumans() }}</td>
                                 <td>{{ $timesheet->updated_at->diffForHumans() }}</td>
                                 <td>
-                                    <a href="{{ route('admin.timesheets.edit', $timesheet->id) }}"
-                                        class="btn btn-sm btn-primary"><i class='fas fa-edit'></i></a>
-                                    <form action="{{ route('admin.timesheets.destroy', $timesheet->id) }}" method="POST"
-                                        style="display: inline-block">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button onclick="return confirm('Are you sure?!')" type="submit"
-                                            class="btn btn-sm btn-danger"><i class='fas fa-trash'></i></button>
-                                    </form>
+                                    <a href="{{ route('admin.timesheets.show', $timesheet->id) }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i>
                                 </td>
                             </tr>
                         @empty

@@ -1,5 +1,5 @@
 <div class="mb-3">
-    <x-form.input label="Title" name="title" placeholder="Enter Task Title" :oldval="$task->title" />
+    <x-form.input label="Title" name="title" placeholder="Enter Task Title" :oldval="$task->title?? '' " />
 </div>
 
 <div class="mb-3">
@@ -35,10 +35,16 @@
         :oldval="$task->due_date" />
 </div> --}}
 
-<div class="mb-3">
+@if(isset($task) && $task->exists)
+    {{-- تعديل --}}
     <x-form.input type="datetime-local" label="Start Time" name="start_time" placeholder="Enter Task Start Time"
-        :oldval="$task->start_time" />
-</div>
+        :oldval="$task->start_time->format('Y-m-d\TH:i')" />
+{{-- @else
+    إنشاء
+    <x-form.input type="datetime-local" label="Start Time" name="start_time" placeholder="Enter Task Start Time"
+        :oldval="now()->format('Y-m-d\TH:i')" /> --}}
+@endif
+
 
 <div class="mb-3">
     <x-form.input type="datetime-local" label="End Time" name="end_time" placeholder="Enter Task End Time"

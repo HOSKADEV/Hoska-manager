@@ -26,9 +26,9 @@ class PaymentRequest extends FormRequest
 
         return [
             // 'amount' => ['required'],
-            'payment_date' => ['required', 'date'],
+            'payment_date' => ['nullable', 'date'],
             'note' => [
-                'required',
+                'nullable',
                 Rule::unique('payments', 'note')->ignore($paymentId),
             ],
         ];

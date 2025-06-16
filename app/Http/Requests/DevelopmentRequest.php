@@ -21,13 +21,13 @@ class DevelopmentRequest extends FormRequest
      */
     public function rules(): array
     {
-        $rules = 'required|unique:developments,description';
-        $rule_rate = 'required|numeric|min:0';
+        $rules = 'nullable|unique:developments,description';
+        $rule_rate = 'nullable|numeric|min:0';
 
         if ($this->method() != 'POST') {
-            $rules = 'required|unique:developments,description,' . $this->development->id;
+            $rules = 'nullable|unique:developments,description,' . $this->development->id;
             // فقط تحقق من الرقم ولا تجبره أن يكون فريدًا
-            $rule_rate = 'required|numeric|min:0';
+            $rule_rate = 'nullable|numeric|min:0';
         }
 
         return [

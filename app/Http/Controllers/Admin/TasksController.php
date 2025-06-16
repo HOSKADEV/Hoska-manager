@@ -7,6 +7,7 @@ use App\Http\Requests\TaskRequest;
 use App\Models\Employee;
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\Timesheet;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -43,6 +44,7 @@ class TasksController extends Controller
         $data = $request->validated();
         // $data['project_id'] = $request->project_id;
         $data['employee_id'] = $request->employee_id;
+        $data['start_time'] = now();
 
         // استخراج المشاريع المرتبطة بالموظف
         $employee = Employee::with('projects')->findOrFail($request->employee_id);
@@ -55,7 +57,11 @@ class TasksController extends Controller
         // إذا كنت تريد أول مشروع فقط
         $data['project_id'] = $employee->projects->first()->id;
 
-        Task::create($data);
+        $task = Task::create($data);
+        // بعد حفظ المهمة:
+        // بعد الحفظ حدث التايمشيت للموظف
+        Timesheet::updateEmployeeTimesheet($task->employee_id, $task->start_time->toDateString());
+
 
         flash()->success('Task created successfully');
         return redirect()->route('admin.tasks.index');
@@ -93,6 +99,7 @@ class TasksController extends Controller
         // $data['project_id'] = $request->project_id;
         $data['employee_id'] = $request->employee_id;
 
+
         // استخراج المشاريع المرتبطة بالموظف
         $employee = Employee::with('projects')->findOrFail($request->employee_id);
 
@@ -106,6 +113,9 @@ class TasksController extends Controller
 
 
         $task->update($data);
+         // بعد الحفظ حدث التايمشيت للموظف
+        Timesheet::updateEmployeeTimesheet($task->employee_id, $task->start_time->toDateString());
+
 
         flash()->success('Task updated successfully');
         return redirect()->route('admin.tasks.index');

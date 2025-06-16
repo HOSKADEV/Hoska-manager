@@ -204,7 +204,7 @@
 
 
             <!-- Divider -->
-            <hr class="sidebar-divider my-0">
+            {{-- <hr class="sidebar-divider my-0">
             <!-- Nav Item - Pages Collapse Menu Timesheets -->
             <li
                 class="nav-item {{ request()->routeIs('admin.timesheets.index') || request()->routeIs('admin.timesheets.create') ? 'active' : ''}}">
@@ -223,6 +223,15 @@
                             href="{{ route('admin.timesheets.create') }}">Add New</a>
                     </div>
                 </div>
+            </li> --}}
+
+            <!-- Divider -->
+            <hr class="sidebar-divider my-0">
+            <!-- Nav Item - Settings -->
+            <li class="nav-item {{ request()->routeIs('admin.timesheets.indexs') ? 'active' : ''}}">
+                <a class="nav-link" href="{{ route('admin.timesheets.index') }}">
+                    <i class="fas fa-user-clock"></i>
+                    <span>Timesheets</span></a>
             </li>
 
             <!-- Divider -->
@@ -288,15 +297,6 @@
                     <span>Contacts Message</span>
                     <span style="top: 25px; right: 20px;" class="badge badge-danger badge-counter ">{{
                         $unread_messages_count }}</span></a>
-            </li> --}}
-
-            {{-- <!-- Divider -->
-            <hr class="sidebar-divider my-0">
-            <!-- Nav Item - Settings -->
-            <li class="nav-item {{ request()->routeIs('admin.settings') ? 'active' : ''}}">
-                <a class="nav-link" href="{{ route('admin.settings') }}">
-                    <i class="fas fa-fw fa-cogs"></i>
-                    <span>Settings</span></a>
             </li> --}}
 
             <!-- Divider -->

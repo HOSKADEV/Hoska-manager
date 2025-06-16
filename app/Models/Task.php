@@ -45,40 +45,18 @@ class Task extends Model
         };
     }
 
-    public static function updateEmployeeTimesheet($employee_id)
-    {
-        $employee = Employee::with(['tasks', 'projects'])->find($employee_id);
-        if (!$employee) return;
-
-        // حساب مجموع الساعات من المهام المنتهية فقط
-        $totalHours = $employee->tasks->whereNotNull('start_time')->whereNotNull('end_time')->sum(function ($task) {
-            return $task->duration_in_hours;
-        });
-
-        // استخدم أول تاريخ متوفر من المهام كـ work_date (أو اليوم الحالي كخيار افتراضي)
-        $workDate = optional($employee->tasks->first())->start_time?->toDateString() ?? now()->toDateString();
-
-        // تحديث أو إنشاء تايمشيت
-        Timesheet::updateOrCreate(
-            [
-                'employee_id' => $employee->id,
-                'work_date' => $workDate,
-            ],
-            [
-                'hours_worked' => $totalHours,
-                'project_id' => optional($employee->projects->first())->id,
-            ]
-        );
-    }
-
     protected static function booted()
     {
         static::saved(function ($task) {
-            self::updateEmployeeTimesheet($task->employee_id);
+            if ($task->employee_id && $task->start_time) {
+                Timesheet::updateEmployeeTimesheet($task->employee_id, $task->start_time->toDateString());
+            }
         });
 
         static::deleted(function ($task) {
-            self::updateEmployeeTimesheet($task->employee_id);
+            if ($task->employee_id && $task->start_time) {
+                Timesheet::updateEmployeeTimesheet($task->employee_id, $task->start_time->toDateString());
+            }
         });
     }
 }

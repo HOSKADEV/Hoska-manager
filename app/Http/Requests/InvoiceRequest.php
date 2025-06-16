@@ -21,13 +21,13 @@ class InvoiceRequest extends FormRequest
      */
     public function rules(): array
     {
-        $rule_number = 'required|unique:invoices,invoice_number';
-        $rule_amount = 'required|numeric|min:0';
-        $rule_invoice_date = 'required|date';
+        $rule_number = 'nullable|unique:invoices,invoice_number';
+        $rule_amount = 'nullable|numeric|min:0';
+        $rule_invoice_date = 'nullable|date';
         $rule_due_date = 'nullable|date|after_or_equal:invoice_date';
 
         if ($this->method() !== 'POST') {
-            $rule_number = 'required|unique:invoices,invoice_number,' . $this->invoice->id;
+            $rule_number = 'nullable|unique:invoices,invoice_number,' . $this->invoice->id;
         }
 
         return [

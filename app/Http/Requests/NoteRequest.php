@@ -26,7 +26,7 @@ class NoteRequest extends FormRequest
 
         return [
             'note' => [
-                'required',
+                'nullable',
                 Rule::unique('payments', 'note')->ignore($noteID),
             ],
         ];

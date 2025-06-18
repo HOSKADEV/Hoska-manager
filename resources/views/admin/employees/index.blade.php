@@ -1,4 +1,30 @@
 <x-dashboard title="Main Dashboard">
+    @push('css')
+        <style>
+            .badge-custom {
+                display: inline-block;
+                padding: 0.5em 0.8em;
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: #fff;
+                border-radius: 0.5rem;
+                white-space: nowrap;
+                margin-right: 0.3em;
+                margin-bottom: 0.2em;
+                vertical-align: middle;
+            }
+
+            .badge-user {
+                background-color: #fd7e14;
+                /* برتقالي */
+            }
+
+            .badge-muted {
+                background-color: #6c757d;
+                /* رمادي */
+            }
+        </style>
+    @endpush
     <!-- Page Heading -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-gray-800">All Employees</h1>
@@ -49,7 +75,13 @@
                                 <td>{{ $employee->contacts->first()->address ?? '-' }}</td>
                                 <td>{{ $employee->rate }}</td>
                                 <td>{{ $employee->payment_type }}</td>
-                                <td>{{ $employee->user->name ?? '_' }}</td>
+                                <td>
+                                    @if($employee->user)
+                                        <span class="badge-custom badge-user">{{ $employee->user->name }}</span>
+                                    @else
+                                        <span class="badge-custom badge-muted">_</span>
+                                    @endif
+                                </td>
                                 <td>{{ $employee->created_at->diffForHumans() }}</td>
                                 <td>{{ $employee->updated_at->diffForHumans() }}</td>
                                 <td>

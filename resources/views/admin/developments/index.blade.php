@@ -1,4 +1,29 @@
 <x-dashboard title="Main Dashboard">
+    @push('css')
+        <style>
+            .badge-custom {
+                display: inline-block;
+                padding: 0.4em 0.75em;
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: #fff;
+                border-radius: 0.5rem;
+                white-space: nowrap;
+                margin-right: 0.3em;
+                vertical-align: middle;
+            }
+
+            .badge-project {
+                background-color: #28a745;
+                /* أخضر */
+            }
+
+            .badge-muted {
+                background-color: #6c757d;
+                /* رمادي */
+            }
+        </style>
+    @endpush
     <!-- Page Heading -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-gray-800">All Developments</h1>
@@ -32,28 +57,37 @@
                         </tr>
                     </tfoot>
                     <tbody>
-                            @forelse ($developments as $development)
-                                <tr>
-                                    <td>{{ $development->id }}</td>
-                                    <td>{{ $development->description }}</td>
-                                    <td>{{ $development->amount }}</td>
-                                    <td>{{ $development->project->name ?? '_'}}</td>
-                                    <td>{{ $development->created_at->diffForHumans() }}</td>
-                                    <td>{{ $development->updated_at->diffForHumans() }}</td>
-                                    <td>
-                                        <a href="{{ route('admin.developments.edit', $development->id) }}" class="btn btn-sm btn-primary"><i class='fas fa-edit'></i></a>
-                                        <form action="{{ route('admin.developments.destroy', $development->id) }}" method="POST" style="display: inline-block">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button onclick="return confirm('Are you sure?!')" type="submit" class="btn btn-sm btn-danger"><i class='fas fa-trash'></i></button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="text-center">No Data Found</td>
-                                </tr>
-                            @endforelse
+                        @forelse ($developments as $development)
+                            <tr>
+                                <td>{{ $development->id }}</td>
+                                <td>{{ $development->description }}</td>
+                                <td>{{ $development->amount }}</td>
+                                <td>
+                                    @if($development->project)
+                                        <span class="badge-custom badge-project">{{ $development->project->name }}</span>
+                                    @else
+                                        <span class="badge-custom badge-muted">_</span>
+                                    @endif
+                                </td>
+                                <td>{{ $development->created_at->diffForHumans() }}</td>
+                                <td>{{ $development->updated_at->diffForHumans() }}</td>
+                                <td>
+                                    <a href="{{ route('admin.developments.edit', $development->id) }}"
+                                        class="btn btn-sm btn-primary"><i class='fas fa-edit'></i></a>
+                                    <form action="{{ route('admin.developments.destroy', $development->id) }}" method="POST"
+                                        style="display: inline-block">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button onclick="return confirm('Are you sure?!')" type="submit"
+                                            class="btn btn-sm btn-danger"><i class='fas fa-trash'></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="text-center">No Data Found</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -74,4 +108,3 @@
         <script src="{{ asset('assets/js/demo/datatables-demo.js') }}"></script>
     @endpush
 </x-dashboard>
-

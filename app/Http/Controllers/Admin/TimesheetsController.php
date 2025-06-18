@@ -9,6 +9,7 @@ use App\Models\Timesheet;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,9 +18,17 @@ class TimesheetsController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $timesheets = Timesheet::all();
+        $query = Timesheet::with('employee');
+
+        if ($request->filled('month')) {
+            $month = Carbon::parse($request->month);
+            $query->whereMonth('work_date', $month->month)
+                ->whereYear('work_date', $month->year);
+        }
+
+        $timesheets = $query->get();
 
         return view('admin.timesheets.index', compact('timesheets'));
     }

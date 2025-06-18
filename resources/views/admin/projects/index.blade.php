@@ -1,4 +1,40 @@
 <x-dashboard title="Main Dashboard">
+    @push('css')
+        <style>
+            .badge-custom {
+                display: inline-block;
+                padding: 0.5em 0.8em;
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: #fff;
+                border-radius: 0.5rem;
+                white-space: nowrap;
+                margin-right: 0.3em;
+                margin-bottom: 0.2em;
+            }
+
+            .badge-client {
+                background-color: #007bff;
+                /* أزرق */
+            }
+
+            .badge-employee {
+                background-color: #20c997;
+                /* أخضر فاتح */
+            }
+
+            .badge-user {
+                background-color: #fd7e14;
+                /* برتقالي */
+            }
+
+            .badge-muted {
+                background-color: #6c757d;
+                /* رمادي */
+            }
+        </style>
+    @endpush
+
     <!-- Page Heading -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-gray-800">All Projects</h1>
@@ -65,16 +101,29 @@
                                         _
                                     @endif
                                 </td>
-
-                                <td>{{ $project->client->name ?? '_'}}</td>
                                 <td>
-                                    @if($project->employees && $project->employees->isNotEmpty())
-                                        {{ $project->employees->pluck('name')->join(', ') }}
+                                    @if($project->client)
+                                        <span class="badge-custom badge-client">{{ $project->client->name }}</span>
                                     @else
-                                        _
+                                        <span class="badge-custom badge-muted">_</span>
                                     @endif
                                 </td>
-                                <td>{{ $project->user->name ?? '_'}}</td>
+                                <td>
+                                    @if($project->employees && $project->employees->isNotEmpty())
+                                        @foreach($project->employees as $employee)
+                                            <span class="badge-custom badge-employee">{{ $employee->name }}</span>
+                                        @endforeach
+                                    @else
+                                        <span class="badge-custom badge-muted">_</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($project->user)
+                                        <span class="badge-custom badge-user">{{ $project->user->name }}</span>
+                                    @else
+                                        <span class="badge-custom badge-muted">_</span>
+                                    @endif
+                                </td>
                                 <td>{{ $project->created_at->diffForHumans() }}</td>
                                 <td>{{ $project->updated_at->diffForHumans() }}</td>
                                 <td>

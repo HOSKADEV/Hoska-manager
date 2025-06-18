@@ -1,4 +1,29 @@
 <x-dashboard title="Main Dashboard">
+    @push('css')
+        <style>
+            .badge-custom {
+                display: inline-block;
+                padding: 0.4em 0.75em;
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: #fff;
+                border-radius: 0.5rem;
+                white-space: nowrap;
+                margin-right: 0.3em;
+                vertical-align: middle;
+            }
+
+            .badge-invoice {
+                background-color: #17a2b8;
+                /* أزرق سماوي */
+            }
+
+            .badge-muted {
+                background-color: #6c757d;
+                /* رمادي */
+            }
+        </style>
+    @endpush
     <!-- Page Heading -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-gray-800">All Payments</h1>
@@ -40,7 +65,13 @@
                                 <td>{{ $payment->amount }}</td>
                                 <td>{{ $payment->payment_date->diffForHumans() }}</td>
                                 <td>{{ $payment->note }}</td>
-                                <td>{{ $payment->invoice->invoice_number ?? '-' }}</td>
+                                <td>
+                                    @if($payment->invoice && $payment->invoice->invoice_number)
+                                        <span class="badge-custom badge-invoice">{{ $payment->invoice->invoice_number }}</span>
+                                    @else
+                                        <span class="badge-custom badge-muted">-</span>
+                                    @endif
+                                </td>
                                 <td>{{ $payment->created_at->diffForHumans() }}</td>
                                 <td>{{ $payment->updated_at->diffForHumans() }}</td>
                                 <td>

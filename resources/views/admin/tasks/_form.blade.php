@@ -1,5 +1,5 @@
 <div class="mb-3">
-    <x-form.input label="Title" name="title" placeholder="Enter Task Title" :oldval="$task->title?? '' " />
+    <x-form.input label="Title" name="title" placeholder="Enter Task Title" :oldval="$task->title ?? '' " />
 </div>
 
 <div class="mb-3">
@@ -39,17 +39,22 @@
     {{-- تعديل --}}
     <x-form.input type="datetime-local" label="Start Time" name="start_time" placeholder="Enter Task Start Time"
         :oldval="$task->start_time->format('Y-m-d\TH:i')" />
-{{-- @else
+    {{-- @else
     إنشاء
     <x-form.input type="datetime-local" label="Start Time" name="start_time" placeholder="Enter Task Start Time"
         :oldval="now()->format('Y-m-d\TH:i')" /> --}}
 @endif
 
-
 <div class="mb-3">
     <x-form.input type="datetime-local" label="End Time" name="end_time" placeholder="Enter Task End Time"
         :oldval="$task->end_time" />
 </div>
+
+@if(isset($task) && $task->exists)
+    <div class="mb-3 col-md-12">
+        <x-form.input label="Duration (Hours)" name="duration_in_hours" :oldval="$task->duration_in_hours" readonly />
+    </div>
+@endif
 
 {{-- <div class="mb-3">
     <x-form.input label="Budget Amount" name="budget_amount" placeholder="Enter Task Budget Amount"
@@ -63,7 +68,8 @@
 
 @if (isset($task) && $task->exists)
     <div class="mb-3 col-md-12">
-        <x-form.input label="Project" name="project_name" :oldval="$task->employee->projects->first()->name ?? 'N/A'" readonly/>
+        <x-form.input label="Project" name="project_name" :oldval="$task->employee->projects->first()->name ?? 'N/A'"
+            readonly />
     </div>
 @endif
 
@@ -71,3 +77,38 @@
     <x-form.select-multiple label="Employees" name="employee_name" :oldval="$task->project->employee->name ?? 'N/A'"
         readonly multiple="true" placeholder="Select Employees" />
 </div> --}}
+
+
+@push('js')
+    <script>
+        function calculateDuration() {
+            const start = document.querySelector('[name="start_time"]').value;
+            const end = document.querySelector('[name="end_time"]').value;
+
+            if (start && end) {
+                const startTime = new Date(start);
+                const endTime = new Date(end);
+
+                if (!isNaN(startTime.getTime()) && !isNaN(endTime.getTime())) {
+                    const diffMs = endTime - startTime;
+                    const diffHours = diffMs / (1000 * 60 * 60);
+                    const rounded = Math.round(diffHours * 100) / 100;
+                    document.querySelector('[name="duration_in_hours"]').value = rounded >= 0 ? rounded : 0;
+                } else {
+                    document.querySelector('[name="duration_in_hours"]').value = '';
+                }
+            } else {
+                document.querySelector('[name="duration_in_hours"]').value = '';
+            }
+        }
+
+        // Event listeners for real-time update
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelector('[name="start_time"]').addEventListener('input', calculateDuration);
+            document.querySelector('[name="end_time"]').addEventListener('input', calculateDuration);
+
+            // Initial calculation if values exist
+            calculateDuration();
+        });
+    </script>
+@endpush

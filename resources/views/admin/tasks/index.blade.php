@@ -1,4 +1,39 @@
 <x-dashboard title="Main Dashboard">
+    @push('css')
+        <style>
+            .badge-custom {
+                display: inline-block;
+                padding: 0.5em 0.8em;
+                /* زيادة البادينغ */
+                font-size: 0.9rem;
+                /* تكبير حجم الخط */
+                font-weight: 600;
+                color: #fff;
+                border-radius: 0.5rem;
+                white-space: nowrap;
+            }
+            .badge-project {
+                background-color: #6f42c1;
+                /* بنفسجي */
+            }
+
+            .badge-employee {
+                background-color: #20c997;
+                /* أخضر فاتح */
+            }
+
+            .badge-muted {
+                background-color: #6c757d;
+                /* رمادي */
+            }
+
+            .badge-danger {
+                background-color: #dc3545;
+                /* أحمر */
+            }
+        </style>
+
+    @endpush
     <!-- Page Heading -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-gray-800">All Tasks</h1>
@@ -13,12 +48,12 @@
                         <tr>
                             <th>ID</th>
                             <th>Title</th>
-                            <th>Description</th>
+                            {{-- <th>Description</th> --}}
                             {{-- <th>Status</th> --}}
                             {{-- <th>Due Date</th> --}}
                             <th>Start Date</th>
                             <th>End Date</th>
-                            <th>Duration</th>
+                            <th>Duration (hours)</th>
                             {{-- <th>Cost</th> --}}
                             <th>Budget Amount</th>
                             <th>Project ID</th>
@@ -32,12 +67,12 @@
                         <tr>
                             <th>ID</th>
                             <th>Title</th>
-                            <th>Description</th>
+                            {{-- <th>Description</th> --}}
                             {{-- <th>Status</th> --}}
                             {{-- <th>Due Date</th> --}}
                             <th>Start Date</th>
                             <th>End Date</th>
-                            <th>Duration</th>
+                            <th>Duration (hours)</th>
                             {{-- <th>Cost</th> --}}
                             <th>Budget Amount</th>
                             <th>Project ID</th>
@@ -52,19 +87,37 @@
                             <tr>
                                 <td>{{ $task->id }}</td>
                                 <td>{{ $task->title }}</td>
-                                <td class="col-md-3">{{ $task->description }}</td>
+                                {{-- <td class="col-md-3">{{ $task->description }}</td> --}}
                                 {{-- <td>{{ $task->status }}</td> --}}
                                 {{-- <td>{{ $task->due_date->diffForHumans() }}</td> --}}
-                                <td>{{ $task->start_time->diffForHumans() }}</td>
-                                <td>{{ $task->end_time?->diffForHumans() ?? '-' }}</td>
+                                <td>{{ $task->start_time->format('D, Y/m/d H:i A') }}</td>
+                                <td>{{ $task->end_time ? $task->end_time->format('D, Y/m/d H:i A') : '-' }}</td>
                                 <td>{{ $task->duration_in_hours }}</td>
                                 <td>{{ number_format($task->cost, 2) }} $</td>
                                 {{-- <td>{{ $task->budget_amount }}</td> --}}
-                                <td>{{ $task->employee->projects->first()->name ?? 'N/A' }}</td>
-                                <td>{{ $task->employee->name ?? '-' }}</td>
+                                <td>
+                                    @if($task->employee && $task->employee->projects->first())
+                                        <span class="badge-custom badge-project">
+                                            {{ $task->employee->projects->first()->name }}
+                                        </span>
+                                    @else
+                                        <span class="badge-custom badge-muted">N/A</span>
+                                    @endif
+                                </td>
+
+                                <td>
+                                    @if($task->employee)
+                                        <span class="badge-custom badge-employee">
+                                            {{ $task->employee->name }}
+                                        </span>
+                                    @else
+                                        <span class="badge-custom badge-danger">-</span>
+                                    @endif
+                                </td>
+
                                 {{-- <td>{{ $task->employee->name ?? '-' }}</td> --}}
-                                <td>{{ $task->created_at->diffForHumans() }}</td>
-                                <td>{{ $task->updated_at->diffForHumans() }}</td>
+                                <td>{{ $task->created_at->format('Y/m/d H:i A') }}</td>
+                                <td>{{ $task->updated_at->format('Y/m/d H:i A') }}</td>
                                 <td class="col-md-4">
                                     <a href="{{ route('admin.tasks.show', $task->id) }}" class="btn btn-sm btn-info">
                                         <i class="fas fa-eye"></i>
@@ -77,7 +130,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <button onclick="return confirm('Are you sure?!')" type="submit"
-                                            class="btn btn-sm btn-danger mt-2"><i class='fas fa-trash'></i></button>
+                                            class="btn btn-sm btn-danger"><i class='fas fa-trash'></i></button>
                                     </form>
                                 </td>
                             </tr>

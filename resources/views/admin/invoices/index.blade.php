@@ -1,4 +1,34 @@
 <x-dashboard title="Main Dashboard">
+    @push('css')
+        <style>
+            .badge-custom {
+                display: inline-block;
+                padding: 0.5em 0.8em;
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: #fff;
+                border-radius: 0.5rem;
+                white-space: nowrap;
+                margin-right: 0.3em;
+                margin-bottom: 0.2em;
+            }
+
+            .badge-client {
+                background-color: #007bff;
+                /* أزرق */
+            }
+
+            .badge-project {
+                background-color: #28a745;
+                /* بنفسجي */
+            }
+
+            .badge-muted {
+                background-color: #6c757d;
+                /* رمادي */
+            }
+        </style>
+    @endpush
     <!-- Page Heading -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-gray-800">All Invoices</h1>
@@ -46,10 +76,22 @@
                                 <td>{{ $invoice->invoice_number }}</td>
                                 <td>{{ $invoice->amount }}</td>
                                 <td>{{ $invoice->invoice_date->diffForHumans() }}</td>
-                                <td>{{ $invoice->due_date?->diffForHumans()?? '_' }}</td>
+                                <td>{{ $invoice->due_date?->diffForHumans() ?? '_' }}</td>
                                 <td>{{ $invoice->is_paid ? 'Paid' : 'Unpaid' }}</td>
-                                <td>{{ $invoice->project->name ?? '_'}}</td>
-                                <td>{{ $invoice->project->client->name ?? 'N/A' }}</td>
+                                <td>
+                                    @if($invoice->project)
+                                        <span class="badge-custom badge-project">{{ $invoice->project->name }}</span>
+                                    @else
+                                        <span class="badge-custom badge-muted">_</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($invoice->project && $invoice->project->client)
+                                        <span class="badge-custom badge-client">{{ $invoice->project->client->name }}</span>
+                                    @else
+                                        <span class="badge-custom badge-muted">N/A</span>
+                                    @endif
+                                </td>
                                 <td>{{ $invoice->created_at->diffForHumans() }}</td>
                                 <td>{{ $invoice->updated_at->diffForHumans() }}</td>
                                 <td>

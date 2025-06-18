@@ -2,16 +2,103 @@
     <!-- Page Heading -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-gray-800">Add New Employee</h1>
-        <a href="{{ route('admin.employees.index') }}" class="btn btn-info"><i class="fas fa-long-arrow-alt-left"></i>All Employees</a>
+        <a href="{{ route('admin.employees.index') }}" class="btn btn-info"><i
+                class="fas fa-long-arrow-alt-left"></i>All Employees</a>
     </div>
+
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" id="error-alert">
+            <strong>The following fields are required:</strong>
+            <ul class="mb-0">
+                @foreach ($errors->keys() as $field)
+                    <li>{{ $fieldLabels[$field] ?? ucfirst(str_replace('_', ' ', $field)) }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
     <div class="card">
         <div class="card-body">
             <form action="{{ route('admin.employees.store') }}" method="POST">
                 @csrf
-                @include('admin.employees._form')
-                <button class='btn btn-success'><i class="fas fa-save"></i> Save</button>
+
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab"
+                            aria-controls="home" aria-selected="true">المعلومات الشخصية</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="contact-tab" data-toggle="tab" href="#contact" role="tab"
+                            aria-controls="contact" aria-selected="false">بيانات التواصل</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="payment-tab" data-toggle="tab" href="#payment" role="tab"
+                            aria-controls="payment" aria-selected="false">بيانات الدفع</a>
+                    </li>
+                </ul>
+
+                <div class="tab-content mt-3" id="myTabContent">
+
+                    <!-- Tab 1: المعلومات الشخصية -->
+                    <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                        <div class="mb-3">
+                            <x-form.input label="Name" name="name" placeholder="Enter Employee Name"
+                                :oldval="$employee->name" />
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: بيانات التواصل -->
+                    <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                        <div class="mb-3">
+                            <x-form.input label="Phone" name="phone" placeholder="Enter Employee Phone"
+                                :oldval="$employee->contacts->first()->phone ?? ''" />
+                        </div>
+                        <div class="mb-3">
+                            <x-form.input label="Email" name="email" placeholder="Enter Employee Email"
+                                :oldval="$employee->contacts->first()->email ?? ''" />
+                        </div>
+                        <div class="mb-3">
+                            <x-form.input label="Address" name="address" placeholder="Enter Employee Address"
+                                :oldval="$employee->contacts->first()->address ?? ''" />
+                        </div>
+                    </div>
+
+                    <!-- Tab 3: بيانات الدفع -->
+                    <div class="tab-pane fade" id="payment" role="tabpanel" aria-labelledby="payment-tab">
+                        <div class="mb-3">
+                            <x-form.input label="Rate" name="rate" placeholder="Enter Employee Rate"
+                                :oldval="$employee->rate" />
+                        </div>
+
+                        @php
+                            $paymentOptions = [
+                                'hourly' => 'Hourly',
+                                'monthly' => 'Monthly',
+                                'per_project' => 'Per Project',
+                            ];
+                            $selectedValue = old('payment_type', $employee->payment_type ?? '');
+                        @endphp
+
+                        <div class="mb-3 col-md-12">
+                            <label for="payment_type" class="form-label">Payment Type</label>
+                            <select name="payment_type" id="payment_type" class="form-control">
+                                <option value="" disabled {{ $selectedValue == '' ? 'selected' : '' }}>Select Payment Type
+                                </option>
+                                @foreach($paymentOptions as $value => $label)
+                                    <option value="{{ $value }}" {{ $selectedValue == $value ? 'selected' : '' }}>
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button class="btn btn-success"><i class="fas fa-save"></i> Save</button>
+                </div>
             </form>
+
         </div>
     </div>
 
@@ -28,5 +115,16 @@
         <!-- Page level custom scripts -->
         <script src="{{ asset('assets/js/demo/datatables-demo.js') }}"></script>
     @endpush
+    @push('js')
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const alert = document.getElementById('error-alert');
+                if (alert) {
+                    setTimeout(() => {
+                        alert.remove(); // This will completely remove it from the DOM
+                    }, 3000); // 3 seconds
+                }
+            });
+        </script>
+    @endpush
 </x-dashboard>
-

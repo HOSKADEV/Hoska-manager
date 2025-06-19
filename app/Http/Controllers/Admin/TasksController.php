@@ -42,25 +42,25 @@ class TasksController extends Controller
     public function store(TaskRequest $request)
     {
         $data = $request->validated();
-        // $data['project_id'] = $request->project_id;
+        $data['project_id'] = $request->project_id;
         $data['employee_id'] = $request->employee_id;
         $data['start_time'] = now();
 
-        // استخراج المشاريع المرتبطة بالموظف
-        $employee = Employee::with('projects')->findOrFail($request->employee_id);
+        // // استخراج المشاريع المرتبطة بالموظف
+        // $employee = Employee::with('projects')->findOrFail($request->employee_id);
 
-        // تحقق من وجود مشاريع مرتبطة
-        if ($employee->projects->isEmpty()) {
-            return back()->withErrors(['employee_id' => 'هذا الموظف لا يحتوي على مشروع مرتبط.']);
-        }
+        // // تحقق من وجود مشاريع مرتبطة
+        // if ($employee->projects->isEmpty()) {
+        //     return back()->withErrors(['employee_id' => 'هذا الموظف لا يحتوي على مشروع مرتبط.']);
+        // }
 
-        // إذا كنت تريد أول مشروع فقط
-        $data['project_id'] = $employee->projects->first()->id;
+        // // إذا كنت تريد أول مشروع فقط
+        // $data['project_id'] = $employee->projects->first()->id;
 
         $task = Task::create($data);
         // بعد حفظ المهمة:
         // بعد الحفظ حدث التايمشيت للموظف
-        Timesheet::updateEmployeeTimesheet($task->employee_id, $task->start_time->toDateString());
+        // Timesheet::updateEmployeeTimesheet($task->employee_id, $task->start_time->toDateString());
 
 
         flash()->success('Task created successfully');
@@ -96,25 +96,24 @@ class TasksController extends Controller
     public function update(TaskRequest $request, Task $task)
     {
         $data = $request->validated();
-        // $data['project_id'] = $request->project_id;
+        $data['project_id'] = $request->project_id;
         $data['employee_id'] = $request->employee_id;
 
+        // // استخراج المشاريع المرتبطة بالموظف
+        // $employee = Employee::with('projects')->findOrFail($request->employee_id);
 
-        // استخراج المشاريع المرتبطة بالموظف
-        $employee = Employee::with('projects')->findOrFail($request->employee_id);
+        // // تحقق من وجود مشاريع مرتبطة
+        // if ($employee->projects->isEmpty()) {
+        //     return back()->withErrors(['employee_id' => 'هذا الموظف لا يحتوي على مشروع مرتبط.']);
+        // }
 
-        // تحقق من وجود مشاريع مرتبطة
-        if ($employee->projects->isEmpty()) {
-            return back()->withErrors(['employee_id' => 'هذا الموظف لا يحتوي على مشروع مرتبط.']);
-        }
-
-        // إذا كنت تريد أول مشروع فقط
-        $data['project_id'] = $employee->projects->first()->id;
+        // // إذا كنت تريد أول مشروع فقط
+        // $data['project_id'] = $employee->projects->first()->id;
 
 
         $task->update($data);
          // بعد الحفظ حدث التايمشيت للموظف
-        Timesheet::updateEmployeeTimesheet($task->employee_id, $task->start_time->toDateString());
+        // Timesheet::updateEmployeeTimesheet($task->employee_id, $task->start_time->toDateString());
 
 
         flash()->success('Task updated successfully');

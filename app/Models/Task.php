@@ -49,13 +49,13 @@ class Task extends Model
     {
         static::saved(function ($task) {
             if ($task->employee_id && $task->start_time) {
-                Timesheet::updateEmployeeTimesheet($task->employee_id, $task->start_time->toDateString());
+                Timesheet::updateMonthlyTimesheet($task->employee_id, $task->start_time->toDateString());
             }
         });
 
         static::deleted(function ($task) {
             if ($task->employee_id && $task->start_time) {
-                Timesheet::updateEmployeeTimesheet($task->employee_id, $task->start_time->toDateString());
+                Timesheet::updateMonthlyTimesheet($task->employee_id, $task->start_time->toDateString());
             }
         });
     }

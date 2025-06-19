@@ -66,16 +66,21 @@
         :oldval="$task->employee_id" />
 </div>
 
-@if (isset($task) && $task->exists)
+<div class="mb-3 col-md-12">
+    <x-form.select label="Project" name="project_id" placeholder='Select Project' :options="$projects"
+        :oldval="$task->project_id" />
+</div>
+
+{{-- @if (isset($task) && $task->exists)
     <div class="mb-3 col-md-12">
         <x-form.input label="Project" name="project_name" :oldval="$task->employee->projects->first()->name ?? 'N/A'"
             readonly />
     </div>
-@endif
+@endif --}}
 
 {{-- <div class="mb-3 col-md-12">
-    <x-form.select-multiple label="Employees" name="employee_name" :oldval="$task->project->employee->name ?? 'N/A'"
-        readonly multiple="true" placeholder="Select Employees" />
+    <x-form.select label="Project" name="project_id" :oldval="$task->project_id ?? 'N/A'" :options="$projects"
+        placeholder="Select Project" />
 </div> --}}
 
 

@@ -18,9 +18,10 @@ class TimesheetsController extends Controller
     /**
      * Display a listing of the resource.
      */
+
     public function index(Request $request)
     {
-        $query = Timesheet::with('employee');
+        $query = Timesheet::query();
 
         if ($request->filled('month')) {
             $month = Carbon::parse($request->month);
@@ -28,10 +29,18 @@ class TimesheetsController extends Controller
                 ->whereYear('work_date', $month->year);
         }
 
-        $timesheets = $query->get();
+        $timesheets = $query->with('employee', 'project')->get();
 
-        return view('admin.timesheets.index', compact('timesheets'));
+        // بناء قائمة أشهر من البيانات أو بشكل يدوي
+        $availableMonths = Timesheet::selectRaw('DATE_FORMAT(work_date, "%Y-%m") as value, DATE_FORMAT(work_date, "%M %Y") as label')
+            ->groupBy('value', 'label')
+            ->orderBy('value', 'desc')
+            ->get()
+            ->toArray();
+
+        return view('admin.timesheets.index', compact('timesheets', 'availableMonths'));
     }
+
 
     /**
      * Show the form for creating a new resource.

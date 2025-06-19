@@ -96,9 +96,9 @@
                                 <td>{{ number_format($task->cost, 2) }} $</td>
                                 {{-- <td>{{ $task->budget_amount }}</td> --}}
                                 <td>
-                                    @if($task->employee && $task->employee->projects->first())
+                                    @if($task->project)
                                         <span class="badge-custom badge-project">
-                                            {{ $task->employee->projects->first()->name }}
+                                            {{ $task->project->name }}
                                         </span>
                                     @else
                                         <span class="badge-custom badge-muted">N/A</span>

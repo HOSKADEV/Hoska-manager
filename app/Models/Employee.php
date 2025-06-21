@@ -31,36 +31,45 @@ class Employee extends Model
         return $this->morphMany(Contact::class, 'contactable');
     }
 
-    protected static function booted()
-    {
-        static::created(function ($employee) {
-            $monthStart = now()->startOfMonth()->toDateString();
+protected static function booted()
+{
+    static::created(function ($employee) {
+        $monthStart = now()->startOfMonth()->toDateString();
 
-            Timesheet::updateOrCreate(
-                [
-                    'employee_id' => $employee->id,
-                    'work_date' => $monthStart,
-                ],
-                [
-                    'hours_worked' => 0,
-                    'project_id' => null,
-                ]
-            );
-        });
+        Timesheet::updateOrCreate(
+            [
+                'employee_id' => $employee->id,
+                'work_date' => $monthStart,
+            ],
+            [
+                'hours_worked' => 0,
+                'project_id' => null,
+            ]
+        );
+    });
 
-        static::updated(function ($employee) {
-            $monthStart = now()->startOfMonth()->toDateString();
+    static::updated(function ($employee) {
+        $monthStart = now()->startOfMonth()->toDateString();
 
-            Timesheet::updateOrCreate(
-                [
-                    'employee_id' => $employee->id,
-                    'work_date' => $monthStart,
-                ],
-                [
-                    'hours_worked' => 0,
-                    'project_id' => null,
-                ]
-            );
-        });
-    }
+        // مثال: لنفترض أنك تستقبل قيمة الساعات من المتغير $hoursFromTask
+        $hoursFromTask = request()->input('hours_worked', null);
+
+        $updateData = [
+            'project_id' => null,
+        ];
+
+        if (!is_null($hoursFromTask)) {
+            $updateData['hours_worked'] = $hoursFromTask;
+        }
+
+        Timesheet::updateOrCreate(
+            [
+                'employee_id' => $employee->id,
+                'work_date' => $monthStart,
+            ],
+            $updateData
+        );
+    });
+}
+
 }

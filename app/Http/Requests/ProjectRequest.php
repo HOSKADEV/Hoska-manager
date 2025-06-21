@@ -23,16 +23,14 @@ class ProjectRequest extends FormRequest
     {
 
         $rules = 'nullable|unique:projects,name';
-        $rule_desc = 'nullable|unique:projects,description';
 
         if ($this->method() != 'POST') {
             $rules = 'nullable|unique:projects,name,' . $this->project->id;
-            $rule_desc = 'nullable|unique:projects,description,' . $this->project->id;
         }
 
         return [
             'name' => $rules,
-            'description' => $rule_desc,
+            'description' => 'nullable|string',
             'total_amount' => 'nullable|numeric',
             'attachment' => $this->isMethod('post') ? 'nullable|array' : 'nullable|array',
             'attachment.*' => 'file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,ppt,pptx,zip,rar|max:10240',

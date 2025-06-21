@@ -39,7 +39,7 @@
             <div class="text-center" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
                 <h1 class="text-white">Welcome to the Admin Dashboard</h1>
                 <p class="text-white">This is a blank page template. You can customize it as per your requirements.</p>
-                <a href="{{ route('admin.developments.index') }}" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Go to Developments</a>
+                <a href="{{ route('admin.tasks.index') }}" class="btn btn-primary"><i class="fas fa-arrow-left"></i> Go to Tasks</a>
         </div>
     </div>
 </x-dashboard>

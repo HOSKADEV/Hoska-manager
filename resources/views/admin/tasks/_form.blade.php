@@ -44,7 +44,7 @@
 
 <div class="mb-3">
     <x-form.input type="datetime-local" label="End Time" name="end_time" placeholder="Enter Task End Time"
-        :oldval="$task->end_time->format('Y-m-d\TH:i')" />
+        :oldval="$task->end_time ? $task->end_time->format('Y-m-d\TH:i') : ''" />
 </div>
 
 @if(isset($task) && $task->exists)

@@ -14,17 +14,19 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
-        function login() {
+    function login()
+    {
         return  view('auth.login');
     }
 
-    function register() {
+    function register()
+    {
         return  view('auth.register');
     }
 
     function signin(Request $request)
     {
-            $request->validate([
+        $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ]);
@@ -37,10 +39,12 @@ class AuthController extends Controller
             // }
             $role = $user->type;
             $request->session()->regenerate();
-            if ($role === 'client') {
+            if ($role === 'admin') {
+                return redirect()->route('admin.index'); // لوحة تحكم الادمن
+            } elseif ($role === 'employee') {
+                return redirect()->route('admin.index'); // لوحة تحكم الموظف (تأكد من وجودها)
+            } elseif ($role === 'client') {
                 return redirect()->route('login');
-            } else {
-                return redirect()->route('admin.index');
             }
         }
 
@@ -58,15 +62,15 @@ class AuthController extends Controller
             'password_confirmation' => 'required|same:password',
         ]);
         $createuser = User::create([
-            'name'=> $request->name,
-            'email'=> $request->email,
-            'password'=> Hash::make($request->password),
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
             // 'password_confirmation'=> $request->password_confirmation,
         ]);
 
         // mail verfiction:link,otp
-        if($createuser){
-            $otp = mt_rand(100000, 999999) ; // بتولد ارقام عشوائية مكونة من 6لا خانات
+        if ($createuser) {
+            $otp = mt_rand(100000, 999999); // بتولد ارقام عشوائية مكونة من 6لا خانات
             $token = Str::random(50); // 50 خانة
 
             VerfactionEmail::create([
@@ -76,7 +80,7 @@ class AuthController extends Controller
                 'expire' => 10,
             ]);
 
-            $verfactionurl = url('verfactionemail/'. $token);
+            $verfactionurl = url('verfactionemail/' . $token);
             Mail::to($createuser->email)->send(new VerfiyEmail($verfactionurl, $otp));
 
             return redirect()->route('login')->with('verify', 'تم تسجيل الحساب بنجاح وتم ارسال رابط التفعيل عبر الايميل ');
@@ -96,4 +100,3 @@ class AuthController extends Controller
         return  redirect()->route('login');
     }
 }
-

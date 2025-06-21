@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->decimal('rate', 10, 2); // أجر الساعة أو الشهر أو المشروع
             $table->enum('payment_type', ['hourly', 'monthly', 'per_project']);
-            $table->foreignId(column: 'user_id')->constrained()->onDelete('cascade');
+            $table->foreignId( 'user_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
         });
     }

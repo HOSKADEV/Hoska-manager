@@ -19,10 +19,28 @@ class TasksController extends Controller
      */
     public function index()
     {
-        $tasks = Task::with(['employee', 'project'])->get();
+        $user = Auth::user();
+
+        if ($user->type === 'admin') {
+            // المستخدم أدمن، نعرض كل المهام
+            $tasks = Task::with(['employee', 'project'])->latest()->get();
+        } else {
+            // المستخدم موظف، نعرض فقط مهامه
+            $employee = $user->employee;
+
+            if (!$employee) {
+                abort(403, 'You are not linked to an employee.');
+            }
+
+            $tasks = Task::with(['employee', 'project'])
+                ->where('employee_id', $employee->id)
+                ->latest()
+                ->get();
+        }
 
         return view('admin.tasks.index', compact('tasks'));
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -42,30 +60,32 @@ class TasksController extends Controller
     public function store(TaskRequest $request)
     {
         $data = $request->validated();
+
+        $user = Auth::user();
+
+        // إذا المستخدم موظف، نربطه بنفسه
+        if ($user->type === 'employee') {
+            $employee = $user->employee;
+
+            if (!$employee) {
+                abort(403, 'You are not linked to an employee.');
+            }
+
+            $data['employee_id'] = $employee->id;
+        } else {
+            // إذا أدمن نأخذ القيمة من الفورم
+            $data['employee_id'] = $request->employee_id;
+        }
+
         $data['project_id'] = $request->project_id;
-        $data['employee_id'] = $request->employee_id;
         $data['start_time'] = now();
 
-        // // استخراج المشاريع المرتبطة بالموظف
-        // $employee = Employee::with('projects')->findOrFail($request->employee_id);
-
-        // // تحقق من وجود مشاريع مرتبطة
-        // if ($employee->projects->isEmpty()) {
-        //     return back()->withErrors(['employee_id' => 'هذا الموظف لا يحتوي على مشروع مرتبط.']);
-        // }
-
-        // // إذا كنت تريد أول مشروع فقط
-        // $data['project_id'] = $employee->projects->first()->id;
-
-        $task = Task::create($data);
-        // بعد حفظ المهمة:
-        // بعد الحفظ حدث التايمشيت للموظف
-        // Timesheet::updateEmployeeTimesheet($task->employee_id, $task->start_time->toDateString());
-
+        Task::create($data);
 
         flash()->success('Task created successfully');
         return redirect()->route('admin.tasks.index');
     }
+
 
     /**
      * Display the specified resource.
@@ -85,36 +105,53 @@ class TasksController extends Controller
      */
     public function edit(Task $task)
     {
+        $user = Auth::user();
+
+        // الموظف يقدر يعدل فقط على مهامه
+        if ($user->type === 'employee') {
+            $employee = $user->employee;
+
+            if (!$employee || $task->employee_id !== $employee->id) {
+                abort(403, 'You are not authorized to edit this task.');
+            }
+
+            // لا نحتاج جلب كل الموظفين، فقط المشاريع
+            $projects = Project::all();
+            return view('admin.tasks.edit', compact('task', 'projects'));
+        }
+
+        // إذا كان أدمن
         $employees = Employee::all();
         $projects = Project::all();
         return view('admin.tasks.edit', compact('task', 'projects', 'employees'));
     }
+
 
     /**
      * Update the specified resource in storage.
      */
     public function update(TaskRequest $request, Task $task)
     {
+        $user = Auth::user();
         $data = $request->validated();
+
+        if ($user->type === 'employee') {
+            $employee = $user->employee;
+
+            if (!$employee || $task->employee_id !== $employee->id) {
+                abort(403, 'You are not authorized to update this task.');
+            }
+
+            // لا يمكنه تغيير الموظف
+            $data['employee_id'] = $employee->id;
+        } else {
+            // أدمن يقدر يحدد الموظف من الفورم
+            $data['employee_id'] = $request->employee_id;
+        }
+
         $data['project_id'] = $request->project_id;
-        $data['employee_id'] = $request->employee_id;
-
-        // // استخراج المشاريع المرتبطة بالموظف
-        // $employee = Employee::with('projects')->findOrFail($request->employee_id);
-
-        // // تحقق من وجود مشاريع مرتبطة
-        // if ($employee->projects->isEmpty()) {
-        //     return back()->withErrors(['employee_id' => 'هذا الموظف لا يحتوي على مشروع مرتبط.']);
-        // }
-
-        // // إذا كنت تريد أول مشروع فقط
-        // $data['project_id'] = $employee->projects->first()->id;
-
 
         $task->update($data);
-         // بعد الحفظ حدث التايمشيت للموظف
-        // Timesheet::updateEmployeeTimesheet($task->employee_id, $task->start_time->toDateString());
-
 
         flash()->success('Task updated successfully');
         return redirect()->route('admin.tasks.index');

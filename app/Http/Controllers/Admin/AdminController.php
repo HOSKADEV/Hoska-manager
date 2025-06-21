@@ -16,33 +16,55 @@ class AdminController extends Controller
     public function profile()
     {
         $user = Auth::user();
-        return view('admin.profile', compact('user'));
+        $employee = $user->employee; // حسب العلاقة عندك
+        return view('admin.profile', compact('user', 'employee'));
     }
 
     public function profile_save(Request $request)
     {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
         $request->validate([
             'name' => 'required',
-            'phone' => 'required',
-            'password' => 'nullable|min:8|confirmed',
-            'avatar' => 'nullable||image|mimes:png,jpg,svg,jpeg',
+            'phone' => 'nullable',
+            'password' => 'nullable|min:6|confirmed',
+            'avatar' => 'nullable|image|mimes:png,jpg,svg,jpeg',
         ]);
 
-        $data = $request->except(['token', '_method', 'avatar', 'password', 'password_confirmation']);
+        // بيانات المستخدم التي نحدثها (بدون phone لأنه في جدول contacts)
+        if ($user->type === 'admin') {
+            $data = $request->except(['_token', '_method', 'avatar', 'password', 'password_confirmation', 'phone']);
+        } else {
+            $data = $request->only(['name']);
+        }
 
-        if ($request->password) {
-            $data['password'] = $request->password;
+        if ($request->filled('password')) {
+            $data['password'] = bcrypt($request->password);
         }
 
         if ($request->hasFile('avatar')) {
             $data['avatar'] = $request->file('avatar')->store('uploads', 'custom');
         }
 
-        /** @var App/Models/User $user */
+        // تحديث بيانات المستخدم
+        $user->update($data);
 
-        $user = Auth::user();
-        $user->update([$data]);
+        // تحديث رقم الهاتف في جدول contacts المرتبط بالموظف
+        if ($request->filled('phone')) {
+            $employee = $user->employee; // تأكد من العلاقة في موديل User
 
-        return redirect()->back();
+            if ($employee) {
+                $contact = $employee->contacts()->first();
+                if ($contact) {
+                    $contact->update(['phone' => $request->phone]);
+                } else {
+                    // إذا ما فيه contact سابق، ننشئ واحد جديد
+                    $employee->contacts()->create(['phone' => $request->phone]);
+                }
+            }
+        }
+
+        return redirect()->back()->with('success', 'Profile updated successfully.');
     }
 }

@@ -118,11 +118,7 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if($project->user)
-                                        <span class="badge-custom badge-user">{{ $project->user->name }}</span>
-                                    @else
-                                        <span class="badge-custom badge-muted">_</span>
-                                    @endif
+                                    <span class="badge-custom badge-user">{{ auth()->user()->name }}</span>
                                 </td>
                                 <td>{{ $project->created_at->diffForHumans() }}</td>
                                 <td>{{ $project->updated_at->diffForHumans() }}</td>

@@ -15,21 +15,26 @@ use App\Http\Controllers\Mails\VerficationEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')->name('admin.')->middleware(['isAuth'])->group(function () {
-    Route::get('/', [AdminController::class, 'index'])->name('index');
+
+    // متاحة للموظف و الأدمن
+    Route::get('/', [AdminController::class, 'index'])->name('index'); // Dashboard
 
     Route::get('/profile', [AdminController::class, 'profile'])->name('profile');
     Route::put('/profile', [AdminController::class, 'profile_save']);
 
+    Route::resource('tasks', TasksController::class);
+    Route::resource('notes', NotesController::class);
+});
+
+Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group(function () {
 
     Route::resource('clients', ClientsController::class);
     Route::resource('employees', EmployeesController::class);
     Route::resource('projects', ProjectsController::class);
     Route::resource('developments', DevelopmentsController::class);
     Route::resource('invoices', InvoicesController::class);
-    Route::resource('tasks', TasksController::class);
     Route::resource('payments', PaymentsController::class);
     Route::resource('timesheets', TimesheetsController::class);
-    Route::resource('notes', NotesController::class);
 });
 
 

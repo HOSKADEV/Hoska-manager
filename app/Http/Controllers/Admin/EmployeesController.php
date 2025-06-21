@@ -27,9 +27,7 @@ class EmployeesController extends Controller
     public function create()
     {
         $employee = new Employee();
-        $users = User::all();
-
-        return view('admin.employees.create', compact('employee', 'users'));
+        return view('admin.employees.create', compact('employee'));
     }
 
     /**
@@ -38,20 +36,35 @@ class EmployeesController extends Controller
     public function store(EmployeeRequest $request)
     {
         $data = $request->validated();
-        $data['user_id'] = Auth::user()->id; // استخدام معرف المستخدم الحالي بدلاً من معرف المستخدم من الطلب
+
+        unset($data['user']);
+
+        // إنشاء الموظف بدون user_id
         $employee = Employee::create($data);
 
-        // إضافة بيانات الاتصال مرتبطة بالعميل
+        // معلومات التواصل
         $employee->contacts()->create([
             'phone' => $request->phone,
             'email' => $request->email,
             'address' => $request->address,
         ]);
 
+        // إنشاء مستخدم في حال تم إدخال بيانات
+        if ($request->filled('user.email') && $request->filled('user.password')) {
+            $user = User::create([
+                'name' => $request->input('user.name'),
+                'email' => $request->input('user.email'),
+                'password' => bcrypt($request->input('user.password')),
+                'type' => 'employee',
+            ]);
+
+            $employee->user()->associate($user);
+            $employee->save();
+        }
+
         flash()->success('Employee created successfully');
         return redirect()->route('admin.employees.index');
     }
-
     /**
      * Display the specified resource.
      */
@@ -65,8 +78,8 @@ class EmployeesController extends Controller
      */
     public function edit(Employee $employee)
     {
-        $users = User::all();
-        return view('admin.employees.edit', compact('employee', 'users'));
+        $employee->load('user', 'contacts'); // تحميل بيانات المستخدم وجهات الاتصال
+        return view('admin.employees.edit', compact('employee'));
     }
 
     /**
@@ -74,15 +87,54 @@ class EmployeesController extends Controller
      */
     public function update(EmployeeRequest $request, Employee $employee)
     {
-        $data = $request->validated();
-        $data['user_id'] = Auth::user()->id; // استخدام معرف المستخدم الحالي بدلاً من معرف المستخدم من الطلب
+        $data = $request->except(['user', 'phone', 'email', 'address']);
+        $data['user_id'] = Auth::id(); // معرف الأدمن الذي قام بالتعديل
+
+        // تحديث بيانات الموظف
         $employee->update($data);
-        // إضافة بيانات الاتصال مرتبطة بالعميل
-        $employee->contacts()->create([
-            'phone' => $request->phone,
-            'email' => $request->email,
-            'address' => $request->address,
-        ]);
+
+        // تحديث أو إنشاء جهة الاتصال
+        $contact = $employee->contacts->first();
+        if ($contact) {
+            $contact->update([
+                'phone' => $request->phone,
+                'email' => $request->email,
+                'address' => $request->address,
+            ]);
+        } else {
+            $employee->contacts()->create([
+                'phone' => $request->phone,
+                'email' => $request->email,
+                'address' => $request->address,
+            ]);
+        }
+
+        // تحديث أو إنشاء حساب المستخدم المرتبط بالموظف
+        if ($request->filled('user.email')) {
+            if ($employee->user) {
+                // تحديث المستخدم الموجود
+                $updateData = [
+                    'name' => $request->input('user.name'),
+                    'email' => $request->input('user.email'),
+                ];
+
+                if ($request->filled('user.password')) {
+                    $updateData['password'] = bcrypt($request->input('user.password'));
+                }
+
+                $employee->user->update($updateData);
+            } else {
+                // إنشاء مستخدم جديد وربطه بالموظف
+                $user = User::create([
+                    'name' => $request->input('user.name'),
+                    'email' => $request->input('user.email'),
+                    'password' => bcrypt($request->input('user.password')),
+                    'type' => 'employee',
+                ]);
+                $employee->user()->associate($user);
+                $employee->save();
+            }
+        }
 
         flash()->success('Employee updated successfully');
         return redirect()->route('admin.employees.index');
@@ -93,6 +145,10 @@ class EmployeesController extends Controller
      */
     public function destroy(Employee $employee)
     {
+        if ($employee->user) {
+            $employee->user->delete();
+        }
+
         $employee->delete();
 
         flash()->success('Employee deleted successfully');

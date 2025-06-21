@@ -18,7 +18,7 @@
     $selectedValue = old('status', $task->status ?? '');
 @endphp
 
-<div class="mb-3 col-md-12">
+<div class="mb-3">
     <label for="status" class="form-label">Status</label>
     <select name="status" id="status" class="form-control">
         <option value="" disabled {{ $selectedValue == '' ? 'selected' : '' }}>Select Status</option>
@@ -36,22 +36,19 @@
 </div> --}}
 
 @if(isset($task) && $task->exists)
-    {{-- تعديل --}}
-    <x-form.input type="datetime-local" label="Start Time" name="start_time" placeholder="Enter Task Start Time"
-        :oldval="$task->start_time->format('Y-m-d\TH:i')" />
-    {{-- @else
-    إنشاء
-    <x-form.input type="datetime-local" label="Start Time" name="start_time" placeholder="Enter Task Start Time"
-        :oldval="now()->format('Y-m-d\TH:i')" /> --}}
+    <div class="mb-3">
+        <x-form.input type="datetime-local" label="Start Time" name="start_time" placeholder="Enter Task Start Time"
+            :oldval="$task->start_time->format('Y-m-d\TH:i')" />
+    </div>
 @endif
 
 <div class="mb-3">
     <x-form.input type="datetime-local" label="End Time" name="end_time" placeholder="Enter Task End Time"
-        :oldval="$task->end_time" />
+        :oldval="$task->end_time->format('Y-m-d\TH:i')" />
 </div>
 
 @if(isset($task) && $task->exists)
-    <div class="mb-3 col-md-12">
+    <div class="mb-3">
         <x-form.input label="Duration (Hours)" name="duration_in_hours" :oldval="$task->duration_in_hours" readonly />
     </div>
 @endif
@@ -60,22 +57,33 @@
     <x-form.input label="Budget Amount" name="budget_amount" placeholder="Enter Task Budget Amount"
         :oldval="$task->budget_amount" />
 </div> --}}
-
+{{--
 <div class="mb-3 col-md-12">
     <x-form.select label="Employee" name="employee_id" placeholder='Select Employee' :options="$employees"
         :oldval="$task->employee_id" />
-</div>
+</div> --}}
 
-<div class="mb-3 col-md-12">
+@if(auth()->user()->type === 'admin')
+    <div class="mb-3">
+        <x-form.select label="Employee" name="employee_id" placeholder='Select Employee' :options="$employees"
+            :oldval="$task->employee_id" />
+    </div>
+@else
+    <div class="mb-3 col-md-12">
+        <input type="hidden" name="employee_id" value="{{ auth()->user()->employee->id }}">
+    </div>
+@endif
+
+<div class="mb-3">
     <x-form.select label="Project" name="project_id" placeholder='Select Project' :options="$projects"
         :oldval="$task->project_id" />
 </div>
 
 {{-- @if (isset($task) && $task->exists)
-    <div class="mb-3 col-md-12">
-        <x-form.input label="Project" name="project_name" :oldval="$task->employee->projects->first()->name ?? 'N/A'"
-            readonly />
-    </div>
+<div class="mb-3 col-md-12">
+    <x-form.input label="Project" name="project_name" :oldval="$task->employee->projects->first()->name ?? 'N/A'"
+        readonly />
+</div>
 @endif --}}
 
 {{-- <div class="mb-3 col-md-12">

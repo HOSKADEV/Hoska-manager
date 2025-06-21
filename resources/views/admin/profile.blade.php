@@ -17,19 +17,21 @@
                             </div>
                             <div class='col-6'>
                                 <div class="mb-3">
-                                    <x-form.input label="Username" name="name" oldval="{{ $user->name }}"
-                                        disabled />
+                                    <x-form.input label="Username" name="name" oldval="{{ $user->name }}" disabled />
                                 </div>
                             </div>
                         </div>
-
                         <div class="mb-3">
                             <x-form.input label="Name" name="name" placeholder="Enter your Name"
                                 oldval="{{ $user->name}}" />
                         </div>
                         <div class="mb-3">
-                            <x-form.input label="Phone" name="phone" placeholder="Enter your Phone"
-                                oldval="{{ $user->phone}}" />
+                            @if($employee)
+                                <x-form.input label="Phone" name="phone" placeholder="Enter Employee Phone"
+                                    :oldval="$employee->contacts()->first()->phone ?? ''" />
+                            @else
+                                <x-form.input label="Phone" name="phone" placeholder="Enter Employee Phone" :oldval="''" />
+                            @endif
                         </div>
                         <div class="mb-3">
                             <x-form.input type='password' label="Password" name="password"
@@ -48,7 +50,7 @@
                                     style="width: 100%; height: 300px; object-fit: cover;"
                                     src="{{ asset($user->avatar ? $user->avatar : 'assets/img/undraw_profile.svg') }}"
                                     alt="img">
-                                    
+
                             </label>
                             <div class="d-none">
                                 <x-form.file label="Avatar" name="avatar" accept='.png,.jpg,.svg,.jpeg' />

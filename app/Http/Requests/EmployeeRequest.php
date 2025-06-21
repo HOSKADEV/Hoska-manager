@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class EmployeeRequest extends FormRequest
 {
@@ -21,22 +22,36 @@ class EmployeeRequest extends FormRequest
      */
     public function rules(): array
     {
-        $rules = 'nullable|unique:employees,name';
-        $rule_rate = 'required|numeric|min:0';
-        $rule_payment_type = 'required|in:hourly,monthly,per_project';
-
-        if ($this->method() != 'POST') {
-            $rules = 'nullable|unique:employees,name,' . $this->employee->id;
-            // معدل الأجر يبقى شرطه كما هو (ليس unique)
-            $rule_rate = 'required|numeric|min:0';
-            // شرط نوع الدفع لا يتغير
-            $rule_payment_type = 'required|in:hourly,monthly,per_project';
-        }
+        $employeeId = $this->employee->id ?? null;
 
         return [
-            'name' => $rules,
-            'rate' => $rule_rate,
-            'payment_type' => $rule_payment_type,
+            'name' => [
+                'required',
+                Rule::unique('employees', 'name')->ignore($employeeId),
+            ],
+            'rate' => ['required', 'numeric', 'min:0'],
+            'payment_type' => ['required', Rule::in(['hourly', 'monthly', 'per_project'])],
+
+            // معلومات الدفع البنكية - اختيارية
+            'account_name' => ['nullable', 'string', 'max:255'],
+            'account_number' => ['nullable', 'string', 'max:255'],
+            'iban' => ['nullable', 'string', 'max:255'],
+            'bank_code' => ['nullable', 'string', 'max:255'],
+
+            // بيانات حساب الدخول للمستخدم (user)
+            'user.name' => ['nullable', 'string', 'max:255'],
+            'user.email' => [
+                'nullable',
+                'email',
+                Rule::unique('users', 'email')->ignore($this->employee->user->id ?? null),
+            ],
+            'user.password' => [
+                // كلمة السر اختيارية، لكن إذا دخلت يجب أن تكون قوية على الأقل 6 حروف
+                'nullable',
+                'string',
+                'min:6',
+                // 'confirmed', // إذا كنت تستخدم حقل password_confirmation
+            ],
         ];
     }
 }

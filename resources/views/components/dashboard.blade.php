@@ -48,191 +48,224 @@
                     <span>Dashboard</span></a>
             </li>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider my-0">
-            <!-- Nav Item - Pages Collapse Menu Clients -->
-            <li
-                class="nav-item {{ request()->routeIs('admin.clients.index') || request()->routeIs('admin.clients.create') ? 'active' : ''}}">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseClients"
-                    aria-expanded="true" aria-controls="collapseClients">
-                    <i class="fas fa-users"></i>
-                    <span>Clients</span>
-                </a>
-                <div id="collapseClients"
-                    class="collapse {{ request()->routeIs('admin.clients.index') || request()->routeIs('admin.clients.create') ? 'show' : ''}}"
-                    aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item  {{ request()->routeIs('admin.clients.index') ? 'active' : ''}}"
-                            href="{{ route('admin.clients.index') }}">All Clients</a>
-                        <a class="collapse-item {{ request()->routeIs('admin.clients.create') ? 'active' : ''}}"
-                            href="{{ route('admin.clients.create') }}">Add New</a>
-                    </div>
-                </div>
-            </li>
+            @php
+                $user = auth()->user();
+            @endphp
+            @auth
+                @if($user->type === 'admin')
 
-            <!-- Divider -->
-            <hr class="sidebar-divider my-0">
-            <!-- Nav Item - Pages Collapse Menu Employees -->
-            <li
-                class="nav-item {{ request()->routeIs('admin.employees.index') || request()->routeIs('admin.employees.create') ? 'active' : ''}}">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseEmployees"
-                    aria-expanded="true" aria-controls="collapseEmployees">
-                    <i class="fas fa-user-tie"></i>
-                    <span>Employees</span>
-                </a>
-                <div id="collapseEmployees"
-                    class="collapse {{ request()->routeIs('admin.employees.index') || request()->routeIs('admin.employees.create') ? 'show' : ''}}"
-                    aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item {{ request()->routeIs('admin.employees.index') ? 'active' : ''}}"
-                            href="{{ route('admin.employees.index') }}">All Employees</a>
-                        <a class="collapse-item {{ request()->routeIs('admin.employees.create') ? 'active' : ''}}"
-                            href="{{ route('admin.employees.create') }}">Add New</a>
-                    </div>
-                </div>
-            </li>
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Pages Collapse Menu Clients -->
+                    <li
+                        class="nav-item {{ request()->routeIs('admin.clients.index') || request()->routeIs('admin.clients.create') ? 'active' : ''}}">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseClients"
+                            aria-expanded="true" aria-controls="collapseClients">
+                            <i class="fas fa-users"></i>
+                            <span>Clients</span>
+                        </a>
+                        <div id="collapseClients"
+                            class="collapse {{ request()->routeIs('admin.clients.index') || request()->routeIs('admin.clients.create') ? 'show' : ''}}"
+                            aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <a class="collapse-item  {{ request()->routeIs('admin.clients.index') ? 'active' : ''}}"
+                                    href="{{ route('admin.clients.index') }}">All Clients</a>
+                                <a class="collapse-item {{ request()->routeIs('admin.clients.create') ? 'active' : ''}}"
+                                    href="{{ route('admin.clients.create') }}">Add New</a>
+                            </div>
+                        </div>
+                    </li>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider my-0">
-            <!-- Nav Item - Pages Collapse Menu Projects -->
-            <li
-                class="nav-item {{ request()->routeIs('admin.projects.index') || request()->routeIs('admin.projects.create') ? 'active' : ''}}">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseProjects"
-                    aria-expanded="true" aria-controls="collapseProjects">
-                    <i class="fas fa-project-diagram"></i>
-                    <span>Projects</span>
-                </a>
-                <div id="collapseProjects"
-                    class="collapse {{ request()->routeIs('admin.projects.index') || request()->routeIs('admin.projects.create') ? 'show' : ''}}"
-                    aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item  {{ request()->routeIs('admin.projects.index') ? 'active' : ''}}"
-                            href="{{ route('admin.projects.index') }}">All Projects</a>
-                        <a class="collapse-item {{ request()->routeIs('admin.projects.create') ? 'active' : ''}}"
-                            href="{{ route('admin.projects.create') }}">Add New</a>
-                    </div>
-                </div>
-            </li>
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Pages Collapse Menu Employees -->
+                    <li
+                        class="nav-item {{ request()->routeIs('admin.employees.index') || request()->routeIs('admin.employees.create') ? 'active' : ''}}">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseEmployees"
+                            aria-expanded="true" aria-controls="collapseEmployees">
+                            <i class="fas fa-user-tie"></i>
+                            <span>Employees</span>
+                        </a>
+                        <div id="collapseEmployees"
+                            class="collapse {{ request()->routeIs('admin.employees.index') || request()->routeIs('admin.employees.create') ? 'show' : ''}}"
+                            aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <a class="collapse-item {{ request()->routeIs('admin.employees.index') ? 'active' : ''}}"
+                                    href="{{ route('admin.employees.index') }}">All Employees</a>
+                                <a class="collapse-item {{ request()->routeIs('admin.employees.create') ? 'active' : ''}}"
+                                    href="{{ route('admin.employees.create') }}">Add New</a>
+                            </div>
+                        </div>
+                    </li>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider my-0">
-            <!-- Nav Item - Pages Collapse Menu Projects -->
-            <li
-                class="nav-item {{ request()->routeIs('admin.developments.index') || request()->routeIs('admin.developments.create') ? 'active' : ''}}">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseDevelopments"
-                    aria-expanded="true" aria-controls="collapseDevelopments">
-                    <i class="fas fa-code"></i>
-                    <span>Developments</span>
-                </a>
-                <div id="collapseDevelopments"
-                    class="collapse {{ request()->routeIs('admin.developments.index') || request()->routeIs('admin.developments.create') ? 'show' : ''}}"
-                    aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item  {{ request()->routeIs('admin.developments.index') ? 'active' : ''}}"
-                            href="{{ route('admin.developments.index') }}">All Developments</a>
-                        <a class="collapse-item {{ request()->routeIs('admin.developments.create') ? 'active' : ''}}"
-                            href="{{ route('admin.developments.create') }}">Add New</a>
-                    </div>
-                </div>
-            </li>
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Pages Collapse Menu Projects -->
+                    <li
+                        class="nav-item {{ request()->routeIs('admin.projects.index') || request()->routeIs('admin.projects.create') ? 'active' : ''}}">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseProjects"
+                            aria-expanded="true" aria-controls="collapseProjects">
+                            <i class="fas fa-project-diagram"></i>
+                            <span>Projects</span>
+                        </a>
+                        <div id="collapseProjects"
+                            class="collapse {{ request()->routeIs('admin.projects.index') || request()->routeIs('admin.projects.create') ? 'show' : ''}}"
+                            aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <a class="collapse-item  {{ request()->routeIs('admin.projects.index') ? 'active' : ''}}"
+                                    href="{{ route('admin.projects.index') }}">All Projects</a>
+                                <a class="collapse-item {{ request()->routeIs('admin.projects.create') ? 'active' : ''}}"
+                                    href="{{ route('admin.projects.create') }}">Add New</a>
+                            </div>
+                        </div>
+                    </li>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider my-0">
-            <!-- Nav Item - Pages Collapse Menu Invoices -->
-            <li
-                class="nav-item {{ request()->routeIs('admin.invoices.index') || request()->routeIs('admin.invoices.create') ? 'active' : ''}}">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseInvoices"
-                    aria-expanded="true" aria-controls="collapseInvoices">
-                    <i class="fas fa-fw fa-newspaper"></i>
-                    <span>Invoices</span>
-                </a>
-                <div id="collapseInvoices"
-                    class="collapse {{ request()->routeIs('admin.invoices.index') || request()->routeIs('admin.invoices.create') ? 'show' : ''}}"
-                    aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item {{ request()->routeIs('admin.invoices.index') ? 'active' : ''}}"
-                            href="{{ route('admin.invoices.index') }}">All Invoices</a>
-                        <a class="collapse-item {{ request()->routeIs('admin.invoices.create') ? 'active' : ''}}"
-                            href="{{ route('admin.invoices.create') }}">Add New</a>
-                    </div>
-                </div>
-            </li>
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Pages Collapse Menu Projects -->
+                    <li
+                        class="nav-item {{ request()->routeIs('admin.developments.index') || request()->routeIs('admin.developments.create') ? 'active' : ''}}">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseDevelopments"
+                            aria-expanded="true" aria-controls="collapseDevelopments">
+                            <i class="fas fa-code"></i>
+                            <span>Developments</span>
+                        </a>
+                        <div id="collapseDevelopments"
+                            class="collapse {{ request()->routeIs('admin.developments.index') || request()->routeIs('admin.developments.create') ? 'show' : ''}}"
+                            aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <a class="collapse-item  {{ request()->routeIs('admin.developments.index') ? 'active' : ''}}"
+                                    href="{{ route('admin.developments.index') }}">All Developments</a>
+                                <a class="collapse-item {{ request()->routeIs('admin.developments.create') ? 'active' : ''}}"
+                                    href="{{ route('admin.developments.create') }}">Add New</a>
+                            </div>
+                        </div>
+                    </li>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider my-0">
-            <!-- Nav Item - Pages Collapse Menu Payments -->
-            <li
-                class="nav-item {{ request()->routeIs('admin.payments.index') || request()->routeIs('admin.payments.create') ? 'active' : ''}}">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePayments"
-                    aria-expanded="true" aria-controls="collapsePayments">
-                    <i class="fas fa-money-bill-wave"></i>
-                    <span>Payments</span>
-                </a>
-                <div id="collapsePayments"
-                    class="collapse {{ request()->routeIs('admin.payments.index') || request()->routeIs('admin.payments.create') ? 'show' : ''}}"
-                    aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item {{ request()->routeIs('admin.payments.index') ? 'active' : ''}}"
-                            href="{{ route('admin.payments.index') }}">All Payments</a>
-                        <a class="collapse-item {{ request()->routeIs('admin.payments.create') ? 'active' : ''}}"
-                            href="{{ route('admin.payments.create') }}">Add New</a>
-                    </div>
-                </div>
-            </li>
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Pages Collapse Menu Invoices -->
+                    <li
+                        class="nav-item {{ request()->routeIs('admin.invoices.index') || request()->routeIs('admin.invoices.create') ? 'active' : ''}}">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseInvoices"
+                            aria-expanded="true" aria-controls="collapseInvoices">
+                            <i class="fas fa-fw fa-newspaper"></i>
+                            <span>Invoices</span>
+                        </a>
+                        <div id="collapseInvoices"
+                            class="collapse {{ request()->routeIs('admin.invoices.index') || request()->routeIs('admin.invoices.create') ? 'show' : ''}}"
+                            aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <a class="collapse-item {{ request()->routeIs('admin.invoices.index') ? 'active' : ''}}"
+                                    href="{{ route('admin.invoices.index') }}">All Invoices</a>
+                                <a class="collapse-item {{ request()->routeIs('admin.invoices.create') ? 'active' : ''}}"
+                                    href="{{ route('admin.invoices.create') }}">Add New</a>
+                            </div>
+                        </div>
+                    </li>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider my-0">
-            <!-- Nav Item - Pages Collapse Menu Tasks -->
-            <li
-                class="nav-item {{ request()->routeIs('admin.tasks.index') || request()->routeIs('admin.tasks.create') ? 'active' : ''}}">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTasks"
-                    aria-expanded="true" aria-controls="collapseTasks">
-                    <i class="fas fa-tasks"></i>
-                    <span>Tasks</span>
-                </a>
-                <div id="collapseTasks"
-                    class="collapse {{ request()->routeIs('admin.tasks.index') || request()->routeIs('admin.tasks.create') ? 'show' : ''}}"
-                    aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item {{ request()->routeIs('admin.tasks.index') ? 'active' : ''}}"
-                            href="{{ route('admin.tasks.index') }}">All Tasks</a>
-                        <a class="collapse-item {{ request()->routeIs('admin.tasks.create') ? 'active' : ''}}"
-                            href="{{ route('admin.tasks.create') }}">Add New</a>
-                    </div>
-                </div>
-            </li>
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Pages Collapse Menu Payments -->
+                    <li
+                        class="nav-item {{ request()->routeIs('admin.payments.index') || request()->routeIs('admin.payments.create') ? 'active' : ''}}">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePayments"
+                            aria-expanded="true" aria-controls="collapsePayments">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span>Payments</span>
+                        </a>
+                        <div id="collapsePayments"
+                            class="collapse {{ request()->routeIs('admin.payments.index') || request()->routeIs('admin.payments.create') ? 'show' : ''}}"
+                            aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <a class="collapse-item {{ request()->routeIs('admin.payments.index') ? 'active' : ''}}"
+                                    href="{{ route('admin.payments.index') }}">All Payments</a>
+                                <a class="collapse-item {{ request()->routeIs('admin.payments.create') ? 'active' : ''}}"
+                                    href="{{ route('admin.payments.create') }}">Add New</a>
+                            </div>
+                        </div>
+                    </li>
+
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Pages Collapse Menu Tasks -->
+                    <li
+                        class="nav-item {{ request()->routeIs('admin.tasks.index') || request()->routeIs('admin.tasks.create') ? 'active' : ''}}">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTasks"
+                            aria-expanded="true" aria-controls="collapseTasks">
+                            <i class="fas fa-tasks"></i>
+                            <span>Tasks</span>
+                        </a>
+                        <div id="collapseTasks"
+                            class="collapse {{ request()->routeIs('admin.tasks.index') || request()->routeIs('admin.tasks.create') ? 'show' : ''}}"
+                            aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <a class="collapse-item {{ request()->routeIs('admin.tasks.index') ? 'active' : ''}}"
+                                    href="{{ route('admin.tasks.index') }}">All Tasks</a>
+                                <a class="collapse-item {{ request()->routeIs('admin.tasks.create') ? 'active' : ''}}"
+                                    href="{{ route('admin.tasks.create') }}">Add New</a>
+                            </div>
+                        </div>
+                    </li>
 
 
-            <!-- Divider -->
-            {{-- <hr class="sidebar-divider my-0">
-            <!-- Nav Item - Pages Collapse Menu Timesheets -->
-            <li
-                class="nav-item {{ request()->routeIs('admin.timesheets.index') || request()->routeIs('admin.timesheets.create') ? 'active' : ''}}">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTimesheets"
-                    aria-expanded="true" aria-controls="collapseTimesheets">
-                    <i class="fas fa-user-clock"></i>
-                    <span>Timesheets</span>
-                </a>
-                <div id="collapseTimesheets"
-                    class="collapse {{ request()->routeIs('admin.timesheets.index') || request()->routeIs('admin.timesheets.create') ? 'show' : ''}}"
-                    aria-labelledby="headingTwo" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item {{ request()->routeIs('admin.timesheets.index') ? 'active' : ''}}"
-                            href="{{ route('admin.timesheets.index') }}">All Timesheets</a>
-                        <a class="collapse-item {{ request()->routeIs('admin.timesheets.create') ? 'active' : ''}}"
-                            href="{{ route('admin.timesheets.create') }}">Add New</a>
-                    </div>
-                </div>
-            </li> --}}
+                    <!-- Divider -->
+                    {{--
+                    <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Pages Collapse Menu Timesheets -->
+                    <li
+                        class="nav-item {{ request()->routeIs('admin.timesheets.index') || request()->routeIs('admin.timesheets.create') ? 'active' : ''}}">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTimesheets"
+                            aria-expanded="true" aria-controls="collapseTimesheets">
+                            <i class="fas fa-user-clock"></i>
+                            <span>Timesheets</span>
+                        </a>
+                        <div id="collapseTimesheets"
+                            class="collapse {{ request()->routeIs('admin.timesheets.index') || request()->routeIs('admin.timesheets.create') ? 'show' : ''}}"
+                            aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <a class="collapse-item {{ request()->routeIs('admin.timesheets.index') ? 'active' : ''}}"
+                                    href="{{ route('admin.timesheets.index') }}">All Timesheets</a>
+                                <a class="collapse-item {{ request()->routeIs('admin.timesheets.create') ? 'active' : ''}}"
+                                    href="{{ route('admin.timesheets.create') }}">Add New</a>
+                            </div>
+                        </div>
+                    </li> --}}
 
-            <!-- Divider -->
-            <hr class="sidebar-divider my-0">
-            <!-- Nav Item - Settings -->
-            <li class="nav-item {{ request()->routeIs('admin.timesheets.indexs') ? 'active' : ''}}">
-                <a class="nav-link" href="{{ route('admin.timesheets.index') }}">
-                    <i class="fas fa-user-clock"></i>
-                    <span>Timesheets</span></a>
-            </li>
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Settings -->
+                    <li class="nav-item {{ request()->routeIs('admin.timesheets.indexs') ? 'active' : ''}}">
+                        <a class="nav-link" href="{{ route('admin.timesheets.index') }}">
+                            <i class="fas fa-user-clock"></i>
+                            <span>Timesheets</span></a>
+                    </li>
+                @endif
+            @endauth
+
+            <!-- عرض المهام فقط للموظف -->
+            @auth
+                @if($user->type === 'employee')
+                    <li
+                        class="nav-item {{ request()->routeIs('admin.tasks.index') || request()->routeIs('admin.tasks.create') ? 'active' : ''}}">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTasks"
+                            aria-expanded="true" aria-controls="collapseTasks">
+                            <i class="fas fa-tasks"></i>
+                            <span>Tasks</span>
+                        </a>
+                        <div id="collapseTasks"
+                            class="collapse {{ request()->routeIs('admin.tasks.index') || request()->routeIs('admin.tasks.create') ? 'show' : ''}}"
+                            aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <a class="collapse-item {{ request()->routeIs('admin.tasks.index') ? 'active' : ''}}"
+                                    href="{{ route('admin.tasks.index') }}">All Tasks</a>
+                                <a class="collapse-item {{ request()->routeIs('admin.tasks.create') ? 'active' : ''}}"
+                                    href="{{ route('admin.tasks.create') }}">Add New</a>
+                            </div>
+                        </div>
+                    </li>
+                @endif
+            @endauth
 
             <!-- Divider -->
             <hr class="sidebar-divider my-0">
@@ -255,7 +288,6 @@
                     </div>
                 </div>
             </li>
-
             {{--
             <!-- Divider -->
             <hr class="sidebar-divider my-0">

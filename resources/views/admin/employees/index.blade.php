@@ -68,7 +68,10 @@
                     <tbody>
                         @forelse ($employees as $employee)
                             <tr>
-                                <td></td>
+                                @php
+                                    $x = 0;
+                                @endphp
+                                <td>{{ $x += 1}}</td>
                                 <td>{{ $employee->name }}</td>
                                 {{-- <td>{{ $employee->contacts->first()->phone ?? '-' }}</td>
                                 <td>{{ $employee->contacts->first()->email ?? '-' }}</td>

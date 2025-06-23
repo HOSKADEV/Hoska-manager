@@ -61,7 +61,10 @@
                     <tbody>
                         @forelse ($payments as $payment)
                             <tr>
-                                <td></td>
+                                @php
+                                    $x = 0;
+                                @endphp
+                                <td>{{ $x += 1}}</td>
                                 <td>{{ $payment->amount }}</td>
                                 <td>{{ $payment->payment_date->diffForHumans() }}</td>
                                 <td>{{ $payment->note }}</td>

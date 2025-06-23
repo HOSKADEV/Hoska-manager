@@ -15,10 +15,10 @@
                         <select name="month" id="month" class="form-select select2">
                             <option value="">📆 All Months</option>
                             @foreach ($availableMonths as $month)
-                            <option value="{{ $month['value'] }}" {{ request('month')===$month['value'] ? 'selected'
+                                                    <option value="{{ $month['value'] }}" {{ request('month') === $month['value'] ? 'selected'
                                 : '' }}>
-                                {{ $month['label'] }}
-                            </option>
+                                                        {{ $month['label'] }}
+                                                    </option>
                             @endforeach
                         </select>
                     </div>
@@ -28,9 +28,9 @@
                             <i class="fas fa-filter me-1"></i> Filter
                         </button>
                         @if(request()->has('month'))
-                        <a href="{{ route('admin.timesheets.index') }}" class="btn btn-outline-danger ms-2 px-4">
-                            <i class="fas fa-times me-1"></i> Clear
-                        </a>
+                            <a href="{{ route('admin.timesheets.index') }}" class="btn btn-outline-danger ms-2 px-4">
+                                <i class="fas fa-times me-1"></i> Clear
+                            </a>
                         @endif
                     </div>
                 </div>
@@ -43,9 +43,10 @@
                         <select id="month" name="month" class="form-select">
                             <option value="">📆 All Months</option>
                             @foreach ($availableMonths as $month)
-                                <option value="{{ $month['value'] }}" {{ request('month') === $month['value'] ? 'selected' : '' }}>
-                                    {{ $month['label'] }}
-                                </option>
+                            <option value="{{ $month['value'] }}" {{ request('month')===$month['value'] ? 'selected'
+                                : '' }}>
+                                {{ $month['label'] }}
+                            </option>
                             @endforeach
                         </select>
                     </div>
@@ -56,9 +57,9 @@
                         </button>
 
                         @if(request()->has('month'))
-                            <a href="{{ route('admin.timesheets.index') }}" class="btn btn-outline-danger px-4 shadow-sm">
-                                <i class="fas fa-times me-1"></i> Clear
-                            </a>
+                        <a href="{{ route('admin.timesheets.index') }}" class="btn btn-outline-danger px-4 shadow-sm">
+                            <i class="fas fa-times me-1"></i> Clear
+                        </a>
                         @endif
                     </div>
                 </div>
@@ -95,7 +96,10 @@
                     <tbody>
                         @forelse ($timesheets as $timesheet)
                             <tr>
-                                <td></td>
+                                @php
+                                    $x = 0;
+                                @endphp
+                                <td>{{ $x += 1}}</td>
                                 <td>{{ $timesheet->employee->name ?? '_'}}</td>
                                 <td>{{ $timesheet->hours_worked }}</td>
                                 <td>{{ $timesheet->work_date->format('Y-M') }}</td>

@@ -67,9 +67,9 @@
                         @forelse ($clients as $client)
                             <tr>
                                 @php
-                                    $x = 0
+                                    $x = 0;
                                 @endphp
-                                <td>{{ ++$x }}</td>
+                                <td>{{ $x +=1}}</td>
                                 <td>{{ $client->name }}</td>
                                 <td>{{ $client->contacts->first()->phone ?? '-' }}</td>
                                 <td>{{ $client->contacts->first()->email ?? '-' }}</td>

@@ -59,7 +59,10 @@
                     <tbody>
                         @forelse ($developments as $development)
                             <tr>
-                                <td></td>
+                                @php
+                                    $x = 0;
+                                @endphp
+                                <td>{{ $x += 1}}</td>
                                 <td>{{ $development->description }}</td>
                                 <td>{{ $development->amount }}</td>
                                 <td>

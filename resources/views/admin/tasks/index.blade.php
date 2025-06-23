@@ -12,6 +12,7 @@
                 border-radius: 0.5rem;
                 white-space: nowrap;
             }
+
             .badge-project {
                 background-color: #6f42c1;
                 /* بنفسجي */
@@ -85,7 +86,10 @@
                     <tbody>
                         @forelse ($tasks as $task)
                             <tr>
-                                <td></td>
+                                @php
+                                    $x = 0;
+                                @endphp
+                                <td>{{ $x += 1}}</td>
                                 <td>{{ $task->title }}</td>
                                 {{-- <td class="col-md-3">{{ $task->description }}</td> --}}
                                 {{-- <td>{{ $task->status }}</td> --}}

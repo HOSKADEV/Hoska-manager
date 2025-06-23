@@ -66,10 +66,7 @@
                     <tbody>
                         @forelse ($clients as $client)
                             <tr>
-                                @php
-                                    $x +=1;
-                                @endphp
-                                <td>{{ $x }}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>{{ $client->name }}</td>
                                 <td>{{ $client->contacts->first()->phone ?? '-' }}</td>
                                 <td>{{ $client->contacts->first()->email ?? '-' }}</td>

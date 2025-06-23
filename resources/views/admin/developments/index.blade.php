@@ -59,10 +59,7 @@
                     <tbody>
                         @forelse ($developments as $development)
                             <tr>
-                                @php
-                                    $x = 0;
-                                @endphp
-                                <td>{{ $x += 1}}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>{{ $development->description }}</td>
                                 <td>{{ $development->amount }}</td>
                                 <td>

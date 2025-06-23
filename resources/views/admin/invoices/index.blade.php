@@ -72,10 +72,7 @@
                     <tbody>
                         @forelse ($invoices as $invoice)
                             <tr>
-                                @php
-                                    $x = 0;
-                                @endphp
-                                <td>{{ $x += 1}}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>{{ $invoice->invoice_number }}</td>
                                 <td>{{ $invoice->amount }}</td>
                                 <td>{{ $invoice->invoice_date->diffForHumans() }}</td>

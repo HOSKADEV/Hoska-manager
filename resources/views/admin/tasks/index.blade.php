@@ -86,10 +86,7 @@
                     <tbody>
                         @forelse ($tasks as $task)
                             <tr>
-                                @php
-                                    $x = 0;
-                                @endphp
-                                <td>{{ $x += 1}}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>{{ $task->title }}</td>
                                 {{-- <td class="col-md-3">{{ $task->description }}</td> --}}
                                 {{-- <td>{{ $task->status }}</td> --}}

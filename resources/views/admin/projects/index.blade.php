@@ -78,10 +78,7 @@
                     <tbody>
                         @forelse ($projects as $project)
                             <tr>
-                                @php
-                                    $x = 0;
-                                @endphp
-                                <td>{{ $x += 1}}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>{{ $project->name }}</td>
                                 <td>{{ $project->description }}</td>
                                 <td>{{ $project->total_amount }}</td>

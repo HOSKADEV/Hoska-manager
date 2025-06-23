@@ -96,10 +96,7 @@
                     <tbody>
                         @forelse ($timesheets as $timesheet)
                             <tr>
-                                @php
-                                    $x += 1;
-                                @endphp
-                                <td>{{ $x }}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>{{ $timesheet->employee->name ?? '_'}}</td>
                                 <td>{{ $timesheet->hours_worked }}</td>
                                 <td>{{ $timesheet->work_date->format('Y-M') }}</td>

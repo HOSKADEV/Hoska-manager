@@ -57,10 +57,7 @@
                     <tbody>
                         @forelse ($notes as $note)
                             <tr>
-                                @php
-                                    $x = 0;
-                                @endphp
-                                <td>{{ $x += 1}}</td>
+                                <td>{{ $loop->iteration }}</td>
                                 <td>{{ $note->note }}</td>
                                 <td>
                                     @if($note->user)

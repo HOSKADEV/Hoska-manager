@@ -12,35 +12,22 @@ use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
+    // public function index()
+    // {
+    //     return view('admin.index');
+    // }
+
     public function index()
     {
-        $user = Auth::user();
+        $totalTasks = Task::count();
+        $completedTasks = Task::where('status', 'completed')->count();
 
-        if ($user->type === 'admin') {
-            $totalTasks = Task::count();
-            $completedTasks = Task::where('status', 'completed')->count();
+        $totalProjects = Project::count();
+        $totalClients = Client::count();
 
-            // 👇 عدد المشاريع والعملاء
-            $totalProjects = Project::count();
-            $totalClients = Client::count();
-            $monthlyEarnings = Payment::whereYear('created_at', now()->year)
-                ->whereMonth('created_at', now()->month)
-                ->sum('amount'); // تأكد أن العمود اسمه "amount" في جدول payments
-        } else {
-            $employee = $user->employee;
-
-            if (!$employee) {
-                abort(403, 'You are not linked to an employee.');
-            }
-
-            $totalTasks = Task::where('employee_id', $employee->id)->count();
-            $completedTasks = Task::where('employee_id', $employee->id)
-                ->where('status', 'completed')->count();
-
-            // 👇 في حالة الموظف، ممكن ما يكون إله علاقة مباشرة بالمشاريع/العملاء
-            $totalProjects = 0;
-            $totalClients = 0;
-        }
+        $monthlyEarnings = Payment::whereYear('created_at', now()->year)
+            ->whereMonth('created_at', now()->month)
+            ->sum('amount'); // تأكد اسم العمود في جدول الدفع
 
         $completionPercentage = $totalTasks > 0
             ? round(($completedTasks / $totalTasks) * 100)

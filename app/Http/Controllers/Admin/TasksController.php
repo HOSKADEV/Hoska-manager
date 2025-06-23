@@ -22,20 +22,22 @@ class TasksController extends Controller
         $user = Auth::user();
 
         if ($user->type === 'admin') {
-            // المستخدم أدمن، نعرض كل المهام
+            // إذا كان المستخدم مدير، عرض كل المهام
             $tasks = Task::with(['employee', 'project'])->latest()->get();
-        } else {
-            // المستخدم موظف، نعرض فقط مهامه
+        } elseif ($user->type === 'employee') {
+            // إذا كان المستخدم موظف، عرض فقط مهامه
             $employee = $user->employee;
 
             if (!$employee) {
-                abort(403, 'You are not linked to an employee.');
+                abort(403, 'لا يوجد حساب موظف مرتبط بهذا المستخدم.');
             }
 
             $tasks = Task::with(['employee', 'project'])
                 ->where('employee_id', $employee->id)
                 ->latest()
                 ->get();
+        } else {
+            abort(403, 'نوع المستخدم غير مدعوم.');
         }
 
         return view('admin.tasks.index', compact('tasks'));
@@ -142,14 +144,15 @@ class TasksController extends Controller
                 abort(403, 'You are not authorized to update this task.');
             }
 
-            // لا يمكنه تغيير الموظف
+            // تأكد أن الموظف لا يقدر يعدل على employee_id حتى لو أرسله يدويًا
+            unset($data['employee_id']);
             $data['employee_id'] = $employee->id;
-        } else {
-            // أدمن يقدر يحدد الموظف من الفورم
+        } elseif ($user->type === 'admin') {
+            // فقط تأكيد إضافي لو أردت تخصيص قواعد مختلفة
             $data['employee_id'] = $request->employee_id;
+        } else {
+            abort(403, 'User type not allowed.');
         }
-
-        $data['project_id'] = $request->project_id;
 
         $task->update($data);
 

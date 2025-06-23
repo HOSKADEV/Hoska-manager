@@ -63,7 +63,7 @@
         :oldval="$task->employee_id" />
 </div> --}}
 
-@if(auth()->user()->type === 'admin')
+{{-- @if(auth()->user()->type === 'admin')
     <div class="mb-3">
         <x-form.select label="Employee" name="employee_id" placeholder='Select Employee' :options="$employees"
             :oldval="$task->employee_id" />
@@ -72,7 +72,24 @@
     <div class="mb-3 col-md-12">
         <input type="hidden" name="employee_id" value="{{ auth()->user()->employee->id }}">
     </div>
+@endif --}}
+
+@if(auth()->user()->type === 'admin')
+    <div class="mb-3">
+        <x-form.select label="Employee" name="employee_id" placeholder='Select Employee' :options="$employees"
+            :oldval="$task->employee_id" />
+    </div>
+@elseif(auth()->user()->employee)
+    <div class="mb-3 col-md-12">
+        <input type="hidden" name="employee_id" value="{{ auth()->user()->employee->id }}">
+    </div>
+@else
+    <div class="alert alert-warning">
+        لا يوجد موظف مرتبط بهذا الحساب، يرجى التواصل مع الإدارة.
+    </div>
 @endif
+
+
 
 <div class="mb-3">
     <x-form.select label="Project" name="project_id" placeholder='Select Project' :options="$projects"

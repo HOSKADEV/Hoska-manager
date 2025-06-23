@@ -36,7 +36,7 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>#</th>
                             <th>Amount</th>
                             <th>Payment Date</th>
                             <th>Note</th>
@@ -48,7 +48,7 @@
                     </thead>
                     <tfoot>
                         <tr>
-                            <th>ID</th>
+                            <th>#</th>
                             <th>Amount</th>
                             <th>Payment Date</th>
                             <th>Note</th>
@@ -61,7 +61,7 @@
                     <tbody>
                         @forelse ($payments as $payment)
                             <tr>
-                                <td>{{ $payment->id }}</td>
+                                <td></td>
                                 <td>{{ $payment->amount }}</td>
                                 <td>{{ $payment->payment_date->diffForHumans() }}</td>
                                 <td>{{ $payment->note }}</td>

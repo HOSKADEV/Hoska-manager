@@ -41,7 +41,7 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>#</th>
                             <th>Invoice Number</th>
                             <th>Amount</th>
                             <th>Invoice Date</th>
@@ -56,7 +56,7 @@
                     </thead>
                     <tfoot>
                         <tr>
-                            <th>ID</th>
+                            <th>#</th>
                             <th>Invoice Number</th>
                             <th>Amount</th>
                             <th>Invoice Date</th>
@@ -72,7 +72,7 @@
                     <tbody>
                         @forelse ($invoices as $invoice)
                             <tr>
-                                <td>{{ $invoice->id }}</td>
+                                <td></td>
                                 <td>{{ $invoice->invoice_number }}</td>
                                 <td>{{ $invoice->amount }}</td>
                                 <td>{{ $invoice->invoice_date->diffForHumans() }}</td>

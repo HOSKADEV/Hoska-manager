@@ -37,7 +37,7 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>#</th>
                             <th>Name</th>
                             <th>Phone</th>
                             <th>Email</th>
@@ -51,7 +51,7 @@
                     </thead>
                     <tfoot>
                         <tr>
-                            <th>ID</th>
+                            <th>#</th>
                             <th>Name</th>
                             <th>Phone</th>
                             <th>Email</th>
@@ -66,7 +66,7 @@
                     <tbody>
                         @forelse ($clients as $client)
                             <tr>
-                                <td>{{ $client->id }}</td>
+                                <td></td>
                                 <td>{{ $client->name }}</td>
                                 <td>{{ $client->contacts->first()->phone ?? '-' }}</td>
                                 <td>{{ $client->contacts->first()->email ?? '-' }}</td>

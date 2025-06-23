@@ -70,7 +70,7 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>#</th>
                             <th>Employee Name</th>
                             <th>Duration (hours)</th>
                             <th>Date</th>
@@ -82,7 +82,7 @@
                     </thead>
                     <tfoot>
                         <tr>
-                            <th>ID</th>
+                            <th>#</th>
                             <th>Employee Name</th>
                             <th>Duration (hours)</th>
                             <th>Date</th>
@@ -95,7 +95,7 @@
                     <tbody>
                         @forelse ($timesheets as $timesheet)
                             <tr>
-                                <td>{{ $timesheet->id }}</td>
+                                <td></td>
                                 <td>{{ $timesheet->employee->name ?? '_'}}</td>
                                 <td>{{ $timesheet->hours_worked }}</td>
                                 <td>{{ $timesheet->work_date->format('Y-M') }}</td>

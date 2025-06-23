@@ -47,7 +47,7 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>#</th>
                             <th>Name</th>
                             <th>Description</th>
                             <th>Total Amount</th>
@@ -62,7 +62,7 @@
                     </thead>
                     <tfoot>
                         <tr>
-                            <th>ID</th>
+                            <th>#</th>
                             <th>Name</th>
                             <th>Description</th>
                             <th>Total Amount</th>
@@ -78,7 +78,7 @@
                     <tbody>
                         @forelse ($projects as $project)
                             <tr>
-                                <td>{{ $project->id }}</td>
+                                <td></td>
                                 <td>{{ $project->name }}</td>
                                 <td>{{ $project->description }}</td>
                                 <td>{{ $project->total_amount }}</td>

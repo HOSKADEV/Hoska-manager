@@ -36,7 +36,7 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>#</th>
                             <th>Notes</th>
                             <th>User Name</th>
                             <th>Created At</th>
@@ -46,7 +46,7 @@
                     </thead>
                     <tfoot>
                         <tr>
-                            <th>ID</th>
+                            <th>#</th>
                             <th>Notes</th>
                             <th>User Name</th>
                             <th>Created At</th>
@@ -57,7 +57,7 @@
                     <tbody>
                         @forelse ($notes as $note)
                             <tr>
-                                <td>{{ $note->id }}</td>
+                                <td></td>
                                 <td>{{ $note->note }}</td>
                                 <td>
                                     @if($note->user)

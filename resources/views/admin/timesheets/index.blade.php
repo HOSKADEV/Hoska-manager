@@ -97,9 +97,9 @@
                         @forelse ($timesheets as $timesheet)
                             <tr>
                                 @php
-                                    $x = 0;
+                                    $x += 1;
                                 @endphp
-                                <td>{{ $x += 1}}</td>
+                                <td>{{ $x }}</td>
                                 <td>{{ $timesheet->employee->name ?? '_'}}</td>
                                 <td>{{ $timesheet->hours_worked }}</td>
                                 <td>{{ $timesheet->work_date->format('Y-M') }}</td>

@@ -46,7 +46,7 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>#</th>
                             <th>Title</th>
                             {{-- <th>Description</th> --}}
                             {{-- <th>Status</th> --}}
@@ -65,7 +65,7 @@
                     </thead>
                     <tfoot>
                         <tr>
-                            <th>ID</th>
+                            <th>#</th>
                             <th>Title</th>
                             {{-- <th>Description</th> --}}
                             {{-- <th>Status</th> --}}
@@ -85,7 +85,7 @@
                     <tbody>
                         @forelse ($tasks as $task)
                             <tr>
-                                <td>{{ $task->id }}</td>
+                                <td></td>
                                 <td>{{ $task->title }}</td>
                                 {{-- <td class="col-md-3">{{ $task->description }}</td> --}}
                                 {{-- <td>{{ $task->status }}</td> --}}
@@ -136,6 +136,7 @@
                             </tr>
                         @empty
                             <tr>
+                                <td class="d-none"></td>
                                 <td colspan="15" class="text-center">No Data Found</td>
                             </tr>
                         @endforelse

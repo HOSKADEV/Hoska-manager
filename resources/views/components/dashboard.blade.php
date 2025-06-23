@@ -21,9 +21,62 @@
     <!-- Custom styles for this template-->
     <link href="{{ asset('assets/css/sb-admin-2.min.css')}}" rel="stylesheet">
     @stack('css')
+    <style>
+        .colors {
+            width: 100px;
+            position: fixed;
+            right: -60px;
+            top: 150px;
+            display: flex;
+            transition: all 0.3s ease;
+            z-index: 9999;
+        }
+
+        .colors.open {
+            right: 0;
+        }
+
+        .colors button {
+            background: #d9d9d9;
+            border: 0;
+            width: 40px;
+            height: 40px;
+        }
+
+        .colors ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            background: #e4e4e4;
+            width: 60px;
+            justify-content: center;
+            padding: 5px 0;
+        }
+
+        .colors ul li {
+            width: 20px;
+            height: 20px;
+            margin: 3px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body id="page-top">
+
+    <div class="colors">
+        <button><i class="fas fa-cog"></i></button>
+        <ul>
+            <li class="bg-gradient-primary"></li>
+            <li class="bg-gradient-dark"></li>
+            <li class="bg-gradient-success"></li>
+            <li class="bg-gradient-info"></li>
+            <li class="bg-gradient-warning"></li>
+            <li class="bg-gradient-danger"></li>
+        </ul>
+    </div>
 
     <!-- Page Wrapper -->
     <div id="wrapper">
@@ -529,6 +582,75 @@
 
     <!-- Custom scripts for all pages-->
     <script src="{{ asset('assets/js/sb-admin-2.min.js') }}"></script>
+    {{--
+    <script>
+        document.querySelector('.colors button').onclick = () => {
+            document.querySelector('.colors').classList.toggle('open')
+        }
+
+        // log
+        document.querySelectorAll('.colors ul li').forEach(el => {
+            el.onclick = () => {
+                let cl = el.classList[0];
+                document.querySelector('#accordionSidebar').className = '';
+                document.querySelector('#accordionSidebar').classList.add(cl)
+                localStorage.setItem('cl', cl)
+            }
+        });
+
+
+        let oldclass = localStorage.getItem('cl') ?? 'bg-gradient-primary'
+        document.querySelector('#accordionSidebar').classList.add(oldclass)
+
+    </script> --}}
+
+    <script>
+            (() => {
+                const colorsBtn = document.querySelector('.colors button');
+                const colorsList = document.querySelector('.colors');
+                const colorItems = document.querySelectorAll('.colors ul li');
+                const sidebar = document.getElementById('accordionSidebar');
+
+                const colorClasses = [
+                    'bg-gradient-primary',
+                    'bg-gradient-dark',
+                    'bg-gradient-success',
+                    'bg-gradient-info',
+                    'bg-gradient-warning',
+                    'bg-gradient-danger'
+                ];
+
+                // فتح وإغلاق صندوق الألوان
+                colorsBtn.addEventListener('click', () => {
+                    colorsList.classList.toggle('open');
+                    // تحديث aria-expanded
+                    const expanded = colorsList.classList.contains('open');
+                    colorsBtn.setAttribute('aria-expanded', expanded);
+                });
+
+                // تحميل اللون المخزن
+                const savedClass = localStorage.getItem('sidebarColor') || 'bg-gradient-primary';
+
+                // إزالة أصناف الألوان القديمة
+                function removeColorClasses() {
+                    colorClasses.forEach(c => sidebar.classList.remove(c));
+                }
+
+                // تطبيق اللون المخزن عند التحميل
+                removeColorClasses();
+                sidebar.classList.add(savedClass);
+
+                // عند اختيار لون جديد
+                colorItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        const selectedClass = item.classList[0];
+                        removeColorClasses();
+                        sidebar.classList.add(selectedClass);
+                        localStorage.setItem('sidebarColor', selectedClass);
+                    });
+                });
+            })();
+    </script>
     @stack('js')
 </body>
 

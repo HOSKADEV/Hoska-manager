@@ -113,5 +113,21 @@
 
         <!-- Page level custom scripts -->
         <script src="{{ asset('assets/js/demo/datatables-demo.js') }}"></script>
+
+        <script>
+            $(document).ready(function () {
+                $('#dataTable').DataTable({
+                    order: [[1, 'desc']],  // ترتيب حسب عمود العنوان أو أي عمود مناسب
+                    columnDefs: [{
+                        targets: 0,
+                        searchable: false,
+                        orderable: false,
+                        render: function (data, type, row, meta) {
+                            return meta.row + 1;
+                        }
+                    }]
+                });
+            });
+        </script>
     @endpush
 </x-dashboard>

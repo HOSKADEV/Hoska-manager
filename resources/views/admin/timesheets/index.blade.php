@@ -6,66 +6,115 @@
             New</a> --}}
     </div>
 
+    <!-- Timesheet Summary Cards -->
+    <div class="row mb-4">
+
+        <!-- Total Hours Worked -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Hours Worked
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ number_format($totalHours, 2) }} hrs
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Salaries -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Monthly Salary
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ number_format($totalSalaries, 2) }} $
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shekel-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paid Salaries -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Paid Salaries
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ $paidCount }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unpaid Salaries -->
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Unpaid Salaries
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ $unpaidCount }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-times-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
     <div class="card">
         <div class="card-body">
-            <form method="GET" action="{{ route('admin.timesheets.index') }}" class="mb-4">
+            {{-- filter --}}
+            <form method="GET" action="{{ route('admin.timesheets.index') }}" class="mb-4" id="filterForm">
                 <div class="row g-2 align-items-end">
                     <div class="col-md-4">
                         <label for="month" class="form-label fw-bold text-secondary">📅 Filter by Month</label>
                         <select name="month" id="month" class="form-select select2">
-                            <option value="">📆 All Months</option>
+                            <option value="all" {{ request('month', now()->format('Y-m')) === 'all' ? 'selected' : '' }}>
+                                📆 All Months</option>
                             @foreach ($availableMonths as $month)
-                                                    <option value="{{ $month['value'] }}" {{ request('month') === $month['value'] ? 'selected'
-                                : '' }}>
-                                                        {{ $month['label'] }}
-                                                    </option>
+                                <option value="{{ $month['value'] }}" {{ request('month', now()->format('Y-m')) === $month['value'] ? 'selected' : '' }}>
+                                    {{ $month['label'] }}
+                                </option>
                             @endforeach
                         </select>
-                    </div>
-
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary px-4">
-                            <i class="fas fa-filter me-1"></i> Filter
-                        </button>
-                        @if(request()->has('month'))
-                            <a href="{{ route('admin.timesheets.index') }}" class="btn btn-outline-danger ms-2 px-4">
-                                <i class="fas fa-times me-1"></i> Clear
-                            </a>
-                        @endif
                     </div>
                 </div>
             </form>
-
-            {{-- <form method="GET" action="{{ route('admin.timesheets.index') }}" class="mb-4">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-4">
-                        <label for="month" class="form-label fw-bold text-secondary">📅 Filter by Month</label>
-                        <select id="month" name="month" class="form-select">
-                            <option value="">📆 All Months</option>
-                            @foreach ($availableMonths as $month)
-                            <option value="{{ $month['value'] }}" {{ request('month')===$month['value'] ? 'selected'
-                                : '' }}>
-                                {{ $month['label'] }}
-                            </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-success px-4 shadow-sm">
-                            <i class="fas fa-filter me-1"></i> Filter
-                        </button>
-
-                        @if(request()->has('month'))
-                        <a href="{{ route('admin.timesheets.index') }}" class="btn btn-outline-danger px-4 shadow-sm">
-                            <i class="fas fa-times me-1"></i> Clear
-                        </a>
-                        @endif
-                    </div>
-                </div>
-            </form> --}}
-
-
 
             <div class="table-responsive mt-3">
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
@@ -74,7 +123,9 @@
                             <th>#</th>
                             <th>Employee Name</th>
                             <th>Duration (hours)</th>
-                            <th>Date</th>
+                            <th>Monthly Salary</th> <!-- الأجر الشهري -->
+                            <th>Payment Status</th> <!-- مدفوع / غير مدفوع -->
+                            <th>Month</th>
                             {{-- <th>Project Name</th> --}}
                             {{-- <th>Created At</th>
                             <th>Updated At</th> --}}
@@ -86,7 +137,9 @@
                             <th>#</th>
                             <th>Employee Name</th>
                             <th>Duration (hours)</th>
-                            <th>Date</th>
+                            <th>Monthly Salary</th> <!-- الأجر الشهري -->
+                            <th>Payment Status</th> <!-- مدفوع / غير مدفوع -->
+                            <th>Month</th>
                             {{-- <th>Project Name</th> --}}
                             {{-- <th>Created At</th>
                             <th>Updated At</th> --}}
@@ -99,6 +152,14 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $timesheet->employee->name ?? '_'}}</td>
                                 <td>{{ $timesheet->hours_worked }}</td>
+                                <td>{{ number_format($timesheet->month_salary, 2) }} $</td> <!-- الأجر الشهري -->
+                                <td>
+                                    @if($timesheet->is_paid)
+                                        <span class="badge bg-success text-white">Paid</span>
+                                    @else
+                                        <span class="badge bg-danger text-white">Unpaid</span>
+                                    @endif
+                                </td>
                                 <td>{{ $timesheet->work_date->format('Y-M') }}</td>
                                 {{-- <td>{{ $task->start_time ? $task->start_time->format('Y-m-d') : '-' }}</td> --}}
                                 {{-- <td>{{ $timesheet->project->name ?? '_'}}</td> --}}
@@ -147,6 +208,11 @@
                     placeholder: "📆 Select a Month",
                     allowClear: true,
                     width: '100%'
+                });
+
+                // استمع لحدث التغيير وأرسل الفورم تلقائيًا
+                $('#month').on('change', function () {
+                    $(this).closest('form').submit();
                 });
             });
         </script>

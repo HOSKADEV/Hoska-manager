@@ -115,61 +115,65 @@ class Timesheet extends Model
     //         : Timesheet::create($data);
     // }
 
-public static function updateMonthlyTimesheet($employee_id, $taskDate)
-{
-    $monthStart = Carbon::parse($taskDate)->startOfMonth()->toDateString();
-    $monthEnd = Carbon::parse($taskDate)->endOfMonth()->toDateString();
+    public static function updateMonthlyTimesheet($employee_id, $taskDate)
+    {
+        $monthStart = Carbon::parse($taskDate)->startOfMonth()->toDateString();
+        $monthEnd = Carbon::parse($taskDate)->endOfMonth()->toDateString();
 
-    Log::info("Updating monthly timesheet for employee {$employee_id} for month starting {$monthStart}");
+        Log::info("Updating monthly timesheet for employee {$employee_id} for month starting {$monthStart}");
 
-    $employee = Employee::with(['tasks' => function ($query) use ($monthStart, $monthEnd) {
-        $query->whereDate('start_time', '>=', $monthStart)
-              ->whereDate('start_time', '<=', $monthEnd);
-    }])->find($employee_id);
+        $employee = Employee::with(['tasks' => function ($query) use ($monthStart, $monthEnd) {
+            $query->whereDate('start_time', '>=', $monthStart)
+                ->whereDate('start_time', '<=', $monthEnd);
+        }])->find($employee_id);
 
-    if (!$employee) {
-        Log::warning("Employee {$employee_id} not found");
-        return;
+        if (!$employee) {
+            Log::warning("Employee {$employee_id} not found");
+            return;
+        }
+
+        $validTasks = $employee->tasks->filter(fn($task) => $task->start_time && $task->end_time);
+
+        if ($validTasks->isEmpty()) {
+            Timesheet::updateOrCreate(
+                [
+                    'employee_id' => $employee_id,
+                    'work_date' => $monthStart,
+                ],
+                [
+                    'hours_worked' => 0,
+                    'project_id' => null,
+                    'month_salary' => 0, // 👈اجر الشهري
+                ]
+            );
+
+            Log::info("No valid tasks for employee {$employee_id} in month {$monthStart}, timesheet set to 0 hours");
+            return;
+        }
+
+        $totalHours = $validTasks->sum(fn($task) => $task->duration_in_hours);
+
+        // ✅ حساب الأجر الشهري
+        $monthlySalary = $totalHours * $employee->rate;
+
+        $data = [
+            'employee_id' => $employee_id,
+            'work_date' => $monthStart,
+            'hours_worked' => $totalHours,
+            'project_id' => null,
+            'month_salary' => $monthlySalary, // 👈 اجر الشهري
+        ];
+
+        $timesheet = Timesheet::where('employee_id', $employee_id)
+            ->whereDate('work_date', $monthStart)
+            ->first();
+
+        if ($timesheet) {
+            $timesheet->update($data);
+            Log::info("Updated timesheet ID {$timesheet->id} for employee {$employee_id}");
+        } else {
+            Timesheet::create($data);
+            Log::info("Created new timesheet for employee {$employee_id} for month {$monthStart}");
+        }
     }
-
-    $validTasks = $employee->tasks->filter(fn($task) => $task->start_time && $task->end_time);
-
-    if ($validTasks->isEmpty()) {
-        Timesheet::updateOrCreate(
-            [
-                'employee_id' => $employee_id,
-                'work_date' => $monthStart,
-            ],
-            [
-                'hours_worked' => 0,
-                'project_id' => null,
-            ]
-        );
-
-        Log::info("No valid tasks for employee {$employee_id} in month {$monthStart}, timesheet set to 0 hours");
-        return;
-    }
-
-    $totalHours = $validTasks->sum(fn($task) => $task->duration_in_hours);
-
-    $data = [
-        'employee_id' => $employee_id,
-        'work_date' => $monthStart,
-        'hours_worked' => $totalHours,
-        'project_id' => null,
-    ];
-
-    $timesheet = Timesheet::where('employee_id', $employee_id)
-        ->whereDate('work_date', $monthStart)
-        ->first();
-
-    if ($timesheet) {
-        $timesheet->update($data);
-        Log::info("Updated timesheet ID {$timesheet->id} for employee {$employee_id}");
-    } else {
-        Timesheet::create($data);
-        Log::info("Created new timesheet for employee {$employee_id} for month {$monthStart}");
-    }
-}
-
 }

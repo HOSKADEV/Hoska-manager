@@ -88,7 +88,8 @@ class EmployeesController extends Controller
     public function update(EmployeeRequest $request, Employee $employee)
     {
         $data = $request->except(['user', 'phone', 'email', 'address']);
-        $data['user_id'] = Auth::id(); // معرف الأدمن الذي قام بالتعديل
+        // 🚫 لا نضع user_id هنا لأنه ليس من المفترض أن يتغير إلا في حالة إنشاء مستخدم جديد
+        // $data['user_id'] = Auth::id(); // احذف هذا السطر
 
         // تحديث بيانات الموظف
         $employee->update($data);
@@ -109,7 +110,7 @@ class EmployeesController extends Controller
             ]);
         }
 
-        // تحديث أو إنشاء حساب المستخدم المرتبط بالموظف
+        // تحديث أو إنشاء حساب المستخدم المرتبط
         if ($request->filled('user.email')) {
             if ($employee->user) {
                 // تحديث المستخدم الموجود
@@ -124,21 +125,27 @@ class EmployeesController extends Controller
 
                 $employee->user->update($updateData);
             } else {
-                // إنشاء مستخدم جديد وربطه بالموظف
-                $user = User::create([
-                    'name' => $request->input('user.name'),
-                    'email' => $request->input('user.email'),
-                    'password' => bcrypt($request->input('user.password')),
-                    'type' => 'employee',
-                ]);
-                $employee->user()->associate($user);
-                $employee->save();
+                // إنشاء مستخدم جديد فقط إذا تم إدخال كلمة المرور
+                if ($request->filled('user.password')) {
+                    $user = User::create([
+                        'name' => $request->input('user.name'),
+                        'email' => $request->input('user.email'),
+                        'password' => bcrypt($request->input('user.password')),
+                        'type' => 'employee',
+                    ]);
+
+                    // ربط المستخدم بالموظف
+                    $employee->user()->associate($user);
+                    $employee->save();
+                }
             }
         }
+        // ✳️ لا تفعل أي شيء في حالة عدم وجود بيانات مستخدم
 
         flash()->success('Employee updated successfully');
         return redirect()->route('admin.employees.index');
     }
+
 
     /**
      * Remove the specified resource from storage.

@@ -1,73 +1,81 @@
 <x-dashboard title="Timesheet Details">
 
-    <style>
-        /* Responsive table wrapper */
-        .table-responsive {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
+    @push('css')
+        <style>
+            /* Responsive table wrapper */
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-family: Arial, sans-serif;
-            color: #1a1a1a;
-        }
-
-        th,
-        td {
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            text-align: center;
-            font-size: 16px;
-        }
-
-        th {
-            background-color: #0d47a1;
-            color: white;
-            font-weight: 700;
-        }
-
-        tbody tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        tbody tr:hover {
-            background-color: #e3f2fd;
-        }
-
-        .summary-box {
-            background-color: #e3f2fd;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            font-size: 18px;
-        }
-
-        h2,
-        h3 {
-            color: #0d47a1;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        @media (max-width: 600px) {
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                font-family: Arial, sans-serif;
+                color: #1a1a1a;
+            }
 
             th,
             td {
-                font-size: 14px;
-                padding: 10px 8px;
+                padding: 12px 15px;
+                border: 1px solid #ddd;
+                text-align: center;
+                font-size: 16px;
+            }
+
+            th {
+                background-color: #0d47a1;
+                color: white;
+                font-weight: 700;
+            }
+
+            tbody tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+
+            tbody tr:hover {
+                background-color: #e3f2fd;
             }
 
             .summary-box {
-                font-size: 16px;
-                padding: 15px;
+                background-color: #e3f2fd;
+                padding: 20px;
+                border-radius: 8px;
+                margin-bottom: 30px;
+                font-size: 18px;
             }
-        }
-    </style>
+
+            h2,
+            h3 {
+                color: #0d47a1;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+
+            @media (max-width: 600px) {
+
+                th,
+                td {
+                    font-size: 14px;
+                    padding: 10px 8px;
+                }
+
+                .summary-box {
+                    font-size: 16px;
+                    padding: 15px;
+                }
+            }
+        </style>
+    @endpush
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Employee Timesheet</h2>
+        <a href="{{ route('admin.timesheets.index') }}" class="btn btn-info"><i
+                class="fas fa-long-arrow-alt-left"></i>All
+            Timesheets</a>
+    </div>
+
 
     <div class="container py-4" style="max-width: 900px; margin: auto;">
-        <h2>Employee Timesheet</h2>
-
         <div class="summary-box">
             <p><strong>Employee Name:</strong> {{ $employee->name }}</p>
             <p><strong>Timesheet Date:</strong> {{ $timesheet->work_date->format('Y-m-d') }}</p>

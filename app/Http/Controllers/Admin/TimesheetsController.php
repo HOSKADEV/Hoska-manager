@@ -21,24 +21,48 @@ class TimesheetsController extends Controller
 
     public function index(Request $request)
     {
-        $query = Timesheet::query();
-
-        if ($request->filled('month')) {
-            $month = Carbon::parse($request->month);
-            $query->whereMonth('work_date', $month->month)
-                ->whereYear('work_date', $month->year);
-        }
-
-        $timesheets = $query->with('employee', 'project')->get();
-
-        // بناء قائمة أشهر من البيانات أو بشكل يدوي
+        // بناء قائمة الأشهر مع خيار "All" يدويًا
         $availableMonths = Timesheet::selectRaw('DATE_FORMAT(work_date, "%Y-%m") as value, DATE_FORMAT(work_date, "%M %Y") as label')
             ->groupBy('value', 'label')
             ->orderBy('value', 'desc')
             ->get()
             ->toArray();
 
-        return view('admin.timesheets.index', compact('timesheets', 'availableMonths'));
+        // افتراضيًا، الشهر الحالي كقيمة فلتر إذا ما حدد المستخدم شيء
+        $monthFilter = $request->input('month', now()->format('Y-m'));
+
+        $query = Timesheet::query();
+
+        if ($monthFilter && $monthFilter !== 'all') {
+            $month = Carbon::parse($monthFilter);
+            $query->whereMonth('work_date', $month->month)
+                ->whereYear('work_date', $month->year);
+
+            $monthStart = $month->copy()->startOfMonth();
+            $monthEnd = $month->copy()->endOfMonth();
+        } else {
+            // لو اختار "all" (يعني عرض الكل)
+            $monthStart = Timesheet::min('work_date') ?? now();
+            $monthEnd = Timesheet::max('work_date') ?? now();
+        }
+
+        $timesheets = $query->with('employee', 'project')->get();
+
+        // احسب الاحصائيات ضمن الفترة المختارة (أو الكل)
+        $totalHours = Timesheet::whereBetween('work_date', [$monthStart, $monthEnd])->sum('hours_worked');
+        $totalSalaries = Timesheet::whereBetween('work_date', [$monthStart, $monthEnd])->sum('month_salary');
+        $paidCount = Timesheet::whereBetween('work_date', [$monthStart, $monthEnd])->where('is_paid', true)->count();
+        $unpaidCount = Timesheet::whereBetween('work_date', [$monthStart, $monthEnd])->where('is_paid', false)->count();
+
+        return view('admin.timesheets.index', compact(
+            'timesheets',
+            'availableMonths',
+            'totalHours',
+            'totalSalaries',
+            'paidCount',
+            'unpaidCount',
+            'monthFilter'
+        ));
     }
 
 
@@ -94,14 +118,19 @@ class TimesheetsController extends Controller
 
         $employee = Employee::findOrFail($timesheet->employee_id);
 
-        // جلب المهام بدون علاقة (query builder)
-        $tasks = Task::where('employee_id', $employee->id)->with('project')->get();
+        // تحديد بداية ونهاية الشهر المرتبط بالتايم شيت
+        $monthStart = Carbon::parse($timesheet->work_date)->startOfMonth();
+        $monthEnd = Carbon::parse($timesheet->work_date)->endOfMonth();
+
+        // جلب المهام ضمن نفس الشهر ونفس الموظف
+        $tasks = Task::where('employee_id', $employee->id)
+            ->whereDate('start_time', '>=', $monthStart)
+            ->whereDate('start_time', '<=', $monthEnd)
+            ->with('project')
+            ->get();
 
         return view('admin.timesheets.show', compact('timesheet', 'employee', 'tasks'));
     }
-
-
-
     /**
      * Show the form for editing the specified resource.
      */

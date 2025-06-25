@@ -31,45 +31,54 @@ class Employee extends Model
         return $this->morphMany(Contact::class, 'contactable');
     }
 
-protected static function booted()
-{
-    static::created(function ($employee) {
-        $monthStart = now()->startOfMonth()->toDateString();
+    protected static function booted()
+    {
+        static::created(function ($employee) {
+            $monthStart = now()->startOfMonth()->toDateString();
 
-        Timesheet::updateOrCreate(
-            [
+            // لا تنشئ إلا إذا لم يكن موجود
+            $timesheet = Timesheet::where('employee_id', $employee->id)
+                ->whereDate('work_date', $monthStart)
+                ->first();
+
+            if ($timesheet) {
+                // موجود مسبقاً → لا تفعل شيء أو عدّله حسب الحاجة
+                return;
+            }
+
+            // غير موجود → أنشئ جديد
+            Timesheet::create([
                 'employee_id' => $employee->id,
                 'work_date' => $monthStart,
-            ],
-            [
                 'hours_worked' => 0,
                 'project_id' => null,
-            ]
-        );
-    });
+                'month_salary' => 0,
+                'is_paid' => false,
+            ]);
+        });
 
-    static::updated(function ($employee) {
-        $monthStart = now()->startOfMonth()->toDateString();
+        static::updated(function ($employee) {
+            $monthStart = now()->startOfMonth()->toDateString();
 
-        // مثال: لنفترض أنك تستقبل قيمة الساعات من المتغير $hoursFromTask
-        $hoursFromTask = request()->input('hours_worked', null);
+            $hoursFromTask = request()->input('hours_worked', null);
 
-        $updateData = [
-            'project_id' => null,
-        ];
+            $timesheet = Timesheet::where('employee_id', $employee->id)
+                ->whereDate('work_date', $monthStart)
+                ->first();
 
-        if (!is_null($hoursFromTask)) {
-            $updateData['hours_worked'] = $hoursFromTask;
-        }
+            if (!$timesheet) {
+                // لا تقم بإنشاء جديد
+                return;
+            }
 
-        Timesheet::updateOrCreate(
-            [
-                'employee_id' => $employee->id,
-                'work_date' => $monthStart,
-            ],
-            $updateData
-        );
-    });
-}
-
+            // عدل فقط إذا كان هناك ساعات جديدة
+            if (!is_null($hoursFromTask)) {
+                $timesheet->update([
+                    'hours_worked' => $hoursFromTask,
+                    'month_salary' => $hoursFromTask * $employee->rate,
+                    // نحتفظ بـ is_paid كما هو
+                ]);
+            }
+        });
+    }
 }

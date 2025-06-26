@@ -12,6 +12,8 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\TimesheetExport;
 
 class TimesheetsController extends Controller
 {
@@ -21,15 +23,14 @@ class TimesheetsController extends Controller
 
     public function index(Request $request)
     {
-        // بناء قائمة الأشهر مع خيار "All" يدويًا
         $availableMonths = Timesheet::selectRaw('DATE_FORMAT(work_date, "%Y-%m") as value, DATE_FORMAT(work_date, "%M %Y") as label')
             ->groupBy('value', 'label')
             ->orderBy('value', 'desc')
             ->get()
             ->toArray();
 
-        // افتراضيًا، الشهر الحالي كقيمة فلتر إذا ما حدد المستخدم شيء
         $monthFilter = $request->input('month', now()->format('Y-m'));
+        $isPaidFilter = $request->input('is_paid', 'all'); // الافتراضي 'all'
 
         $query = Timesheet::query();
 
@@ -41,18 +42,38 @@ class TimesheetsController extends Controller
             $monthStart = $month->copy()->startOfMonth();
             $monthEnd = $month->copy()->endOfMonth();
         } else {
-            // لو اختار "all" (يعني عرض الكل)
             $monthStart = Timesheet::min('work_date') ?? now();
             $monthEnd = Timesheet::max('work_date') ?? now();
         }
 
+        // طبّق فلتر الدفع فقط إذا القيمة ليست 'all'
+        if ($isPaidFilter !== 'all') {
+            $query->where('is_paid', $isPaidFilter);
+        }
+
         $timesheets = $query->with('employee', 'project')->get();
 
-        // احسب الاحصائيات ضمن الفترة المختارة (أو الكل)
-        $totalHours = Timesheet::whereBetween('work_date', [$monthStart, $monthEnd])->sum('hours_worked');
-        $totalSalaries = Timesheet::whereBetween('work_date', [$monthStart, $monthEnd])->sum('month_salary');
-        $paidCount = Timesheet::whereBetween('work_date', [$monthStart, $monthEnd])->where('is_paid', true)->count();
-        $unpaidCount = Timesheet::whereBetween('work_date', [$monthStart, $monthEnd])->where('is_paid', false)->count();
+        // إحصائيات ضمن فترة الشهر المختار
+        $statsQuery = Timesheet::whereBetween('work_date', [$monthStart, $monthEnd]);
+
+        // طبّق فلتر الدفع على الإحصائيات أيضاً بنفس المنطق
+        if ($isPaidFilter !== 'all') {
+            $statsQuery->where('is_paid', $isPaidFilter);
+        }
+
+        $totalHours = (clone $statsQuery)->sum('hours_worked');
+        $totalSalaries = (clone $statsQuery)->sum('month_salary');
+
+        if ($isPaidFilter === '1') {
+            $paidCount = (clone $statsQuery)->count();
+            $unpaidCount = 0;
+        } elseif ($isPaidFilter === '0') {
+            $paidCount = 0;
+            $unpaidCount = (clone $statsQuery)->count();
+        } else {
+            $paidCount = (clone $statsQuery)->where('is_paid', true)->count();
+            $unpaidCount = (clone $statsQuery)->where('is_paid', false)->count();
+        }
 
         return view('admin.timesheets.index', compact(
             'timesheets',
@@ -61,10 +82,32 @@ class TimesheetsController extends Controller
             'totalSalaries',
             'paidCount',
             'unpaidCount',
-            'monthFilter'
+            'monthFilter',
+            'isPaidFilter'
         ));
     }
 
+
+
+    public function markPaid($id)
+    {
+        $timesheet = Timesheet::findOrFail($id);
+        $timesheet->is_paid = true;
+        $timesheet->save();
+        flash()->success('Timesheet marked as paid successfully.');
+        return redirect()->back();
+    }
+
+    // public function export(Request $request)
+    // {
+    //     $columns = $request->get('columns', []);
+
+    //     if (empty($columns)) {
+    //         return back()->with('error', 'Please select at least one column.');
+    //     }
+
+    //     // return Excel::download(new TimesheetExport($columns), 'timesheets_' . now()->format('Y_m') . '.xlsx');
+    // }
 
     /**
      * Show the form for creating a new resource.

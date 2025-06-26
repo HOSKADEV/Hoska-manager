@@ -44,7 +44,7 @@
                             </div>
                         </div>
                         <div class="col-auto">
-                            <i class="fas fa-shekel-sign fa-2x text-gray-300"></i>
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
                         </div>
                     </div>
                 </div>
@@ -98,23 +98,41 @@
 
     <div class="card">
         <div class="card-body">
-            {{-- filter --}}
-            <form method="GET" action="{{ route('admin.timesheets.index') }}" class="mb-4" id="filterForm">
-                <div class="row g-2 align-items-end">
-                    <div class="col-md-4">
-                        <label for="month" class="form-label fw-bold text-secondary">📅 Filter by Month</label>
-                        <select name="month" id="month" class="form-select select2">
-                            <option value="all" {{ request('month', now()->format('Y-m')) === 'all' ? 'selected' : '' }}>
-                                📆 All Months</option>
-                            @foreach ($availableMonths as $month)
-                                <option value="{{ $month['value'] }}" {{ request('month', now()->format('Y-m')) === $month['value'] ? 'selected' : '' }}>
-                                    {{ $month['label'] }}
-                                </option>
-                            @endforeach
-                        </select>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                {{-- filter --}}
+                <form method="GET" action="{{ route('admin.timesheets.index') }}" class="mb-4 w-75" id="filterForm">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-4">
+                            <label for="month" class="form-label fw-bold text-secondary">📅 Filter by Month</label>
+                            <select name="month" id="month" class="form-select select2">
+                                <option value="all" {{ request('month', now()->format('Y-m')) === 'all' ? 'selected' : '' }}>
+                                    📆 All Months</option>
+                                @foreach ($availableMonths as $month)
+                                    <option value="{{ $month['value'] }}" {{ request('month', now()->format('Y-m')) === $month['value'] ? 'selected' : '' }}>
+                                        {{ $month['label'] }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- فلتر حالة الدفع --}}
+                        <div class="col-md-4">
+                            <label for="is_paid" class="form-label fw-bold text-secondary">💰 Filter by Payment
+                                Status</label>
+                            <select name="is_paid" id="is_paid" class="form-select select2">
+                                <option value="all" {{ request('is_paid', '') === 'all' ? 'selected' : '' }}>All</option>
+                                <option value="1" {{ request('is_paid') === '1' ? 'selected' : '' }}>Paid</option>
+                                <option value="0" {{ request('is_paid') === '0' ? 'selected' : '' }}>Unpaid</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
-            </form>
+                </form>
+
+                <!-- Add this anywhere suitable -->
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exportModal">
+                    <i class="fa fa-file-excel"></i> Export Excel
+                </button>
+            </div>
 
             <div class="table-responsive mt-3">
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
@@ -166,6 +184,20 @@
                                 {{-- <td>{{ $timesheet->created_at->diffForHumans() }}</td>
                                 <td>{{ $timesheet->updated_at->diffForHumans() }}</td> --}}
                                 <td>
+                                    @if(!$timesheet->is_paid)
+                                        <form id="pay-form-{{ $timesheet->id }}"
+                                            action="{{ route('admin.timesheets.markPaid', $timesheet->id) }}" method="POST"
+                                            style="display: inline;">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="button" class="btn btn-success btn-sm"
+                                                onclick="confirmPayment({{ $timesheet->id }})">
+                                                <i class="fa fa-check-circle"></i> Mark as Paid
+                                            </button>
+                                        </form>
+                                    @else
+                                        <span class="badge bg-success d-none">Paid</span>
+                                    @endif
                                     <a href="{{ route('admin.timesheets.show', $timesheet->id) }}"
                                         class="btn btn-sm btn-primary">
                                         <i class="fas fa-eye"></i>
@@ -180,6 +212,40 @@
                     </tbody>
                 </table>
             </div>
+            {{-- <!-- Modal -->
+            <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-scrollable">
+                    <form id="export-form" action="{{ route('timesheets.export') }}" method="GET">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Select Columns to Export</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                @php
+                                $columns = ['id' => 'ID', 'employee_name' => 'Employee', 'project_name' => 'Project',
+                                'date' => 'Date', 'hours' => 'Hours', 'is_paid' => 'Paid'];
+                                @endphp
+
+                                @foreach($columns as $key => $label)
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="columns[]" value="{{ $key }}"
+                                        id="col_{{ $key }}" checked>
+                                    <label class="form-check-label" for="col_{{ $key }}">
+                                        {{ $label }}
+                                    </label>
+                                </div>
+                                @endforeach
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-success">Export</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div> --}}
         </div>
     </div>
 
@@ -204,17 +270,36 @@
         <!-- Initialize Select2 -->
         <script>
             $(document).ready(function () {
-                $('#month').select2({
-                    placeholder: "📆 Select a Month",
+                $('#month, #is_paid').select2({
+                    placeholder: "📆 Select an option",
                     allowClear: true,
                     width: '100%'
                 });
 
-                // استمع لحدث التغيير وأرسل الفورم تلقائيًا
-                $('#month').on('change', function () {
+                // استمع لأي تغيير في الفلاتر وأرسل الفورم
+                $('#month, #is_paid').on('change', function () {
                     $(this).closest('form').submit();
                 });
             });
+        </script>
+
+        <script>
+            function confirmPayment(id) {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "Do you really want to mark this timesheet as paid?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, mark as paid',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('pay-form-' + id).submit();
+                    }
+                });
+            }
         </script>
     @endpush
 </x-dashboard>

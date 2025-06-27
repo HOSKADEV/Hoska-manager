@@ -20,101 +20,6 @@ class Timesheet extends Model
     {
         return $this->belongsTo(Project::class);
     }
-
-    // public static function updateEmployeeTimesheet($employee_id, $work_date)
-    // {
-    //     // تأكد أن التاريخ بدون وقت بصيغة Y-m-d
-    //     $work_date = Carbon::parse($work_date)->toDateString();
-
-    //     // جلب الموظف مع المهام لنفس التاريخ
-    //     $employee = Employee::with(['tasks' => function ($query) use ($work_date) {
-    //         $query->whereDate('start_time', $work_date);
-    //     }])->find($employee_id);
-
-    //     if (!$employee) return;
-
-    //     $tasksForDate = $employee->tasks;
-
-    //     // فلترة المهام الصالحة
-    //     $validTasks = $tasksForDate->filter(function ($task) {
-    //         return $task->start_time && $task->end_time;
-    //     });
-
-    //     // البحث عن التايمشيت الحالي
-    //     $timesheet = Timesheet::where('employee_id', $employee_id)
-    //         ->whereDate('work_date', $work_date)
-    //         ->first();
-
-    //     if ($validTasks->isEmpty()) {
-    //         if ($timesheet) {
-    //             $timesheet->delete();
-    //         }
-    //         return;
-    //     }
-
-    //     // حساب عدد الساعات
-    //     $totalHours = $validTasks->sum(fn($task) => $task->duration_in_hours);
-
-    //     // تحديد المشروع إن وجد واحد فقط
-    //     $projectIds = $validTasks->pluck('project_id')->unique();
-    //     $projectId = $projectIds->count() === 1 ? $projectIds->first() : null;
-
-    //     $data = [
-    //         'employee_id' => $employee_id,
-    //         'work_date' => $work_date,
-    //         'hours_worked' => $totalHours,
-    //         'project_id' => $projectId,
-    //     ];
-
-    //     $timesheet
-    //         ? $timesheet->update($data)
-    //         : Timesheet::create($data);
-    // }
-
-    // public static function updateMonthlyTimesheet($employee_id, $taskDate)
-    // {
-    //     $monthStart = Carbon::parse($taskDate)->startOfMonth()->toDateString();
-    //     $monthEnd = Carbon::parse($taskDate)->endOfMonth()->toDateString();
-
-    //     // جلب المهام خلال الشهر
-    //     $employee = Employee::with(['tasks' => function ($query) use ($monthStart, $monthEnd) {
-    //         $query->whereDate('start_time', '>=', $monthStart)
-    //             ->whereDate('start_time', '<=', $monthEnd);
-    //     }])->find($employee_id);
-
-    //     if (!$employee) return;
-
-    //     $tasksForMonth = $employee->tasks;
-
-    //     // فلترة المهام التي لها وقت بداية ونهاية
-    //     $validTasks = $tasksForMonth->filter(fn($task) => $task->start_time && $task->end_time);
-
-    //     if ($validTasks->isEmpty()) {
-    //         // حذف التايمشيت الشهري إن وجد
-    //         Timesheet::where('employee_id', $employee_id)
-    //             ->whereDate('work_date', $monthStart)
-    //             ->delete();
-    //         return;
-    //     }
-
-    //     $totalHours = $validTasks->sum(fn($task) => $task->duration_in_hours);
-
-    //     $data = [
-    //         'employee_id' => $employee_id,
-    //         'work_date' => $monthStart, // اليوم الأول في الشهر كمرجع
-    //         'hours_worked' => $totalHours,
-    //         'project_id' => null // أو احسب المشروع إن أردت
-    //     ];
-
-    //     $timesheet = Timesheet::where('employee_id', $employee_id)
-    //         ->whereDate('work_date', $monthStart)
-    //         ->first();
-
-    //     $timesheet
-    //         ? $timesheet->update($data)
-    //         : Timesheet::create($data);
-    // }
-
     public static function updateMonthlyTimesheet($employee_id, $taskDate)
     {
         $monthStart = Carbon::parse($taskDate)->startOfMonth()->toDateString();
@@ -135,6 +40,8 @@ class Timesheet extends Model
         $validTasks = $employee->tasks->filter(fn($task) => $task->start_time && $task->end_time);
 
         if ($validTasks->isEmpty()) {
+            $monthSalary = $employee->payment_type === 'monthly' ? $employee->rate : 0;
+
             Timesheet::updateOrCreate(
                 [
                     'employee_id' => $employee_id,
@@ -143,7 +50,7 @@ class Timesheet extends Model
                 [
                     'hours_worked' => 0,
                     'project_id' => null,
-                    'month_salary' => 0, // 👈اجر الشهري
+                    'month_salary' => $monthSalary, // أجر شهري ثابت لو الدفع شهري
                 ]
             );
 
@@ -153,15 +60,20 @@ class Timesheet extends Model
 
         $totalHours = $validTasks->sum(fn($task) => $task->duration_in_hours);
 
-        // ✅ حساب الأجر الشهري
-        $monthlySalary = $totalHours * $employee->rate;
+        if ($employee->payment_type === 'monthly') {
+            // الراتب ثابت للشهر بغض النظر عن الساعات
+            $monthlySalary = $employee->rate;
+        } else {
+            // حساب الراتب حسب الساعات والعمل
+            $monthlySalary = $totalHours * $employee->rate;
+        }
 
         $data = [
             'employee_id' => $employee_id,
             'work_date' => $monthStart,
             'hours_worked' => $totalHours,
             'project_id' => null,
-            'month_salary' => $monthlySalary, // 👈 اجر الشهري
+            'month_salary' => $monthlySalary,
         ];
 
         $timesheet = Timesheet::where('employee_id', $employee_id)

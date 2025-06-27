@@ -40,7 +40,7 @@ class Task extends Model
         return match ($this->employee->payment_type) {
             'hourly' => $hours * $rate,
             'per_project' => ($hours / 8) * $rate,
-            'monthly' => ($hours / 160) * $rate,
+            'monthly' => $rate,
             default => 0,
         };
     }

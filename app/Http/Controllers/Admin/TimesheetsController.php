@@ -14,6 +14,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\TimesheetExport;
+use Illuminate\Support\Facades\Schema;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
 class TimesheetsController extends Controller
 {
@@ -75,6 +81,8 @@ class TimesheetsController extends Controller
             $unpaidCount = (clone $statsQuery)->where('is_paid', false)->count();
         }
 
+        $columns = Schema::getColumnListing('timesheets');
+
         return view('admin.timesheets.index', compact(
             'timesheets',
             'availableMonths',
@@ -83,7 +91,8 @@ class TimesheetsController extends Controller
             'paidCount',
             'unpaidCount',
             'monthFilter',
-            'isPaidFilter'
+            'isPaidFilter',
+            'columns',
         ));
     }
 
@@ -98,20 +107,106 @@ class TimesheetsController extends Controller
         return redirect()->back();
     }
 
-    // public function export(Request $request)
-    // {
-    //     $columns = $request->get('columns', []);
-
-    //     if (empty($columns)) {
-    //         return back()->with('error', 'Please select at least one column.');
-    //     }
-
-    //     // return Excel::download(new TimesheetExport($columns), 'timesheets_' . now()->format('Y_m') . '.xlsx');
-    // }
-
     /**
-     * Show the form for creating a new resource.
+     * Export selected columns of timesheets for a specific month.
      */
+    public function exportSelectedColumns(Request $request)
+    {
+        $columns = $request->input('columns', []);
+        $month = $request->input('month', now()->format('Y-m'));
+
+        if (empty($columns)) {
+            return redirect()->back()->with('error', 'يرجى تحديد الأعمدة للتصدير');
+        }
+
+        $query = Timesheet::query();
+
+        // إذا المطلوب 'employee_name'، نفذ join لجلب اسم الموظف
+        if (in_array('employee_name', $columns)) {
+            $query->join('employees', 'timesheets.employee_id', '=', 'employees.id');
+        }
+
+        // بناء select ديناميكي
+        $selects = [];
+        foreach ($columns as $col) {
+            if ($col === 'employee_name') {
+                $selects[] = 'employees.name as employee_name';
+            } else {
+                $selects[] = 'timesheets.' . $col;
+            }
+        }
+        $query->select($selects);
+
+        // فلترة الشهر إلا إذا كان all (يعني كل الشهور)
+        if ($month !== 'all') {
+            $query->whereRaw('DATE_FORMAT(timesheets.work_date, "%Y-%m") = ?', [$month]);
+        }
+
+        $data = $query->get();
+
+        // إنشاء ملف Excel
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // رؤوس الأعمدة (تغيير بعض التسميات لجعلها واضحة)
+        foreach ($columns as $i => $col) {
+            $colLetter = Coordinate::stringFromColumnIndex($i + 1);
+            switch ($col) {
+                case 'employee_name':
+                    $label = 'Employee Name';
+                    break;
+                case 'hours_worked':
+                    $label = 'Duration (hours)';
+                    break;
+                case 'month_salary':
+                    $label = 'Monthly Salary';
+                    break;
+                case 'is_paid':
+                    $label = 'Payment Status';
+                    break;
+                case 'work_date':
+                    $label = 'Month';
+                    break;
+                default:
+                    $label = ucfirst(str_replace('_', ' ', $col));
+            }
+            $sheet->setCellValue($colLetter . '1', $label);
+        }
+
+        // البيانات مع تحويل القيم الضرورية
+        foreach ($data as $rowIndex => $row) {
+            foreach ($columns as $colIndex => $col) {
+                $colLetter = Coordinate::stringFromColumnIndex($colIndex + 1);
+                $cellValue = null;
+
+                switch ($col) {
+                    case 'is_paid':
+                        $cellValue = $row->is_paid ? 'Paid' : 'Unpaid';
+                        break;
+                    case 'work_date':
+                        $cellValue = Carbon::parse($row->work_date)->format('Y-m');
+                        break;
+                    case 'employee_name':
+                        $cellValue = $row->employee_name;
+                        break;
+                    default:
+                        $cellValue = $row->$col;
+                }
+
+                $sheet->setCellValue($colLetter . ($rowIndex + 2), $cellValue);
+            }
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $fileName = 'timesheet_' . ($month === 'all' ? 'all_months' : $month) . '.xlsx';
+        $temp_file = tempnam(sys_get_temp_dir(), $fileName);
+        $writer->save($temp_file);
+
+        return response()->download($temp_file, $fileName)->deleteFileAfterSend(true);
+    }
+    // /**
+    //  * Show the form for creating a new resource.
+    //  */
     // public function create()
     // {
     //     $timesheet = new Timesheet();

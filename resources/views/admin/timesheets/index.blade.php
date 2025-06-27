@@ -129,7 +129,7 @@
                 </form>
 
                 <!-- Add this anywhere suitable -->
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exportModal">
+                <button class="btn btn-primary" data-toggle="modal" data-target="#exportModal">
                     <i class="fa fa-file-excel"></i> Export Excel
                 </button>
             </div>
@@ -212,40 +212,75 @@
                     </tbody>
                 </table>
             </div>
-            {{-- <!-- Modal -->
-            <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog modal-dialog-scrollable">
-                    <form id="export-form" action="{{ route('timesheets.export') }}" method="GET">
+            <!-- Modal -->
+            <div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="exportModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+                    <form method="POST" action="{{ route('admin.export.timesheet') }}">
+                        @csrf
                         <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Select Columns to Export</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                    aria-label="Close"></button>
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title" id="exportModalLabel">
+                                    <i class="fas fa-file-export mr-2"></i> تصدير بيانات إلى Excel
+                                </h5>
+                                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
                             </div>
-                            <div class="modal-body">
-                                @php
-                                $columns = ['id' => 'ID', 'employee_name' => 'Employee', 'project_name' => 'Project',
-                                'date' => 'Date', 'hours' => 'Hours', 'is_paid' => 'Paid'];
-                                @endphp
 
-                                @foreach($columns as $key => $label)
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="columns[]" value="{{ $key }}"
-                                        id="col_{{ $key }}" checked>
-                                    <label class="form-check-label" for="col_{{ $key }}">
-                                        {{ $label }}
-                                    </label>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <h6 class="font-weight-bold text-secondary">
+                                        <i class="fas fa-columns mr-1"></i> اختر الأعمدة المطلوب تصديرها:
+                                    </h6>
+                                    <div class="row">
+                                        @php
+                                            $exportColumns = [
+                                                'employee_name' => '🧑‍💼 Employee Name',
+                                                'hours_worked' => '⏱ Duration (hours)',
+                                                'month_salary' => '💵 Monthly Salary',
+                                                'is_paid' => '💰 Payment Status',
+                                                'work_date' => '📅 Month',
+                                            ];
+                                        @endphp
+
+                                        @foreach($exportColumns as $key => $label)
+                                            <div class="col-md-6 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="columns[]" value="{{ $key }}"
+                                                        id="col_{{ $key }}" checked>
+                                                    <label class="form-check-label" for="col_{{ $key }}">{{ $label }}</label>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 </div>
-                                @endforeach
+
+                                <div class="form-group">
+                                    <label for="export_month" class="font-weight-bold text-secondary">
+                                        <i class="fas fa-calendar-alt mr-1"></i> اختر الشهر:
+                                    </label>
+                                    <select name="month" id="export_month" class="form-control">
+                                        <option value="all" {{ $monthFilter === 'all' ? 'selected' : '' }}>📆 All Months</option>
+                                        @foreach($availableMonths as $month)
+                                            <option value="{{ $month['value'] }}" {{ $month['value'] == $monthFilter ? 'selected' : '' }}>
+                                                {{ $month['label'] }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
+
                             <div class="modal-footer">
-                                <button type="submit" class="btn btn-success">Export</button>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-file-excel mr-1"></i> تصدير Excel
+                                </button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">إغلاق</button>
                             </div>
                         </div>
                     </form>
                 </div>
-            </div> --}}
+            </div>
+
         </div>
     </div>
 

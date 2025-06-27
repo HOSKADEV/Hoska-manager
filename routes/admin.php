@@ -36,8 +36,7 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group
     Route::resource('payments', PaymentsController::class);
     Route::resource('timesheets', TimesheetsController::class);
     Route::patch('/timesheets/{id}/mark-paid', [TimesheetsController::class, 'markPaid'])->name('timesheets.markPaid');
-    // Route::get('/timesheets/export', [TimesheetsController::class, 'export'])->name('timesheets.export');
-
+    Route::post('timesheets/export', [TimesheetsController::class, 'exportSelectedColumns'])->name('export.timesheet');
 });
 
 

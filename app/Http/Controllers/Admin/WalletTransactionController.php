@@ -54,7 +54,6 @@ class WalletTransactionController extends Controller
             'amount' => 'required|numeric|min:0.01',
             'description' => 'nullable|string|max:255',
             'transaction_date' => 'required|date',
-            // الحقل الخاص بالمحفظة المرتبطة للتحويل فقط
             'related_wallet_id' => 'required_if:type,transfer|nullable|exists:wallets,id',
         ]);
 
@@ -66,17 +65,17 @@ class WalletTransactionController extends Controller
             switch ($request->type) {
                 case 'expense':
                 case 'withdraw':
-                    // تحقق من الرصيد
+                    // Check for sufficient balance
                     if ($wallet->balance < $request->amount) {
                         return redirect()->back()->withErrors(['amount' => 'Insufficient wallet balance.'])->withInput();
                     }
-                    // خصم الرصيد
+                    // Decrement wallet balance
                     $wallet->decrement('balance', $request->amount);
                     break;
 
                 case 'income':
                 case 'funding':
-                    // زيادة الرصيد
+                    // Increment wallet balance
                     $wallet->increment('balance', $request->amount);
                     break;
 
@@ -90,32 +89,46 @@ class WalletTransactionController extends Controller
                         return redirect()->back()->withErrors(['amount' => 'Insufficient wallet balance.'])->withInput();
                     }
 
-                    // خصم من المحفظة الأصلية
+                    // Decrement from original wallet (type: transfer_out)
                     $wallet->decrement('balance', $request->amount);
 
-                    // إضافة للمحفظة الهدف
+                    // Increment to target wallet (type: transfer_in)
                     $relatedWallet->increment('balance', $request->amount);
 
-                    // إنشاء معاملة التحويل للمحفظة الهدف
+                    // Record transfer out transaction
+                    WalletTransaction::create([
+                        'wallet_id' => $wallet->id,
+                        'type' => 'transfer_out',
+                        'amount' => $request->amount,
+                        'description' => $request->description ?: 'Transfer to wallet ID ' . $relatedWallet->id,
+                        'transaction_date' => $request->transaction_date,
+                        'related_wallet_id' => $relatedWallet->id,
+                    ]);
+
+                    // Record transfer in transaction
                     WalletTransaction::create([
                         'wallet_id' => $relatedWallet->id,
-                        'type' => 'income',
+                        'type' => 'transfer_in',
                         'amount' => $request->amount,
                         'description' => 'Transfer received from wallet ID ' . $wallet->id,
                         'transaction_date' => $request->transaction_date,
                         'related_wallet_id' => $wallet->id,
                     ]);
-                    break;
+
+                    DB::commit();
+
+                    flash()->success('Transfer completed successfully.');
+                    return redirect()->route('admin.wallet-transactions.index');
             }
 
-            // إنشاء المعاملة للمحفظة الأصلية
+            // For other types: expense, income, withdraw, funding
             WalletTransaction::create([
                 'wallet_id' => $wallet->id,
                 'type' => $request->type,
                 'amount' => $request->amount,
                 'description' => $request->description,
                 'transaction_date' => $request->transaction_date,
-                'related_wallet_id' => $request->type == 'transfer' ? $request->related_wallet_id : null,
+                'related_wallet_id' => null,
             ]);
 
             DB::commit();

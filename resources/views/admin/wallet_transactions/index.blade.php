@@ -13,37 +13,55 @@
 
             .badge-expense {
                 background-color: #dc3545;
+                /* أحمر */
             }
 
-            /* أحمر */
             .badge-income {
                 background-color: #28a745;
+                /* أخضر */
             }
 
-            /* أخضر */
             .badge-transfer {
                 background-color: #17a2b8;
+                /* سماوي */
             }
 
-            /* سماوي */
             .badge-withdraw {
                 background-color: #ffc107;
+                /* أصفر */
                 color: #212529;
             }
 
-            /* أصفر */
             .badge-funding {
                 background-color: #6f42c1;
+                /* بنفسجي */
             }
-
-            /* بنفسجي */
         </style>
     @endpush
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-gray-800">All Wallet Transactions</h1>
-        <a href="{{ route('admin.wallet-transactions.create') }}" class="btn btn-info">Add Transaction </a>
+        <a href="{{ route('admin.wallet-transactions.create') }}" class="btn btn-info">Add Transaction</a>
     </div>
+
+    @php
+        $typeLabels = [
+            'expense' => 'Expense',
+            'income' => 'Income',
+            'transfer_in' => 'Transfer In',
+            'transfer_out' => 'Transfer Out',
+            'withdraw' => 'Withdraw',
+            'funding' => 'Funding',
+        ];
+        $typeClasses = [
+            'expense' => 'expense',
+            'income' => 'income',
+            'transfer_in' => 'transfer',
+            'transfer_out' => 'transfer',
+            'withdraw' => 'withdraw',
+            'funding' => 'funding',
+        ];
+    @endphp
 
     <form method="GET" class="form-inline mb-3" id="filterForm">
         <select name="wallet_id" class="form-control mr-2" onchange="document.getElementById('filterForm').submit()">
@@ -57,14 +75,13 @@
 
         <select name="type" class="form-control mr-2" onchange="document.getElementById('filterForm').submit()">
             <option value="">All Type</option>
-            @foreach(['expense', 'income', 'transfer', 'withdraw', 'funding'] as $type)
+            @foreach(array_keys($typeLabels) as $type)
                 <option value="{{ $type }}" {{ request('type') == $type ? 'selected' : '' }}>
-                    {{ ucfirst($type) }}
+                    {{ $typeLabels[$type] }}
                 </option>
             @endforeach
         </select>
     </form>
-
 
     <div class="card">
         <div class="card-body">
@@ -99,14 +116,14 @@
                                 </td>
                                 <td>{{ $txn->wallet->name }}</td>
                                 <td>
-                                    <span class="badge badge-type badge-{{ $txn->type }}">
-                                        {{ ucfirst($txn->type) }}
+                                    <span class="badge badge-type badge-{{ $typeClasses[$txn->type] ?? 'income' }}">
+                                        {{ $typeLabels[$txn->type] ?? ucfirst($txn->type) }}
                                     </span>
                                 </td>
                                 <td>${{ number_format($txn->amount, 2) }}</td>
                                 <td>{{ $txn->description ?? '-' }}</td>
                                 <td>{{ $txn->relatedWallet ? $txn->relatedWallet->name : '-' }}</td>
-                                <td>{{ $txn->transaction_date->format('Y-m-d H:i') }}</td>
+                                <td>{{ \Carbon\Carbon::parse($txn->transaction_date)->format('Y-m-d H:i') }}</td>
                             </tr>
                         @empty
                             <tr>

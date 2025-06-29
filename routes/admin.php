@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\PaymentsController;
 use App\Http\Controllers\Admin\ProjectsController;
 use App\Http\Controllers\Admin\TasksController;
 use App\Http\Controllers\Admin\TimesheetsController;
+use App\Http\Controllers\Admin\WalletsController;
+use App\Http\Controllers\Admin\WalletTransactionController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Mails\VerficationEmailController;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +39,9 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group
     Route::resource('timesheets', TimesheetsController::class);
     Route::patch('/timesheets/{id}/mark-paid', [TimesheetsController::class, 'markPaid'])->name('timesheets.markPaid');
     Route::post('timesheets/export', [TimesheetsController::class, 'exportSelectedColumns'])->name('export.timesheet');
+
+    Route::resource('wallets', WalletsController::class);
+    Route::resource('wallet-transactions', WalletTransactionController::class);
 });
 
 

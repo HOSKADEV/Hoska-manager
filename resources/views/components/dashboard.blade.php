@@ -196,6 +196,38 @@
                     </li>
 
                     <!-- Divider -->
+                    <hr class="sidebar-divider">
+                    <!-- Nav Item - Wallets Menu -->
+                    <li
+                        class="nav-item {{ request()->routeIs('admin.wallets.index') || request()->routeIs('admin.wallets.create') ? 'active' : '' }}">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseWallets"
+                            aria-expanded="true" aria-controls="collapseWallets">
+                            <i class="fas fa-wallet"></i>
+                            <span>Wallets</span>
+                        </a>
+                        <div id="collapseWallets"
+                            class="collapse {{ request()->routeIs('admin.wallets.index') || request()->routeIs('admin.wallets.create') ? 'show' : '' }}"
+                            aria-labelledby="headingWallets" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <a class="collapse-item {{ request()->routeIs('admin.wallets.index') ? 'active' : '' }}"
+                                    href="{{ route('admin.wallets.index') }}">All Wallets</a>
+                                <a class="collapse-item {{ request()->routeIs('admin.wallets.create') ? 'active' : '' }}"
+                                    href="{{ route('admin.wallets.create') }}">Add New</a>
+                            </div>
+                        </div>
+                    </li>
+
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Wallet Transactions -->
+                    <li class="nav-item {{ request()->routeIs('admin.wallet-transactions.index') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.wallet-transactions.index') }}">
+                            <i class="fas fa-exchange-alt"></i>
+                            <span>Wallet Transactions</span>
+                        </a>
+                    </li>
+
+                    <!-- Divider -->
                     <hr class="sidebar-divider my-0">
                     <!-- Nav Item - Pages Collapse Menu Invoices -->
                     <li
@@ -287,7 +319,7 @@
 
                     <!-- Divider -->
                     <hr class="sidebar-divider my-0">
-                    <!-- Nav Item - Settings -->
+                    <!-- Nav Item - Timesheets -->
                     <li class="nav-item {{ request()->routeIs('admin.timesheets.indexs') ? 'active' : ''}}">
                         <a class="nav-link" href="{{ route('admin.timesheets.index') }}">
                             <i class="fas fa-user-clock"></i>

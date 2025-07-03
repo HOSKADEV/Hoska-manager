@@ -35,6 +35,8 @@ class InvoiceRequest extends FormRequest
             // 'amount' => $rule_amount,
             'invoice_date' => $rule_invoice_date,
             'due_date' => $rule_due_date,
+            'project_id' => 'required|exists:projects,id',
+            'wallet_id' => 'required|exists:wallets,id',
         ];
     }
 }

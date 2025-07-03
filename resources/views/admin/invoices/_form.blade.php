@@ -1,6 +1,6 @@
 <div class="mb-3">
-    <x-form.input label="Invoice Number" name="invoice_number" placeholder="Enter Invoice Invoice Number"
-        :oldval="$invoice->invoice_number" />
+    <x-form.input label="Invoice Number" name="invoice_number" placeholder="Enter Invoice Number"
+        :oldval="$invoice->invoice_number ?? ''" />
 </div>
 
 @if (isset($invoice) && $invoice->exists)
@@ -12,14 +12,13 @@
 
 <div class="mb-3">
     <x-form.input type="datetime-local" label="Invoice Date" name="invoice_date" placeholder="Enter Invoice Date"
-        :oldval="$invoice->invoice_date" />
+        :oldval="$invoice->invoice_date ?? ''" />
 </div>
 
 <div class="mb-3">
     <x-form.input type="datetime-local" label="Due Date" name="due_date" placeholder="Enter Due Date"
-        :oldval="$invoice->due_date" />
+        :oldval="$invoice->due_date ?? ''" />
 </div>
-
 
 @php
     $selectedIsPaid = old('is_paid', $invoice->is_paid ?? '');
@@ -39,13 +38,17 @@
 
 <div class="mb-3 col-md-12">
     <x-form.select label="Project" name="project_id" placeholder='Select Project' :options="$projects"
-        :oldval="$invoice->project_id" />
+        :oldval="$invoice->project_id ?? ''" />
 </div>
 
 @if (isset($invoice) && $invoice->exists)
     <div class="mb-3 col-md-12">
-        <x-form.input label="Client" name="client_name" placeholder="Client Name"
-            :oldval="$invoice->project->client->name ?? 'N/A'" readonly />
+        <x-form.input label="Client" name="client_name" placeholder="Client Name" :oldval="$invoice->project->client->name ?? 'N/A'" readonly />
     </div>
 @endif
 
+{{-- إضافة اختيار المحفظة --}}
+<div class="mb-3 col-md-12">
+    <x-form.select label="Wallet" name="wallet_id" placeholder="Select Wallet" :options="$wallets"
+        :oldval="$invoice->wallet_id ?? ''" />
+</div>

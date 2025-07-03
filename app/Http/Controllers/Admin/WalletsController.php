@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Payment;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
 use Illuminate\Http\Request;
@@ -33,12 +34,15 @@ class WalletsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'currency' => 'required|in:EUR,USD,DZD',
             'initial_amount' => 'required|numeric|min:0',
         ]);
 
         $wallet = Wallet::create([
             'name' => $request->name,
+            'currency' => $request->currency,
             'balance' => $request->initial_amount,
+            'notes' => $request->notes,
         ]);
 
         WalletTransaction::create([
@@ -59,7 +63,11 @@ class WalletsController extends Controller
     public function show(Wallet $wallet)
     {
         $transactions = $wallet->transactions()->latest()->paginate(20); // هذا صحيح
-        return view('admin.wallets.show', compact('wallet', 'transactions'));
+        $payments = Payment::whereHas('invoice', function ($q) use ($wallet) {
+            $q->where('wallet_id', $wallet->id);
+        })->paginate(15);
+
+        return view('admin.wallets.show', compact('wallet', 'transactions', 'payments'));
     }
 
     /**
@@ -77,9 +85,10 @@ class WalletsController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'currency' => 'required|in:EUR,USD,DZD',
         ]);
 
-        $wallet->update($request->only(['name', 'currency']));
+        $wallet->update($request->only(['name', 'currency', 'notes']));
 
         flash()->success('Wallet updated successfully');
         return redirect()->route('admin.wallets.index');

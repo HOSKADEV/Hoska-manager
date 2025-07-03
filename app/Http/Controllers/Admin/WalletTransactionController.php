@@ -35,7 +35,7 @@ class WalletTransactionController extends Controller
     }
 
     /**
-     * عرض نموذج إضافة معاملة جديدة - هنا يمكن الاختيار النوع (expense, income, transfer, ...)
+     * عرض نموذج إضافة معاملة جديدة - هنا يمكن الاختيار النوع (expense, income, transfer, ...).
      */
     public function create()
     {
@@ -55,6 +55,7 @@ class WalletTransactionController extends Controller
             'description' => 'nullable|string|max:255',
             'transaction_date' => 'required|date',
             'related_wallet_id' => 'required_if:type,transfer|nullable|exists:wallets,id',
+            'exchange_rate' => 'required_if:type,transfer|nullable|numeric|min:0.0001',
         ]);
 
         $wallet = Wallet::findOrFail($request->wallet_id);
@@ -65,17 +66,14 @@ class WalletTransactionController extends Controller
             switch ($request->type) {
                 case 'expense':
                 case 'withdraw':
-                    // Check for sufficient balance
                     if ($wallet->balance < $request->amount) {
                         return redirect()->back()->withErrors(['amount' => 'Insufficient wallet balance.'])->withInput();
                     }
-                    // Decrement wallet balance
                     $wallet->decrement('balance', $request->amount);
                     break;
 
                 case 'income':
                 case 'funding':
-                    // Increment wallet balance
                     $wallet->increment('balance', $request->amount);
                     break;
 
@@ -85,17 +83,22 @@ class WalletTransactionController extends Controller
                     }
                     $relatedWallet = Wallet::findOrFail($request->related_wallet_id);
 
+                    $exchangeRate = $request->exchange_rate;
+
                     if ($wallet->balance < $request->amount) {
                         return redirect()->back()->withErrors(['amount' => 'Insufficient wallet balance.'])->withInput();
                     }
 
-                    // Decrement from original wallet (type: transfer_out)
+                    // خصم المبلغ من المحفظة المصدر
                     $wallet->decrement('balance', $request->amount);
 
-                    // Increment to target wallet (type: transfer_in)
-                    $relatedWallet->increment('balance', $request->amount);
+                    // حساب المبلغ المحول بعملة المحفظة الهدف
+                    $convertedAmount = $request->amount * $exchangeRate;
 
-                    // Record transfer out transaction
+                    // إضافة المبلغ إلى المحفظة الهدف
+                    $relatedWallet->increment('balance', $convertedAmount);
+
+                    // تسجيل معاملة تحويل خروج
                     WalletTransaction::create([
                         'wallet_id' => $wallet->id,
                         'type' => 'transfer_out',
@@ -103,16 +106,18 @@ class WalletTransactionController extends Controller
                         'description' => $request->description ?: 'Transfer to wallet ID ' . $relatedWallet->id,
                         'transaction_date' => $request->transaction_date,
                         'related_wallet_id' => $relatedWallet->id,
+                        'exchange_rate' => $exchangeRate,
                     ]);
 
-                    // Record transfer in transaction
+                    // تسجيل معاملة تحويل دخول
                     WalletTransaction::create([
                         'wallet_id' => $relatedWallet->id,
                         'type' => 'transfer_in',
-                        'amount' => $request->amount,
+                        'amount' => $convertedAmount,
                         'description' => 'Transfer received from wallet ID ' . $wallet->id,
                         'transaction_date' => $request->transaction_date,
                         'related_wallet_id' => $wallet->id,
+                        'exchange_rate' => $exchangeRate,
                     ]);
 
                     DB::commit();
@@ -121,7 +126,7 @@ class WalletTransactionController extends Controller
                     return redirect()->route('admin.wallet-transactions.index');
             }
 
-            // For other types: expense, income, withdraw, funding
+            // لبقية أنواع المعاملات (مصروف، دخل، سحب، تمويل)
             WalletTransaction::create([
                 'wallet_id' => $wallet->id,
                 'type' => $request->type,
@@ -129,6 +134,7 @@ class WalletTransactionController extends Controller
                 'description' => $request->description,
                 'transaction_date' => $request->transaction_date,
                 'related_wallet_id' => null,
+                'exchange_rate' => null,
             ]);
 
             DB::commit();
@@ -140,6 +146,7 @@ class WalletTransactionController extends Controller
             return redirect()->back()->withErrors(['error' => 'An error occurred: ' . $e->getMessage()])->withInput();
         }
     }
+    // الدوال الأخرى (show, edit, update, destroy) يمكن تركها فارغة أو تكملها حسب حاجتك.
 
     /**
      * Display the specified resource.

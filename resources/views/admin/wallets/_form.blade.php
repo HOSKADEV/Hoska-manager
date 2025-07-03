@@ -11,5 +11,9 @@
 @endif
 
 <div class="mb-3">
+    <x-form.select2 label="Currency" name="currency" :options="['EUR' => 'Euro', 'USD' => 'US Dollar', 'DZD' => 'Algerian Dinar']" :selected="$wallet->currency ?? old('currency')" placeholder="Select currency" />
+</div>
+
+<div class="mb-3">
     <x-form.area label="Notes" name="notes" placeholder="Enter Notes" :oldval="$wallet->notes ?? ''" />
 </div>

@@ -41,7 +41,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-gray-800">All Wallet Transactions</h1>
-        <a href="{{ route('admin.wallet-transactions.create') }}" class="btn btn-info">Add Transaction</a>
+        <a href="{{ route('admin.wallet-transactions.create') }}" class="btn btn-info">Expense Transactions</a>
     </div>
 
     @php
@@ -93,6 +93,7 @@
                             <th>Wallet</th>
                             <th>Type</th>
                             <th>Amount</th>
+                            <th>Exchange Rate</th> {{-- عمود سعر الصرف --}}
                             <th>Description</th>
                             <th>Related Wallet</th>
                             <th>Date</th>
@@ -104,6 +105,7 @@
                             <th>Wallet</th>
                             <th>Type</th>
                             <th>Amount</th>
+                            <th>Exchange Rate</th>
                             <th>Description</th>
                             <th>Related Wallet</th>
                             <th>Date</th>
@@ -120,14 +122,31 @@
                                         {{ $typeLabels[$txn->type] ?? ucfirst($txn->type) }}
                                     </span>
                                 </td>
-                                <td>${{ number_format($txn->amount, 2) }}</td>
+                                @php
+                                    $currencySymbols = [
+                                        'USD' => '$',
+                                        'EUR' => '€',
+                                        'DZD' => 'DA',
+                                    ];
+                                @endphp
+                                <td>
+                                    {{ $currencySymbols[$txn->wallet->currency] ?? '' }}{{ number_format($txn->amount, 2) }}
+                                </td>
+                                <td>
+                                    {{-- عرض سعر الصرف فقط إذا كان من نوع تحويل --}}
+                                    @if(in_array($txn->type, ['transfer_in', 'transfer_out']) && $txn->exchange_rate)
+                                        {{ number_format($txn->exchange_rate, 6) }}
+                                    @else
+                                        -
+                                    @endif
+                                </td>
                                 <td>{{ $txn->description ?? '-' }}</td>
                                 <td>{{ $txn->relatedWallet ? $txn->relatedWallet->name : '-' }}</td>
                                 <td>{{ \Carbon\Carbon::parse($txn->transaction_date)->format('Y-m-d H:i') }}</td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="text-center">No transactions found.</td>
+                                <td colspan="8" class="text-center">No transactions found.</td>
                             </tr>
                         @endforelse
                     </tbody>

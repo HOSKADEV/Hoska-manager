@@ -7,44 +7,34 @@ use App\Http\Requests\InvoiceRequest;
 use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\Project;
-use App\Models\User;
+use App\Models\Wallet;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class InvoicesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $invoices = Invoice::all();
-
         return view('admin.invoices.index', compact('invoices'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $invoice = new Invoice();
         $projects = Project::all();
         $clients = Client::all();
+        $wallets = Wallet::all(); // جلب المحافظ
 
-        return view('admin.invoices.create', compact('invoice', 'projects', 'clients'));
+        return view('admin.invoices.create', compact('invoice', 'projects', 'clients', 'wallets'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(InvoiceRequest $request)
     {
         $data = $request->validated();
+        $data['wallet_id'] = $request->wallet_id; // حفظ المحفظة المختارة
         $data['is_paid'] = $request->is_paid;
         $data['project_id'] = $request->project_id;
 
-        // ✅ استخراج العميل المرتبط بالمشروع
         $project = Project::with('client')->findOrFail($request->project_id);
 
         if (!$project->client) {
@@ -52,7 +42,6 @@ class InvoicesController extends Controller
         }
 
         $data['client_id'] = $project->client->id;
-
         $data['amount'] = $project->total_amount;
 
         Invoice::create($data);
@@ -61,34 +50,22 @@ class InvoicesController extends Controller
         return redirect()->route('admin.invoices.index');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Invoice $invoice)
     {
         $projects = Project::all();
         $clients = Client::all();
-        return view('admin.invoices.edit', compact('invoice', 'projects', 'clients'));
-    }
+        $wallets = Wallet::all(); // جلب المحافظ
 
-    /**
-     * Update the specified resource in storage.
-     */
+        return view('admin.invoices.edit', compact('invoice', 'projects', 'clients', 'wallets'));
+    }
+    
     public function update(InvoiceRequest $request, Invoice $invoice)
     {
         $data = $request->validated();
+        $data['wallet_id'] = $request->wallet_id;
         $data['is_paid'] = $request->is_paid;
         $data['project_id'] = $request->project_id;
 
-        // ✅ استخراج العميل والمبلغ من المشروع المرتبط
         $project = Project::with('client')->findOrFail($request->project_id);
 
         if (!$project->client) {
@@ -104,9 +81,6 @@ class InvoicesController extends Controller
         return redirect()->route('admin.invoices.index');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Invoice $invoice)
     {
         $invoice->delete();

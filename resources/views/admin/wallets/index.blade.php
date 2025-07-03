@@ -25,6 +25,7 @@
                             <th>#</th>
                             <th>Name</th>
                             <th>Balance</th>
+                            <th>Currency</th>
                             <th>Created At</th>
                             <th>Updated At</th>
                             <th>Actions</th>
@@ -35,6 +36,7 @@
                             <th>#</th>
                             <th>Name</th>
                             <th>Balance</th>
+                            <th>Currency</th>
                             <th>Created At</th>
                             <th>Updated At</th>
                             <th>Actions</th>
@@ -46,6 +48,9 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $wallet->name }}</td>
                                 <td>${{ number_format($wallet->balance, 2) }}</td>
+                                <td>
+                                    <span class="badge badge-currency">{{ $wallet->currency }}</span>
+                                </td>
                                 <td>{{ $wallet->created_at->diffForHumans() }}</td>
                                 <td>{{ $wallet->updated_at->diffForHumans() }}</td>
                                 <td>

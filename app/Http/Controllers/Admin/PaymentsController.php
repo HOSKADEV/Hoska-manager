@@ -40,12 +40,19 @@ class PaymentsController extends Controller
     public function store(PaymentRequest $request)
     {
         $data = $request->validated();
-        $invoice = Invoice::findOrFail($request->invoice_id);
-        $data['invoice_id'] = $request->invoice_id;
-        $data['amount'] = $invoice->amount; // استخدام خاصية المبلغ من الكائن
-        Payment::create($data);
+        $invoice = Invoice::with('wallet')->findOrFail($request->invoice_id);
 
-        flash()->success('Payment created successfully');
+        $data['invoice_id'] = $request->invoice_id;
+        $data['amount'] = $invoice->amount;
+
+        $payment = Payment::create($data);
+
+        // تحديث رصيد المحفظة المرتبطة بالفاتورة
+        if ($invoice->wallet) {
+            $invoice->wallet->increment('balance', $invoice->amount);
+        }
+
+        flash()->success('Payment created successfully and wallet balance updated');
         return redirect()->route('admin.payments.index');
     }
 
@@ -71,11 +78,28 @@ class PaymentsController extends Controller
      */
     public function update(PaymentRequest $request, Payment $payment)
     {
+        $oldInvoice = $payment->invoice()->with('wallet')->first(); // الفاتورة القديمة
+        $oldAmount = $payment->amount;
+
         $data = $request->validated();
+        $newInvoice = Invoice::with('wallet')->findOrFail($request->invoice_id);
+
         $data['invoice_id'] = $request->invoice_id;
+        $data['amount'] = $newInvoice->amount;
+
         $payment->update($data);
 
-        flash()->success('Payment updated successfully');
+        // تعديل رصيد المحفظة القديمة - نخصم المبلغ القديم
+        if ($oldInvoice && $oldInvoice->wallet) {
+            $oldInvoice->wallet->decrement('balance', $oldAmount);
+        }
+
+        // إضافة المبلغ الجديد للمحفظة الجديدة
+        if ($newInvoice->wallet) {
+            $newInvoice->wallet->increment('balance', $newInvoice->amount);
+        }
+
+        flash()->success('Payment updated successfully and wallet balances adjusted');
         return redirect()->route('admin.payments.index');
     }
 

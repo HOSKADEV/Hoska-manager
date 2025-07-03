@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->decimal('balance', 18, 2)->default(0);
+               $table->enum('currency', ['EUR', 'USD', 'DZD']); // العملة: يورو، دولار، دينار جزائري
             $table->text('notes')->nullable();
             $table->timestamps();
         });

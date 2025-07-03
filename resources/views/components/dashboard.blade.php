@@ -229,6 +229,16 @@
 
                     <!-- Divider -->
                     <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Expenses -->
+                    <li class="nav-item {{ request()->routeIs('admin.wallet-transactions.create') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.wallet-transactions.create') }}">
+                            <i class="fas fa-arrow-circle-up"></i>
+                            <span>Expense Transactions</span>
+                        </a>
+                    </li>
+
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
                     <!-- Nav Item - Pages Collapse Menu Invoices -->
                     <li
                         class="nav-item {{ request()->routeIs('admin.invoices.index') || request()->routeIs('admin.invoices.create') ? 'active' : ''}}">

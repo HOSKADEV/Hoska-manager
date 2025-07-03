@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('wallet_transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('wallet_id')->constrained()->onDelete('cascade');
+            $table->foreignId('wallet_id')->constrained()->cascadeOnDelete();
             $table->enum('type', ['income', 'expense', 'transfer_in', 'transfer_out', 'withdraw', 'funding']);
             $table->decimal('amount', 18, 2);
+            $table->decimal('exchange_rate', 18, 6)->nullable();
             $table->text('description')->nullable();
             $table->foreignId('related_wallet_id')->nullable()->constrained('wallets')->nullOnDelete();
-            $table->date('transaction_date')->default(now());
+            $table->timestamp('transaction_date');
             $table->timestamps();
         });
     }

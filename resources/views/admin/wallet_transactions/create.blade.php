@@ -42,7 +42,7 @@
                     <label for="wallet_id" class="form-label">Wallet</label>
                     <select name="wallet_id" id="wallet_id"
                         class="form-control @error('wallet_id') is-invalid @enderror" required>
-                        <option value="" selected disabled>-- Select Wallet --</option>
+                        <option value="" selected disabled>Select Wallet</option>
                         @foreach ($wallets as $wallet)
                             <option value="{{ $wallet->id }}" {{ old('wallet_id') == $wallet->id ? 'selected' : '' }}>
                                 {{ $wallet->name }}
@@ -58,7 +58,7 @@
                     <label for="related_wallet_id" class="form-label">Related Wallet (For Transfer)</label>
                     <select name="related_wallet_id" id="related_wallet_id"
                         class="form-control @error('related_wallet_id') is-invalid @enderror">
-                        <option value="" selected disabled>-- Select Related Wallet --</option>
+                        <option value="" selected disabled>Select Related Wallet</option>
                         @foreach ($wallets as $wallet)
                             <option value="{{ $wallet->id }}" {{ old('related_wallet_id') == $wallet->id ? 'selected' : '' }}>
                                 {{ $wallet->name }}
@@ -66,6 +66,17 @@
                         @endforeach
                     </select>
                     @error('related_wallet_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <div class="mb-3" id="exchange-rate-div" style="display: none;">
+                    <label for="exchange_rate" class="form-label">Exchange Rate (For Transfer)</label>
+                    <input type="text" step="0.000001" min="0" name="exchange_rate" id="exchange_rate"
+                        value="{{ old('exchange_rate') }}"
+                        class="form-control @error('exchange_rate') is-invalid @enderror"
+                        placeholder="Enter exchange rate manually">
+                    @error('exchange_rate')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
@@ -111,20 +122,24 @@
             document.addEventListener('DOMContentLoaded', function () {
                 const typeSelect = document.getElementById('type');
                 const relatedWalletDiv = document.getElementById('related-wallet-div');
+                const exchangeRateDiv = document.getElementById('exchange-rate-div');
 
-                function toggleRelatedWallet() {
+                function toggleFields() {
                     if (typeSelect.value === 'transfer') {
                         relatedWalletDiv.style.display = 'block';
+                        exchangeRateDiv.style.display = 'block';
                     } else {
                         relatedWalletDiv.style.display = 'none';
+                        exchangeRateDiv.style.display = 'none';
                         document.getElementById('related_wallet_id').value = '';
+                        document.getElementById('exchange_rate').value = '';
                     }
                 }
 
-                typeSelect.addEventListener('change', toggleRelatedWallet);
+                typeSelect.addEventListener('change', toggleFields);
 
                 // Call once on load
-                toggleRelatedWallet();
+                toggleFields();
             });
         </script>
     @endpush

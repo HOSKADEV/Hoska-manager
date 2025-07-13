@@ -36,19 +36,19 @@
     @enderror
 </div>
 
-<div class="mb-3 col-md-12">
+<div class="mb-3">
     <x-form.select label="Project" name="project_id" placeholder='Select Project' :options="$projects"
         :oldval="$invoice->project_id ?? ''" />
 </div>
 
 @if (isset($invoice) && $invoice->exists)
-    <div class="mb-3 col-md-12">
+    <div class="mb-3 ">
         <x-form.input label="Client" name="client_name" placeholder="Client Name" :oldval="$invoice->project->client->name ?? 'N/A'" readonly />
     </div>
 @endif
 
 {{-- إضافة اختيار المحفظة --}}
-<div class="mb-3 col-md-12">
+<div class="mb-3">
     <x-form.select label="Wallet" name="wallet_id" placeholder="Select Wallet" :options="$wallets"
         :oldval="$invoice->wallet_id ?? ''" />
 </div>

@@ -76,7 +76,17 @@
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $invoice->invoice_number }}</td>
-                                <td>{{ $invoice->amount }}</td>
+                                {{-- <td>{{ $invoice->amount }}</td> --}}
+                                @php
+                                    $currencySymbols = [
+                                        'USD' => '$',
+                                        'EUR' => '€',
+                                        'DZD' => 'DZ',
+                                    ];
+                                @endphp
+                                <td>
+                                    {{ $currencySymbols[$invoice->project?->currency] ?? '' }} {{ number_format($invoice->amount, 2) }}
+                                </td>
                                 <td>{{ $invoice->invoice_date->diffForHumans() }}</td>
                                 <td>{{ $invoice->due_date?->diffForHumans() ?? '_' }}</td>
                                 <td>{{ $invoice->is_paid ? 'Paid' : 'Unpaid' }}</td>

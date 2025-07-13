@@ -62,7 +62,18 @@
                         @forelse ($payments as $payment)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
-                                <td>{{ $payment->amount }}</td>
+                                {{-- <td>{{ $payment->amount }}</td> --}}
+                                @php
+                                    $currencySymbols = [
+                                        'USD' => '$',
+                                        'EUR' => '€',
+                                        'DZD' => 'DZ',
+                                    ];
+                                @endphp
+                                <td>
+                                    {{ $currencySymbols[$payment->invoice->project?->currency] ?? '' }}
+                                    {{ number_format($payment->amount, 2) }}
+                                </td>
                                 <td>{{ $payment->payment_date->diffForHumans() }}</td>
                                 <td>{{ $payment->note }}</td>
                                 <td>

@@ -35,12 +35,12 @@
         :oldval="$task->due_date" />
 </div> --}}
 
-@if(isset($task) && $task->exists)
-    <div class="mb-3">
-        <x-form.input type="datetime-local" label="Start Time" name="start_time" placeholder="Enter Task Start Time"
-            :oldval="$task->start_time->format('Y-m-d\TH:i')" />
-    </div>
-@endif
+{{-- @if(isset($task) && $task->exists) --}}
+<div class="mb-3">
+    <x-form.input type="datetime-local" label="Start Time" name="start_time" placeholder="Enter Task Start Time"
+        :oldval="$task->start_time ? $task->start_time->format('Y-m-d\TH:i') : '' " />
+</div>
+{{-- @endif --}}
 
 <div class="mb-3">
     <x-form.input type="datetime-local" label="End Time" name="end_time" placeholder="Enter Task End Time"
@@ -64,14 +64,14 @@
 </div> --}}
 
 {{-- @if(auth()->user()->type === 'admin')
-    <div class="mb-3">
-        <x-form.select label="Employee" name="employee_id" placeholder='Select Employee' :options="$employees"
-            :oldval="$task->employee_id" />
-    </div>
+<div class="mb-3">
+    <x-form.select label="Employee" name="employee_id" placeholder='Select Employee' :options="$employees"
+        :oldval="$task->employee_id" />
+</div>
 @else
-    <div class="mb-3 col-md-12">
-        <input type="hidden" name="employee_id" value="{{ auth()->user()->employee->id }}">
-    </div>
+<div class="mb-3 col-md-12">
+    <input type="hidden" name="employee_id" value="{{ auth()->user()->employee->id }}">
+</div>
 @endif --}}
 
 @if(auth()->user()->type === 'admin')
@@ -85,7 +85,7 @@
     </div>
 @else
     <div class="alert alert-warning">
-        لا يوجد موظف مرتبط بهذا الحساب، يرجى التواصل مع الإدارة.
+        There is no employee associated with this account. Please contact the administration.
     </div>
 @endif
 

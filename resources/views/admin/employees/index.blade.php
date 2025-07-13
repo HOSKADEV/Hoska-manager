@@ -73,7 +73,17 @@
                                 {{-- <td>{{ $employee->contacts->first()->phone ?? '-' }}</td>
                                 <td>{{ $employee->contacts->first()->email ?? '-' }}</td>
                                 <td>{{ $employee->contacts->first()->address ?? '-' }}</td> --}}
-                                <td>{{ $employee->rate }}</td>
+                                {{-- <td>{{ $employee->rate }}</td> --}}
+                                @php
+                                    $currencySymbols = [
+                                        'USD' => '$',
+                                        'EUR' => '€',
+                                        'DZD' => 'DZ',
+                                    ];
+                                @endphp
+                                <td>
+                                    {{ $currencySymbols[$employee->currency] ?? '' }} {{ number_format($employee->rate, 2) }}
+                                </td>
                                 <td>{{ $employee->payment_type }}</td>
                                 <td>
                                     <span class="badge-custom badge-user">{{ auth()->user()->name }}</span>

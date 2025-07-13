@@ -126,11 +126,11 @@
                                     $currencySymbols = [
                                         'USD' => '$',
                                         'EUR' => '€',
-                                        'DZD' => 'DA',
+                                        'DZD' => 'DZ',
                                     ];
                                 @endphp
                                 <td>
-                                    {{ $currencySymbols[$txn->wallet->currency] ?? '' }}{{ number_format($txn->amount, 2) }}
+                                    {{ $currencySymbols[$txn->wallet->currency] ?? '' }} {{ number_format($txn->amount, 2) }}
                                 </td>
                                 <td>
                                     {{-- عرض سعر الصرف فقط إذا كان من نوع تحويل --}}

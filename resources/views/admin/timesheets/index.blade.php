@@ -170,7 +170,17 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $timesheet->employee->name ?? '_'}}</td>
                                 <td>{{ $timesheet->hours_worked }}</td>
-                                <td>{{ number_format($timesheet->month_salary, 2) }} $</td> <!-- الأجر الشهري -->
+                                {{-- <td>{{ number_format($timesheet->month_salary, 2) }} $</td> <!-- الأجر الشهري --> --}}
+                                @php
+                                    $currencySymbols = [
+                                        'USD' => '$',
+                                        'EUR' => '€',
+                                        'DZD' => 'DZ',
+                                    ];
+                                @endphp
+                                <td>
+                                    {{ $currencySymbols[$timesheet->employee?->currency] ?? '' }} {{ number_format($timesheet->month_salary, 2) }}
+                                </td>
                                 <td>
                                     @if($timesheet->is_paid)
                                         <span class="badge bg-success text-white">Paid</span>

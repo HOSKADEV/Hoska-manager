@@ -25,9 +25,29 @@ class AdminController extends Controller
         $totalProjects = Project::count();
         $totalClients = Client::count();
 
-        $monthlyEarnings = Payment::whereYear('created_at', now()->year)
+        // أسعار الصرف إلى الدولار
+        $exchangeRatesToUSD = [
+            'USD' => 1,
+            'EUR' => 1.10, // 1 EUR = 1.10 USD
+            'DZD' => 0.0074, // 1 DZD = 0.0074 USD
+        ];
+
+        // اجمع الدفعات بعد التحويل للدولار
+        $payments = Payment::with('invoice.project')->whereYear('created_at', now()->year)
             ->whereMonth('created_at', now()->month)
-            ->sum('amount'); // تأكد اسم العمود في جدول الدفع
+            ->get();
+
+        $monthlyEarnings = 0;
+
+        foreach ($payments as $payment) {
+            $currency = strtoupper($payment->invoice->project->currency ?? 'USD');
+            $rate = $exchangeRatesToUSD[$currency] ?? 1;
+
+            // إذا الدفع تم بعملة أخرى، نضرب في السعر مقابل الدولار
+            $amountInUSD = $payment->amount * $rate;
+
+            $monthlyEarnings += $amountInUSD;
+        }
 
         $completionPercentage = $totalTasks > 0
             ? round(($completedTasks / $totalTasks) * 100)

@@ -62,6 +62,16 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $development->description }}</td>
                                 <td>{{ $development->amount }}</td>
+                                @php
+                                    $currencySymbols = [
+                                        'USD' => '$',
+                                        'EUR' => '€',
+                                        'DZD' => 'DZ',
+                                    ];
+                                @endphp
+                                <td>
+                                    {{ $currencySymbols[$development->project?->currency] ?? '' }} {{ number_format($development->amount, 2) }}
+                                </td>
                                 <td>
                                     @if($development->project)
                                         <span class="badge-custom badge-project">{{ $development->project->name }}</span>

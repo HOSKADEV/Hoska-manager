@@ -9,6 +9,7 @@
                 border-radius: 0.25rem;
                 margin-left: 5px;
             }
+
             .table-secondary thead {
                 background-color: #e9ecef;
             }
@@ -89,7 +90,9 @@
                     <tr>
                         <td>{{ $loop->iteration + ($payments->currentPage() - 1) * $payments->perPage() }}</td>
                         <td>{{ $payment->invoice->invoice_number ?? '-' }}</td>
-                        <td>{{ number_format($payment->amount, 2) }}</td>
+                        <td>
+                            {{ number_format($payment->amount * ($payment->exchange_rate ?? 1), 2) }}
+                        </td>
                         <td>{{ $payment->payment_date->format('Y-m-d H:i') }}</td>
                         <td>{{ $payment->note ?? '-' }}</td>
                     </tr>

@@ -57,7 +57,7 @@
             $selectedValue = old('payment_type', $employee->payment_type ?? '');
         @endphp
 
-        <div class="mb-3 col-md-12">
+        <div class="mb-3">
             <label for="payment_type" class="form-label">Payment Type</label>
             <select name="payment_type" id="payment_type" class="form-control">
                 <option value="" disabled {{ $selectedValue == '' ? 'selected' : '' }}>Select Payment Type
@@ -68,6 +68,10 @@
                     </option>
                 @endforeach
             </select>
+        </div>
+
+        <div class="mb-3">
+            <x-form.select2 label="Currency" name="currency" :options="['EUR' => 'Euro', 'USD' => 'US Dollar', 'DZD' => 'Algerian Dinar']" :selected="$employee->currency ?? old('currency')" placeholder="Select currency" />
         </div>
 
         <!-- 🔻 New Payment Details Section -->
@@ -104,7 +108,7 @@
         <x-form.input label="Email" name="user[email]" placeholder="Enter Login Email" :oldval="old('user.email', $user?->email ?? '')" />
         <div class="mb-3">
             <x-form.input label="Password" name="user[password]" type="password"
-                placeholder="Enter Password (leave blank to keep current)"/>
+                placeholder="Enter Password (leave blank to keep current)" />
         </div>
     </div>
 

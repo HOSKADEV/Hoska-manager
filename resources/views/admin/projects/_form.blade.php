@@ -13,6 +13,10 @@
 </div>
 
 <div class="mb-3">
+    <x-form.select2 label="Currency" name="currency" :options="['EUR' => 'Euro', 'USD' => 'US Dollar', 'DZD' => 'Algerian Dinar']" :selected="$project->currency ?? old('currency')" placeholder="Select currency" />
+</div>
+
+<div class="mb-3">
     @php
         $oldFiles = optional($project->attachments)->map(fn($file) => 'storage/' . $file->file_path)->toArray();
     @endphp
@@ -31,6 +35,6 @@
 
     @endphp
 
-    <x-form.select-multiple label="Employees" name="employee_id" :options="$employees" :oldval="$selectedEmployees"  multiple="true" placeholder="Select Employees" />
+    <x-form.select-multiple label="Employees" name="employee_id" :options="$employees" :oldval="$selectedEmployees"
+        multiple="true" placeholder="Select Employees" />
 </div>
-

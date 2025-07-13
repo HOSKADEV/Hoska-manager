@@ -80,7 +80,7 @@ class TasksController extends Controller
         }
 
         $data['project_id'] = $request->project_id;
-        $data['start_time'] = now();
+        // $data['start_time'] = now();
 
         Task::create($data);
 

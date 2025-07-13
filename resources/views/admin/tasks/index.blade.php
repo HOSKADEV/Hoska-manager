@@ -94,7 +94,18 @@
                                 <td>{{ $task->start_time->format('D, Y/m/d H:i A') }}</td>
                                 <td>{{ $task->end_time ? $task->end_time->format('D, Y/m/d H:i A') : '-' }}</td>
                                 <td>{{ $task->duration_in_hours }}</td>
-                                <td>{{ number_format($task->cost, 2) }} $</td>
+                                {{-- <td>{{ number_format($task->cost, 2) }} $</td> --}}
+                                @php
+                                    $currencySymbols = [
+                                        'USD' => '$',
+                                        'EUR' => '€',
+                                        'DZD' => 'DZ',
+                                    ];
+                                @endphp
+                                <td>
+                                    {{ $currencySymbols[$task->employee?->currency] ?? '' }} {{ number_format($task->cost, 2) }}
+                                </td>
+
                                 {{-- <td>{{ $task->budget_amount }}</td> --}}
                                 <td>
                                     @if($task->project)

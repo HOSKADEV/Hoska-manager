@@ -31,7 +31,7 @@ class EmployeeRequest extends FormRequest
             ],
             'rate' => ['required', 'numeric', 'min:0'],
             'payment_type' => ['required', Rule::in(['hourly', 'monthly', 'per_project'])],
-
+            'currency' => 'required|in:EUR,USD,DZD',
             // معلومات الدفع البنكية - اختيارية
             'account_name' => ['nullable', 'string', 'max:255'],
             'account_number' => ['nullable', 'string', 'max:255'],

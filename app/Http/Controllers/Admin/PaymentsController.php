@@ -39,17 +39,30 @@ class PaymentsController extends Controller
      */
     public function store(PaymentRequest $request)
     {
-        $data = $request->validated();
-        $invoice = Invoice::with('wallet')->findOrFail($request->invoice_id);
+        $invoice = Invoice::with(['wallet', 'project'])->findOrFail($request->invoice_id);
 
-        $data['invoice_id'] = $request->invoice_id;
+        $data = $request->validated();
+        $data['invoice_id'] = $invoice->id;
         $data['amount'] = $invoice->amount;
+
+        // العملة الخاصة بالفاتورة (من المشروع) وعملة المحفظة
+        $invoiceCurrency = $invoice->project->currency ?? null;
+        $walletCurrency = $invoice->wallet->currency ?? null;
+
+        // إذا نفس العملة: سعر الصرف = 1
+        if ($invoiceCurrency === $walletCurrency) {
+            $data['exchange_rate'] = 1;
+            $convertedAmount = $invoice->amount;
+        } else {
+            $data['exchange_rate'] = $request->exchange_rate;
+            $convertedAmount = $invoice->amount * $request->exchange_rate;
+        }
 
         $payment = Payment::create($data);
 
-        // تحديث رصيد المحفظة المرتبطة بالفاتورة
+        // استخدام المبلغ المحول فقط
         if ($invoice->wallet) {
-            $invoice->wallet->increment('balance', $invoice->amount);
+            $invoice->wallet->increment('balance', $convertedAmount);
         }
 
         flash()->success('Payment created successfully and wallet balance updated');
@@ -78,25 +91,41 @@ class PaymentsController extends Controller
      */
     public function update(PaymentRequest $request, Payment $payment)
     {
-        $oldInvoice = $payment->invoice()->with('wallet')->first(); // الفاتورة القديمة
-        $oldAmount = $payment->amount;
+        // الفاتورة القديمة مع المحفظة والمشروع
+        $oldInvoice = $payment->invoice()->with(['wallet', 'project'])->first();
+        $oldConvertedAmount = $payment->amount * ($payment->exchange_rate ?? 1);
+
+        // الفاتورة الجديدة مع المحفظة والمشروع
+        $newInvoice = Invoice::with(['wallet', 'project'])->findOrFail($request->invoice_id);
 
         $data = $request->validated();
-        $newInvoice = Invoice::with('wallet')->findOrFail($request->invoice_id);
-
-        $data['invoice_id'] = $request->invoice_id;
+        $data['invoice_id'] = $newInvoice->id;
         $data['amount'] = $newInvoice->amount;
 
-        $payment->update($data);
+        // عملات الفاتورة والمحفظة الجديدة
+        $invoiceCurrency = $newInvoice->project->currency ?? null;
+        $walletCurrency = $newInvoice->wallet->currency ?? null;
 
-        // تعديل رصيد المحفظة القديمة - نخصم المبلغ القديم
-        if ($oldInvoice && $oldInvoice->wallet) {
-            $oldInvoice->wallet->decrement('balance', $oldAmount);
+        // تحديد سعر الصرف والمبلغ المحول
+        if ($invoiceCurrency === $walletCurrency) {
+            $data['exchange_rate'] = 1;
+            $newConvertedAmount = $newInvoice->amount;
+        } else {
+            $data['exchange_rate'] = $request->exchange_rate;
+            $newConvertedAmount = $newInvoice->amount * $request->exchange_rate;
         }
 
-        // إضافة المبلغ الجديد للمحفظة الجديدة
+        // تحديث الدفعة
+        $payment->update($data);
+
+        // خصم المبلغ المحول القديم من المحفظة القديمة
+        if ($oldInvoice && $oldInvoice->wallet) {
+            $oldInvoice->wallet->decrement('balance', $oldConvertedAmount);
+        }
+
+        // إضافة المبلغ المحول الجديد إلى المحفظة الجديدة
         if ($newInvoice->wallet) {
-            $newInvoice->wallet->increment('balance', $newInvoice->amount);
+            $newInvoice->wallet->increment('balance', $newConvertedAmount);
         }
 
         flash()->success('Payment updated successfully and wallet balances adjusted');

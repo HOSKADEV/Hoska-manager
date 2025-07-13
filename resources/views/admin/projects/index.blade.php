@@ -50,7 +50,7 @@
                             <th>#</th>
                             <th>Name</th>
                             <th>Description</th>
-                            <th>Total Amount</th>
+                            <th>TotalAmount</th>
                             <th>Attachments</th>
                             <th>Client Name</th>
                             <th>Employee Name</th>
@@ -81,7 +81,17 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $project->name }}</td>
                                 <td>{{ $project->description }}</td>
-                                <td>{{ $project->total_amount }}</td>
+                                {{-- <td>{{ $project->total_amount }}</td> --}}
+                                @php
+                                    $currencySymbols = [
+                                        'USD' => '$',
+                                        'EUR' => '€',
+                                        'DZD' => 'DZ',
+                                    ];
+                                @endphp
+                                <td>
+                                    {{ $currencySymbols[$project->currency] ?? '' }} {{ number_format( $project->total_amount, 2) }}
+                                </td>
                                 {{-- <td>{{ $project->attachments->first()->file_name ?? '_'}}</td> --}}
                                 <td>
                                     @php

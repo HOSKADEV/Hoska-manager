@@ -28,9 +28,10 @@ class PaymentRequest extends FormRequest
             // 'amount' => ['required'],
             'payment_date' => ['nullable', 'date'],
             'note' => [
-                'nullable',
-                Rule::unique('payments', 'note')->ignore($paymentId),
+                'nullable'
             ],
+            'invoice_id' => ['required', 'exists:invoices,id'],
+            'exchange_rate' => ['nullable', 'numeric', 'min:0.0001'],
         ];
     }
 }

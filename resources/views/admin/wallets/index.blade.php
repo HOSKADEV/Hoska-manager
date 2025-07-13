@@ -47,7 +47,17 @@
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $wallet->name }}</td>
-                                <td>${{ number_format($wallet->balance, 2) }}</td>
+                                {{-- <td>${{ number_format($wallet->balance, 2) }}</td> --}}
+                                @php
+                                    $currencySymbols = [
+                                        'USD' => '$',
+                                        'EUR' => '€',
+                                        'DZD' => 'DZ',
+                                    ];
+                                @endphp
+                                <td>
+                                    {{ $currencySymbols[$wallet->currency] ?? '' }} {{ number_format($wallet->balance, 2) }}
+                                </td>
                                 <td>
                                     <span class="badge badge-currency">{{ $wallet->currency }}</span>
                                 </td>

@@ -32,6 +32,7 @@ class ProjectRequest extends FormRequest
             'name' => $rules,
             'description' => 'nullable|string',
             'total_amount' => 'nullable|numeric',
+            'currency' => 'required|in:EUR,USD,DZD',
             'attachment' => $this->isMethod('post') ? 'nullable|array' : 'nullable|array',
             'attachment.*' => 'file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,ppt,pptx,zip,rar|max:10240',
             'employee_id' => 'nullable|array',

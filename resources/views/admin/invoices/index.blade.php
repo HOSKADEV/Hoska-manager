@@ -50,8 +50,8 @@
                             <th>Project Name</th>
                             <th>Client Name</th>
                             <th>Wallet</th> <!-- هذا العمود الجديد -->
-                            {{-- <th>Created At</th>
-                            <th>Updated At</th> --}}
+                            <th>Created At</th>
+                            <th>Updated At</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -65,9 +65,9 @@
                             <th>Is Paid</th>
                             <th>Project Name</th>
                             <th>Client Name</th>
-                            <th>Wallet</th>
-                            {{-- <th>Created At</th>
-                            <th>Updated At</th> --}}
+                            <th>Wallet</th> <!-- نفس العمود بالـ footer -->
+                            <th>Created At</th>
+                            <th>Updated At</th>
                             <th>Actions</th>
                         </tr>
                     </tfoot>
@@ -112,27 +112,26 @@
                                         <span class="badge-custom badge-muted">N/A</span>
                                     @endif
                                 </td>
-                                {{-- <td>{{ $invoice->created_at->diffForHumans() }}</td>
-                                <td>{{ $invoice->updated_at->diffForHumans() }}</td> --}}
+                                <td>{{ $invoice->created_at->diffForHumans() }}</td>
+                                <td>{{ $invoice->updated_at->diffForHumans() }}</td>
                                 <td>
-                                    <div class="d-flex align-items-center gap-3 flex-wrap">
-                                        <a href="{{ route('admin.invoices.show', $invoice->id) }}"
-                                            class="btn btn-sm btn-info" title="View">
-                                            <i class="fas fa-print"></i>
-                                        </a>
-                                        <a href="{{ route('admin.invoices.edit', $invoice->id) }}"
-                                            class="btn btn-sm btn-primary" title="Edit">
-                                            <i class='fas fa-edit'></i>
-                                        </a>
-                                        <form action="{{ route('admin.invoices.destroy', $invoice->id) }}" method="POST">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button onclick="return confirm('Are you sure?!')" type="submit"
-                                                class="btn btn-sm btn-danger" title="Delete">
-                                                <i class='fas fa-trash'></i>
-                                            </button>
-                                        </form>
-                                    </div>
+                                    <a href="{{ route('admin.invoices.show', $invoice->id) }}" class="btn btn-sm btn-info"
+                                        title="View">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                    <a href="{{ route('admin.invoices.edit', $invoice->id) }}"
+                                        class="btn btn-sm btn-primary" title="Edit">
+                                        <i class='fas fa-edit'></i>
+                                    </a>
+                                    <form action="{{ route('admin.invoices.destroy', $invoice->id) }}" method="POST"
+                                        style="display: inline-block">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button onclick="return confirm('Are you sure?!')" type="submit"
+                                            class="btn btn-sm btn-danger" title="Delete">
+                                            <i class='fas fa-trash'></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         @empty

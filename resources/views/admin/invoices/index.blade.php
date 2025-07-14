@@ -85,7 +85,8 @@
                                     ];
                                 @endphp
                                 <td>
-                                    {{ $currencySymbols[$invoice->project?->currency] ?? '' }} {{ number_format($invoice->amount, 2) }}
+                                    {{ $currencySymbols[$invoice->project?->currency] ?? '' }}
+                                    {{ number_format($invoice->amount, 2) }}
                                 </td>
                                 <td>{{ $invoice->invoice_date->diffForHumans() }}</td>
                                 <td>{{ $invoice->due_date?->diffForHumans() ?? '_' }}</td>
@@ -114,14 +115,22 @@
                                 <td>{{ $invoice->created_at->diffForHumans() }}</td>
                                 <td>{{ $invoice->updated_at->diffForHumans() }}</td>
                                 <td>
+                                    <a href="{{ route('admin.invoices.show', $invoice->id) }}" class="btn btn-sm btn-info"
+                                        title="View">
+                                        <i class="fas fa-print"></i>
+                                    </a>
                                     <a href="{{ route('admin.invoices.edit', $invoice->id) }}"
-                                        class="btn btn-sm btn-primary"><i class='fas fa-edit'></i></a>
+                                        class="btn btn-sm btn-primary" title="Edit">
+                                        <i class='fas fa-edit'></i>
+                                    </a>
                                     <form action="{{ route('admin.invoices.destroy', $invoice->id) }}" method="POST"
                                         style="display: inline-block">
                                         @csrf
                                         @method('DELETE')
                                         <button onclick="return confirm('Are you sure?!')" type="submit"
-                                            class="btn btn-sm btn-danger"><i class='fas fa-trash'></i></button>
+                                            class="btn btn-sm btn-danger" title="Delete">
+                                            <i class='fas fa-trash'></i>
+                                        </button>
                                     </form>
                                 </td>
                             </tr>

@@ -32,7 +32,7 @@ class InvoiceRequest extends FormRequest
 
         return [
             'invoice_number' => $rule_number,
-            // 'amount' => $rule_amount,
+            'amount' => $rule_amount,
             'invoice_date' => $rule_invoice_date,
             'due_date' => $rule_due_date,
             'project_id' => 'required|exists:projects,id',

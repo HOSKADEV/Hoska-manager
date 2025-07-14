@@ -72,10 +72,18 @@ class PaymentsController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        //
+        // جلب الدفعة مع الفاتورة المرتبطة (مع علاقات المحفظة والمشروع)
+        $payment = Payment::with('invoice.wallet', 'invoice.project')->findOrFail($id);
+
+        // جلب كل الفواتير لعرضها في السلكت (اختياري إذا تريد عرض السلكت حسب الكود اللي أعطيتك)
+        $invoices = Invoice::with('wallet', 'project')->get();
+
+        // عرض صفحة العرض وتمرير البيانات
+        return view('admin.payments.show', compact('payment', 'invoices'));
     }
+
 
     /**
      * Show the form for editing the specified resource.

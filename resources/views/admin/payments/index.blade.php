@@ -86,6 +86,10 @@
                                 <td>{{ $payment->created_at->diffForHumans() }}</td>
                                 <td>{{ $payment->updated_at->diffForHumans() }}</td>
                                 <td>
+                                    <a href="{{ route('admin.payments.show', $payment->id) }}" class="btn btn-sm btn-info"
+                                        title="Print">
+                                        <i class="fas fa-print"></i>
+                                    </a>
                                     <a href="{{ route('admin.payments.edit', $payment->id) }}"
                                         class="btn btn-sm btn-primary"><i class='fas fa-edit'></i></a>
                                     <form action="{{ route('admin.payments.destroy', $payment->id) }}" method="POST"

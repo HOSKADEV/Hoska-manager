@@ -35,6 +35,9 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group
     Route::resource('projects', ProjectsController::class);
     Route::resource('developments', DevelopmentsController::class);
     Route::resource('invoices', InvoicesController::class);
+    // web.php
+    Route::get('projects/{project}/financials', [InvoicesController::class, 'getProjectFinancials']);
+
     Route::resource('payments', PaymentsController::class);
     Route::resource('timesheets', TimesheetsController::class);
     Route::patch('/timesheets/{id}/mark-paid', [TimesheetsController::class, 'markPaid'])->name('timesheets.markPaid');

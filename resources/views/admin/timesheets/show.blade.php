@@ -148,7 +148,7 @@
                             @endforeach
 
                             <tr class="{{ $rowClass }}" style="font-weight: bold;">
-                                <td colspan="5" style="text-align: right;">Total Hours for {{ $date }}:</td>
+                                <td colspan="5" style="text-align: center;">Total Hours for {{ $date }}:</td>
                                 <td>{{ number_format($dateTotalHours, 2) }}</td>
                             </tr>
                         @endforeach

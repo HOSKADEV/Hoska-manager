@@ -13,6 +13,11 @@
             .table-secondary thead {
                 background-color: #e9ecef;
             }
+
+            tfoot tr {
+                background-color: #f8f9fa;
+                font-weight: bold;
+            }
         </style>
     @endpush
 
@@ -29,18 +34,18 @@
                 Balance:
                 <span class="badge badge-success">
                     {{ number_format($wallet->balance, 2) }}
-                    <span class="badge badge-currency">{{ $wallet->currency }}</span>
+                    <span class="badge-currency">{{ $wallet->currency }}</span>
                 </span>
             </h5>
 
-            <p><strong>Currency:</strong> <span class="badge badge-currency">{{ $wallet->currency }}</span></p>
+            <p><strong>Currency:</strong> <span class="badge-currency">{{ $wallet->currency }}</span></p>
             <p><strong>Created:</strong> {{ $wallet->created_at->diffForHumans() }}</p>
             <p><strong>Updated:</strong> {{ $wallet->updated_at->diffForHumans() }}</p>
         </div>
     </div>
 
     <h4 class="mb-3">Recent Transactions</h4>
-    <div class="table-responsive mb-5">
+    <div class="table-responsive mb-3">
         <table class="table table-bordered table-striped">
             <thead class="thead-light">
                 <tr>
@@ -68,13 +73,20 @@
                     </tr>
                 @endforelse
             </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3"><strong>Total In:</strong> {{ number_format($totalIn, 2) }} <span
+                            class="badge-currency">{{ $wallet->currency }}</span></td>
+                    <td colspan="3"><strong>Total Out:</strong> {{ number_format($totalOut, 2) }} <span
+                            class="badge-currency">{{ $wallet->currency }}</span></td>
+                </tr>
+            </tfoot>
         </table>
         {{ $transactions->withQueryString()->links() }}
     </div>
 
-    {{-- Add Payments Related to this Wallet --}}
     <h4 class="mb-3">Payments Received (From Invoices Linked to this Wallet)</h4>
-    <div class="table-responsive">
+    <div class="table-responsive mb-3">
         <table class="table table-bordered table-striped">
             <thead class="table-secondary">
                 <tr>
@@ -90,9 +102,7 @@
                     <tr>
                         <td>{{ $loop->iteration + ($payments->currentPage() - 1) * $payments->perPage() }}</td>
                         <td>{{ $payment->invoice->invoice_number ?? '-' }}</td>
-                        <td>
-                            {{ number_format($payment->amount * ($payment->exchange_rate ?? 1), 2) }}
-                        </td>
+                        <td>{{ number_format($payment->amount * ($payment->exchange_rate ?? 1), 2) }}</td>
                         <td>{{ $payment->payment_date->format('Y-m-d H:i') }}</td>
                         <td>{{ $payment->note ?? '-' }}</td>
                     </tr>
@@ -102,6 +112,14 @@
                     </tr>
                 @endforelse
             </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2"><strong>Total Payments</strong></td>
+                    <td colspan="3">{{ number_format($totalPayments, 2) }} <span
+                            class="badge-currency">{{ $wallet->currency }}</span></td>
+                </tr>
+            </tfoot>
+
         </table>
         {{ $payments->withQueryString()->links() }}
     </div>

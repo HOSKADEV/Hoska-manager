@@ -49,9 +49,33 @@ class TasksController extends Controller
      */
     public function create()
     {
+        $user = Auth::user();
+
+        if ($user->type === 'employee') {
+            $employee = $user->employee;
+
+            if (!$employee) {
+                flash()->error('You are not linked to any employee.');
+                return redirect()->route('admin.tasks.index');
+            }
+
+            // تحديد اسم الجدول للأعمدة لتجنب الغموض
+            $projects = $employee->projects()
+                ->select('projects.id', 'projects.name')
+                ->pluck('name', 'id');
+
+            if ($projects->isEmpty()) {
+                flash()->error('You have no projects assigned. You cannot add tasks.');
+                return redirect()->route('admin.tasks.index');
+            }
+
+            $employees = collect();
+        } else {
+            $projects = Project::pluck('name', 'id');
+            $employees = Employee::pluck('name', 'id');
+        }
+
         $task = new Task();
-        $employees = Employee::all();
-        $projects = Project::all();
 
         return view('admin.tasks.create', compact('task', 'projects', 'employees'));
     }
@@ -63,9 +87,11 @@ class TasksController extends Controller
     {
         $data = $request->validated();
 
+        // فرض حالة المهمة كمبليتد عند الإنشاء
+        $data['status'] = 'completed';
+
         $user = Auth::user();
 
-        // إذا المستخدم موظف، نربطه بنفسه
         if ($user->type === 'employee') {
             $employee = $user->employee;
 
@@ -75,12 +101,10 @@ class TasksController extends Controller
 
             $data['employee_id'] = $employee->id;
         } else {
-            // إذا أدمن نأخذ القيمة من الفورم
             $data['employee_id'] = $request->employee_id;
         }
 
         $data['project_id'] = $request->project_id;
-        // $data['start_time'] = now();
 
         Task::create($data);
 
@@ -109,22 +133,26 @@ class TasksController extends Controller
     {
         $user = Auth::user();
 
-        // الموظف يقدر يعدل فقط على مهامه
         if ($user->type === 'employee') {
             $employee = $user->employee;
 
+            // تأكد أن الموظف مرتبط ومسموح له تعديل هذه المهمة فقط
             if (!$employee || $task->employee_id !== $employee->id) {
                 abort(403, 'You are not authorized to edit this task.');
             }
 
-            // لا نحتاج جلب كل الموظفين، فقط المشاريع
-            $projects = Project::all();
+            // جلب المشاريع المرتبطة بالموظف فقط كـ [id => name]
+            $projects = $employee->projects()
+                ->select('projects.id', 'projects.name')
+                ->pluck('projects.name', 'projects.id');
+
             return view('admin.tasks.edit', compact('task', 'projects'));
         }
 
-        // إذا كان أدمن
-        $employees = Employee::all();
-        $projects = Project::all();
+        // للأدمن، جلب كل الموظفين والمشاريع على شكل [id => name]
+        $employees = Employee::pluck('name', 'id');
+        $projects = Project::pluck('name', 'id');
+
         return view('admin.tasks.edit', compact('task', 'projects', 'employees'));
     }
 
@@ -137,18 +165,22 @@ class TasksController extends Controller
         $user = Auth::user();
         $data = $request->validated();
 
+        // فرض حالة المهمة كمبليتد عند الإنشاء
+        $data['status'] = 'completed';
+
         if ($user->type === 'employee') {
             $employee = $user->employee;
 
+            // تحقق من صلاحية التعديل
             if (!$employee || $task->employee_id !== $employee->id) {
                 abort(403, 'You are not authorized to update this task.');
             }
 
-            // تأكد أن الموظف لا يقدر يعدل على employee_id حتى لو أرسله يدويًا
+            // الموظف لا يستطيع تغيير employee_id حتى لو حاول إرسالها
             unset($data['employee_id']);
             $data['employee_id'] = $employee->id;
         } elseif ($user->type === 'admin') {
-            // فقط تأكيد إضافي لو أردت تخصيص قواعد مختلفة
+            // للأدمن يسمح بتحديد employee_id من الفورم
             $data['employee_id'] = $request->employee_id;
         } else {
             abort(403, 'User type not allowed.');

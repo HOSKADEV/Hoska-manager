@@ -93,7 +93,21 @@
                                 {{-- <td>{{ $task->due_date->diffForHumans() }}</td> --}}
                                 <td>{{ $task->start_time->format('D, Y/m/d H:i A') }}</td>
                                 <td>{{ $task->end_time ? $task->end_time->format('D, Y/m/d H:i A') : '-' }}</td>
-                                <td>{{ $task->duration_in_hours }}</td>
+                                @php
+                                    $totalMinutes = (int) round($task->duration_in_hours * 60);
+                                    $hours = intdiv($totalMinutes, 60);
+                                    $minutes = $totalMinutes % 60;
+                                @endphp
+
+                                <td>
+                                    <span class="font-weight-bold text-primary">
+                                        {{ $hours }}h {{ $minutes }}m
+                                    </span>
+                                    <div class="text-muted small">
+                                        ({{ number_format($task->duration_in_hours, 2) }} hours)
+                                    </div>
+                                </td>
+
                                 {{-- <td>{{ number_format($task->cost, 2) }} $</td> --}}
                                 @php
                                     $currencySymbols = [
@@ -103,7 +117,8 @@
                                     ];
                                 @endphp
                                 <td>
-                                    {{ $currencySymbols[$task->employee?->currency] ?? '' }} {{ number_format($task->cost, 2) }}
+                                    {{ $currencySymbols[$task->employee?->currency] ?? '' }}
+                                    {{ number_format($task->cost, 2) }}
                                 </td>
 
                                 {{-- <td>{{ $task->budget_amount }}</td> --}}

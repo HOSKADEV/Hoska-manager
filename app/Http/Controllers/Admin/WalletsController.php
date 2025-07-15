@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class WalletsController extends Controller
 {
@@ -16,7 +17,32 @@ class WalletsController extends Controller
     public function index()
     {
         $wallets = Wallet::all();
-        return view('admin.wallets.index', compact('wallets'));
+
+        $currencySymbols = [
+            'USD' => '$',
+            'EUR' => '€',
+            'DZD' => 'DZ',
+        ];
+
+        // أسعار صرف ثابتة للتحويل إلى دينار جزائري (عدلها حسب بياناتك الحقيقية)
+        $exchangeRatesToDZD = [
+            'DZD' => 1,
+            'USD' => 140, // مثال: 1 دولار = 140 دينار جزائري
+            'EUR' => 150, // مثال: 1 يورو = 150 دينار جزائري
+        ];
+
+        // حساب مجموع الرصيد لكل عملة
+        $totalsByCurrency = $wallets->groupBy('currency')->map(function ($group) {
+            return $group->sum('balance');
+        });
+
+        // حساب مجموع كل المحافظ بالدينار الجزائري (محول حسب سعر الصرف)
+        $totalInDZD = $wallets->reduce(function ($carry, $wallet) use ($exchangeRatesToDZD) {
+            $rate = $exchangeRatesToDZD[$wallet->currency] ?? 1;
+            return $carry + ($wallet->balance * $rate);
+        }, 0);
+
+        return view('admin.wallets.index', compact('wallets', 'totalsByCurrency', 'totalInDZD', 'currencySymbols'));
     }
 
     /**
@@ -62,13 +88,37 @@ class WalletsController extends Controller
      */
     public function show(Wallet $wallet)
     {
-        $transactions = $wallet->transactions()->latest()->paginate(20); // هذا صحيح
+        $transactions = $wallet->transactions()->latest()->paginate(20);
+
         $payments = Payment::whereHas('invoice', function ($q) use ($wallet) {
             $q->where('wallet_id', $wallet->id);
         })->paginate(15);
 
-        return view('admin.wallets.show', compact('wallet', 'transactions', 'payments'));
+        // الرصيد الداخل: income, funding, transfer_in
+        $totalIn = $wallet->transactions()
+            ->whereIn('type', ['income', 'funding', 'transfer_in'])
+            ->sum('amount');
+
+        // الرصيد الخارج: expense, withdraw, transfer_out
+        $totalOut = $wallet->transactions()
+            ->whereIn('type', ['expense', 'withdraw', 'transfer_out'])
+            ->sum('amount');
+
+        // مجموع الدفعات
+        $totalPayments = Payment::whereHas('invoice', function ($q) use ($wallet) {
+            $q->where('wallet_id', $wallet->id);
+        })->sum(DB::raw('amount * IFNULL(exchange_rate, 1)'));
+
+        return view('admin.wallets.show', compact(
+            'wallet',
+            'transactions',
+            'payments',
+            'totalIn',
+            'totalOut',
+            'totalPayments'
+        ));
     }
+
 
     /**
      * Show the form for editing the specified wallet.

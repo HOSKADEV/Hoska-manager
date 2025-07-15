@@ -27,7 +27,7 @@ class TaskRequest extends FormRequest
 
         return [
             'title' => [
-                'nullable',
+                'required',
                 Rule::unique('tasks', 'title')->ignore($taskId),
             ],
             'description' => [
@@ -39,9 +39,11 @@ class TaskRequest extends FormRequest
                 Rule::in(['pending', 'in_progress', 'completed']),
             ],
             // 'due_date' => ['required', 'date'],
-            'start_time' => ['nullable', 'date'],
-            'end_time' => ['nullable', 'date', 'after_or_equal:start_time'],
+            'start_time' => ['required', 'date'],
+            'end_time' => ['required', 'date', 'after_or_equal:start_time'],
             // 'budget_amount' => ['required'],
+            'employee_id' => ['required', 'exists:employees,id'],
+            'project_id' => ['required', 'exists:projects,id'],
         ];
     }
 }

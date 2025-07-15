@@ -65,6 +65,12 @@ class PaymentsController extends Controller
             $invoice->wallet->increment('balance', $convertedAmount);
         }
 
+        // تحديث حالة الفاتورة إلى مدفوعة إذا كانت غير مدفوعة
+        if (!$invoice->is_paid) {
+            $invoice->is_paid = 1;
+            $invoice->save();
+        }
+
         flash()->success('Payment created successfully and wallet balance updated');
         return redirect()->route('admin.payments.index');
     }
@@ -129,11 +135,24 @@ class PaymentsController extends Controller
         // خصم المبلغ المحول القديم من المحفظة القديمة
         if ($oldInvoice && $oldInvoice->wallet) {
             $oldInvoice->wallet->decrement('balance', $oldConvertedAmount);
+
+            // تحقق إذا هذه الفاتورة لم يعد لها دفعات مرتبطة، إذا نعم اجعلها غير مدفوعة
+            $remainingPayments = $oldInvoice->payments()->sum('amount');
+            if ($remainingPayments == 0) {
+                $oldInvoice->is_paid = 0;
+                $oldInvoice->save();
+            }
         }
 
         // إضافة المبلغ المحول الجديد إلى المحفظة الجديدة
         if ($newInvoice->wallet) {
             $newInvoice->wallet->increment('balance', $newConvertedAmount);
+        }
+
+        // تحديث حالة الفاتورة الجديدة إلى مدفوعة إذا لم تكن كذلك
+        if (!$newInvoice->is_paid) {
+            $newInvoice->is_paid = 1;
+            $newInvoice->save();
         }
 
         flash()->success('Payment updated successfully and wallet balances adjusted');

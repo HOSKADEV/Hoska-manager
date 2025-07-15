@@ -29,8 +29,27 @@
                 font-weight: 700;
             }
 
+            /* إزالة اللون الافتراضي */
             tbody tr:nth-child(even) {
-                background-color: #f9f9f9;
+                background-color: transparent;
+            }
+
+            /* تلوين الصفوف بالتناوب */
+            .row-color-0 {
+                background-color: #ffffff;
+                /* أبيض */
+            }
+
+            .row-color-1 {
+                background-color: #f5f5dc;
+                /* بيج فاتح */
+            }
+
+            /* صف المجموع النهائي */
+            .total-row {
+                background-color: #0d47a1 !important;
+                /* بيج أغمق */
+                font-weight: bold;
             }
 
             tbody tr:hover {
@@ -69,11 +88,10 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Employee Timesheet</h2>
-        <a href="{{ route('admin.timesheets.index') }}" class="btn btn-info"><i
-                class="fas fa-long-arrow-alt-left"></i>All
-            Timesheets</a>
+        <a href="{{ route('admin.timesheets.index') }}" class="btn btn-info">
+            <i class="fas fa-long-arrow-alt-left"></i> All Timesheets
+        </a>
     </div>
-
 
     <div class="container py-4" style="max-width: 900px; margin: auto;">
         <div class="summary-box">
@@ -100,22 +118,42 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php $totalHours = 0; @endphp
-                        @foreach ($tasks as $task)
+                        @php
+                            $tasksByDate = $tasks->groupBy(fn($task) => $task->start_time ? $task->start_time->format('Y-m-d') : 'N/A');
+                            $totalHours = 0;
+                            $rowColors = ['row-color-0', 'row-color-1'];
+                            $colorIndex = 0;
+                        @endphp
+
+                        @foreach ($tasksByDate as $date => $tasksForDate)
                             @php
-                                $duration = $task->duration_in_hours ?? 0;
-                                $totalHours += $duration;
+                                $rowspan = $tasksForDate->count();
+                                $rowClass = $rowColors[$colorIndex % count($rowColors)];
+                                $colorIndex++;
+                                $dateTotalHours = $tasksForDate->sum(fn($t) => $t->duration_in_hours ?? 0);
+                                $totalHours += $dateTotalHours;
                             @endphp
-                            <tr>
-                                <td>{{ $task->start_time ? $task->start_time->format('Y-m-d') : '-' }}</td>
-                                <td style="text-align: left;">{{ $task->title }}</td>
-                                <td>{{ $task->project?->name ?? '-' }}</td>
-                                <td>{{ $task->start_time ? $task->start_time->format('H:i') : '-' }}</td>
-                                <td>{{ $task->end_time ? $task->end_time->format('H:i') : '-' }}</td>
-                                <td>{{ number_format($duration, 2) }}</td>
+
+                            @foreach ($tasksForDate as $index => $task)
+                                <tr class="{{ $rowClass }}">
+                                    @if ($index == 0)
+                                        <td rowspan="{{ $rowspan }}">{{ $date }}</td>
+                                    @endif
+                                    <td style="text-align: left;">{{ $task->title }}</td>
+                                    <td>{{ $task->project?->name ?? '-' }}</td>
+                                    <td>{{ $task->start_time ? $task->start_time->format('H:i') : '-' }}</td>
+                                    <td>{{ $task->end_time ? $task->end_time->format('H:i') : '-' }}</td>
+                                    <td>{{ number_format($task->duration_in_hours ?? 0, 2) }}</td>
+                                </tr>
+                            @endforeach
+
+                            <tr class="{{ $rowClass }}" style="font-weight: bold;">
+                                <td colspan="5" style="text-align: right;">Total Hours for {{ $date }}:</td>
+                                <td>{{ number_format($dateTotalHours, 2) }}</td>
                             </tr>
                         @endforeach
-                        <tr style="font-weight: bold; background-color: #bbdefb;">
+
+                        <tr class="total-row bg-primary text-white">
                             <td colspan="5" style="text-align: center;">Total Task Hours:</td>
                             <td>{{ number_format($totalHours, 2) }}</td>
                         </tr>

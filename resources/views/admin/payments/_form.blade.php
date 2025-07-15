@@ -35,6 +35,11 @@
 @push('js')
     <script>
         const invoices = @json($invoices->load(['wallet', 'project']));
+        const currencySymbols = {
+            'USD': '$',
+            'EUR': '€',
+            'DZD': 'DZ'
+        };
 
         const invoiceSelect = document.getElementById('invoice_id');
         const exchangeRateGroup = document.getElementById('exchange-rate-group');
@@ -42,9 +47,11 @@
         function updateExchangeRateVisibility() {
             const selectedInvoiceId = invoiceSelect.value;
             const invoice = invoices.find(inv => inv.id == selectedInvoiceId);
+            const label = exchangeRateGroup.querySelector('label');
 
             if (!invoice || !invoice.wallet || !invoice.project) {
                 exchangeRateGroup.style.display = 'none';
+                if (label) label.textContent = 'Exchange Rate';
                 return;
             }
 
@@ -53,13 +60,18 @@
 
             if (walletCurrency === projectCurrency) {
                 exchangeRateGroup.style.display = 'none';
+                if (label) label.textContent = 'Exchange Rate';
             } else {
                 exchangeRateGroup.style.display = 'block';
+                const fromSymbol = currencySymbols[projectCurrency] || projectCurrency;
+                const toSymbol = currencySymbols[walletCurrency] || walletCurrency;
+                if (label) {
+                    label.textContent = `Exchange Rate (${fromSymbol} → ${toSymbol})`;
+                }
             }
         }
 
         invoiceSelect.addEventListener('change', updateExchangeRateVisibility);
-
         document.addEventListener('DOMContentLoaded', updateExchangeRateVisibility);
     </script>
 @endpush

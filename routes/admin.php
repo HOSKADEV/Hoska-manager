@@ -28,6 +28,12 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth'])->group(function (
     Route::resource('notes', NotesController::class);
 });
 
+Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdminOrAccountant'])->group(function () {
+    Route::get('wallets/{wallet}/balance', [WalletsController::class, 'getBalance'])->name('wallets.balance');
+    Route::resource('wallet-transactions', WalletTransactionController::class);
+});
+
+
 Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group(function () {
 
     Route::resource('clients', ClientsController::class);
@@ -47,8 +53,7 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group
     Route::post('timesheets/export', [TimesheetsController::class, 'exportSelectedColumns'])->name('export.timesheet');
 
     Route::resource('wallets', WalletsController::class);
-    Route::get('wallets/{wallet}/balance', [WalletsController::class, 'getBalance'])->name('wallets.balance');
-    Route::resource('wallet-transactions', WalletTransactionController::class);
+    // Route::get('wallets/{wallet}/balance', [WalletsController::class, 'getBalance'])->name('wallets.balance');
 });
 
 

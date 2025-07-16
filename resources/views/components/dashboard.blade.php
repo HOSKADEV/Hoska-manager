@@ -92,20 +92,21 @@
                 <div class="sidebar-brand-text mx-3">{{ env('APP_NAME') }}</div>
             </a>
 
-            <!-- Divider -->
-            <hr class="sidebar-divider my-0">
-            <!-- Nav Item - Dashboard -->
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('admin.index') }}">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span></a>
-            </li>
 
             @php
                 $user = auth()->user();
             @endphp
             @auth
                 @if($user->type === 'admin')
+
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Dashboard -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('admin.index') }}">
+                            <i class="fas fa-fw fa-tachometer-alt"></i>
+                            <span>Dashboard</span></a>
+                    </li>
 
                     <!-- Divider -->
                     <hr class="sidebar-divider my-0">
@@ -338,9 +339,34 @@
                 @endif
             @endauth
 
+            @auth
+                @if ($user->role?->name === 'accountant')
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Expenses -->
+                    <li class="nav-item {{ request()->routeIs('admin.wallet-transactions.create') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.wallet-transactions.create') }}">
+                            <i class="fas fa-arrow-circle-up"></i>
+                            <span>Expense Transactions</span>
+                        </a>
+                    </li>
+                @endif
+            @endauth
             <!-- عرض المهام فقط للموظف -->
             @auth
-                @if($user->type === 'employee')
+                @if($user->type === 'employee' && $user->role?->name != 'accountant')
+
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Dashboard -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('admin.index') }}">
+                            <i class="fas fa-fw fa-tachometer-alt"></i>
+                            <span>Dashboard</span></a>
+                    </li>
+                    
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
                     <li
                         class="nav-item {{ request()->routeIs('admin.tasks.index') || request()->routeIs('admin.tasks.create') ? 'active' : ''}}">
                         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTasks"

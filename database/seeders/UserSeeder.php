@@ -3,22 +3,38 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Role;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        User::create([
-            'name' => 'Admin',
+        // إنشاء أدمن إذا لم يكن موجود
+        User::firstOrCreate([
             'email' => 'admin@gmail.com',
-            'password' => Hash::make('123456789'),
+        ], [
+            'name' => 'Admin',
+            'password' => bcrypt('123456789'),
             'type' => 'admin',
+        ]);
+
+        // التأكد من وجود دور Accountant
+        $roleAccountant = Role::firstOrCreate([
+            'name' => 'accountant',
+        ], [
+            'label' => 'Accountant',
+        ]);
+
+        // إنشاء محاسب وربطه بالدور
+        User::firstOrCreate([
+            'email' => 'accountant@gmail.com',
+        ], [
+            'name' => 'Accountant',
+            'password' => Hash::make('password123'),
+            'type' => 'employee',
+            'role_id' => $roleAccountant->id,
         ]);
     }
 }

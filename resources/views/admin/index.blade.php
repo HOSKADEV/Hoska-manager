@@ -143,7 +143,7 @@
                     </div>
                 </div>
             </div>
-        @elseif($user->type === 'employee')
+        @elseif($user->type === 'employee' && $user->role?->name != 'accountant')
             @php
                 $employee = $user->employee;
                 $employeeProjectsCount = $employee->projects()->count();

@@ -38,11 +38,15 @@ class AuthController extends Controller
             //     return redirect()->back()->withErrors(['errorlogin' => 'يرجى التحقق من بريدك الإلكتروني لتفعيل الحساب.']);
             // }
             $role = $user->type;
+            $roleName = optional($user->role)->name; // استخدم optional لتجنب الخطأ إن لم يكن له role
             $request->session()->regenerate();
             if ($role === 'admin') {
-                return redirect()->route('admin.index'); // لوحة تحكم الادمن
+                return redirect()->route('admin.index');
             } elseif ($role === 'employee') {
-                return redirect()->route('admin.index'); // لوحة تحكم الموظف (تأكد من وجودها)
+                if ($roleName === 'accountant') {
+                    return redirect()->route('admin.index'); // لوحة تحكم المحاسب
+                }
+                return redirect()->route('admin.index'); // لوحة تحكم الموظف
             } elseif ($role === 'client') {
                 return redirect()->route('login');
             }

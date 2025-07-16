@@ -15,19 +15,15 @@ class RolesTableSeeder extends Seeder
     {
         Role::firstOrCreate(
             ['name' => 'admin'],
-            ['lable' => 'Administrator']
         );
         Role::firstOrCreate(
             ['name' => 'employee'],
-            ['lable' => 'Employee']
         );
         Role::firstOrCreate(
             ['name' => 'client'],
-            ['lable' => 'Client']
         );
         Role::firstOrCreate(
             ['name' => 'accountant'],
-            ['lable' => 'Accountant']
         );// إضافة دور المحاسب
     }
 }

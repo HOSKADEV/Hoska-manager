@@ -38,10 +38,8 @@ class AdminController extends Controller
                 $rate = $employee->rate ?? 0;
 
                 if ($salaryType === 'monthly') {
-                    // راتب شهري ثابت
                     $monthlyEarnings = $rate;
                 } elseif ($salaryType === 'hourly') {
-                    // حساب مجموع عدد الساعات من start_time إلى end_time للمهام المنجزة خلال هذا الشهر
                     $completedTasks = Task::where('employee_id', $employee->id)
                         ->where('status', 'completed')
                         ->whereYear('end_time', now()->year)
@@ -54,7 +52,6 @@ class AdminController extends Controller
 
                     $monthlyEarnings = $totalHours * $rate;
                 } elseif ($salaryType === 'per_project') {
-                    // عدد المشاريع التي لديه فيها مهام مكتملة خلال الشهر
                     $completedProjects = Project::whereHas('tasks', function ($query) use ($employee) {
                         $query->where('employee_id', $employee->id)
                             ->where('status', 'completed')
@@ -66,13 +63,11 @@ class AdminController extends Controller
                 }
             }
         } elseif ($user->type === 'admin') {
-            // مجموع المدفوعات المحصلة في هذا الشهر
             $payments = Payment::with('invoice.project')
                 ->whereYear('created_at', now()->year)
                 ->whereMonth('created_at', now()->month)
                 ->get();
 
-            // تحويل حسب عملة المشروع
             $exchangeRatesToUSD = [
                 'USD' => 1,
                 'EUR' => 1.10,
@@ -82,7 +77,12 @@ class AdminController extends Controller
             foreach ($payments as $payment) {
                 $currency = strtoupper($payment->invoice->project->currency ?? 'USD');
                 $rate = $exchangeRatesToUSD[$currency] ?? 1;
-                $monthlyEarnings += $payment->amount * $rate;
+
+                $amount = $payment->getAttribute('amount');
+
+                if (is_numeric($amount)) {
+                    $monthlyEarnings += $amount * $rate;
+                }
             }
         }
 
@@ -99,6 +99,7 @@ class AdminController extends Controller
             'monthlyEarnings'
         ));
     }
+
 
     public function profile()
     {

@@ -23,8 +23,6 @@ class UserSeeder extends Seeder
         // التأكد من وجود دور Accountant
         $roleAccountant = Role::firstOrCreate([
             'name' => 'accountant',
-        ], [
-            'label' => 'Accountant',
         ]);
 
         // إنشاء محاسب وربطه بالدور

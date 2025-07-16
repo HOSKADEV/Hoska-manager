@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Employee;
 
 class AdminController extends Controller
 {
@@ -25,28 +26,64 @@ class AdminController extends Controller
         $totalProjects = Project::count();
         $totalClients = Client::count();
 
-        // أسعار الصرف إلى الدولار
-        $exchangeRatesToUSD = [
-            'USD' => 1,
-            'EUR' => 1.10, // 1 EUR = 1.10 USD
-            'DZD' => 0.0074, // 1 DZD = 0.0074 USD
-        ];
-
-        // اجمع الدفعات بعد التحويل للدولار
-        $payments = Payment::with('invoice.project')->whereYear('created_at', now()->year)
-            ->whereMonth('created_at', now()->month)
-            ->get();
-
         $monthlyEarnings = 0;
 
-        foreach ($payments as $payment) {
-            $currency = strtoupper($payment->invoice->project->currency ?? 'USD');
-            $rate = $exchangeRatesToUSD[$currency] ?? 1;
+        $user = Auth::user();
 
-            // إذا الدفع تم بعملة أخرى، نضرب في السعر مقابل الدولار
-            $amountInUSD = $payment->amount * $rate;
+        if ($user->type === 'employee') {
+            $employee = Employee::where('user_id', $user->id)->first();
 
-            $monthlyEarnings += $amountInUSD;
+            if ($employee) {
+                $salaryType = $employee->payment_type;  // 'monthly', 'hourly', 'per_project'
+                $rate = $employee->rate ?? 0;
+
+                if ($salaryType === 'monthly') {
+                    // راتب شهري ثابت
+                    $monthlyEarnings = $rate;
+                } elseif ($salaryType === 'hourly') {
+                    // حساب مجموع عدد الساعات من start_time إلى end_time للمهام المنجزة خلال هذا الشهر
+                    $completedTasks = Task::where('employee_id', $employee->id)
+                        ->where('status', 'completed')
+                        ->whereYear('end_time', now()->year)
+                        ->whereMonth('end_time', now()->month)
+                        ->get();
+
+                    $totalHours = $completedTasks->sum(function ($task) {
+                        return \Carbon\Carbon::parse($task->start_time)->diffInHours(\Carbon\Carbon::parse($task->end_time));
+                    });
+
+                    $monthlyEarnings = $totalHours * $rate;
+                } elseif ($salaryType === 'per_project') {
+                    // عدد المشاريع التي لديه فيها مهام مكتملة خلال الشهر
+                    $completedProjects = Project::whereHas('tasks', function ($query) use ($employee) {
+                        $query->where('employee_id', $employee->id)
+                            ->where('status', 'completed')
+                            ->whereYear('end_time', now()->year)
+                            ->whereMonth('end_time', now()->month);
+                    })->count();
+
+                    $monthlyEarnings = $completedProjects * $rate;
+                }
+            }
+        } elseif ($user->type === 'admin') {
+            // مجموع المدفوعات المحصلة في هذا الشهر
+            $payments = Payment::with('invoice.project')
+                ->whereYear('created_at', now()->year)
+                ->whereMonth('created_at', now()->month)
+                ->get();
+
+            // تحويل حسب عملة المشروع
+            $exchangeRatesToUSD = [
+                'USD' => 1,
+                'EUR' => 1.10,
+                'DZD' => 0.0074,
+            ];
+
+            foreach ($payments as $payment) {
+                $currency = strtoupper($payment->invoice->project->currency ?? 'USD');
+                $rate = $exchangeRatesToUSD[$currency] ?? 1;
+                $monthlyEarnings += $payment->amount * $rate;
+            }
         }
 
         $completionPercentage = $totalTasks > 0

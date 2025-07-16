@@ -9,6 +9,7 @@ use App\Models\Employee;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,7 +20,13 @@ class ProjectsController extends Controller
      */
     public function index()
     {
-        $projects = Project::all();
+        $projects = Project::all()->map(function ($project) {
+            $project->remainingDays = $project->delivery_date
+                ? Carbon::now()->diffInDays(Carbon::parse($project->delivery_date), false)
+                : null;
+
+            return $project;
+        });
 
         return view('admin.projects.index', compact('projects'));
     }
@@ -82,9 +89,9 @@ class ProjectsController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Project $project)
     {
-        //
+        return view('admin.projects.show', compact('project'));
     }
 
     /**

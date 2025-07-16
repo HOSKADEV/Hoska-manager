@@ -161,4 +161,18 @@ class EmployeesController extends Controller
         flash()->success('Employee deleted successfully');
         return redirect()->route('admin.employees.index');
     }
+
+    public function projects($employeeId)
+    {
+        $employee = Employee::with('projects')->findOrFail($employeeId);
+
+        $projects = $employee->projects->map(function ($project) {
+            return [
+                'id' => $project->id,
+                'name' => $project->name,
+            ];
+        });
+
+        return response()->json($projects);
+    }
 }

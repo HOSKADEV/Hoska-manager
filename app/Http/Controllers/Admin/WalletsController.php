@@ -8,6 +8,7 @@ use App\Models\Wallet;
 use App\Models\WalletTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
 
 class WalletsController extends Controller
 {
@@ -153,5 +154,13 @@ class WalletsController extends Controller
 
         flash()->success('Wallet deleted successfully');
         return redirect()->route('admin.wallets.index');
+    }
+
+    public function getBalance(Wallet $wallet): JsonResponse
+    {
+        return response()->json([
+            'balance' => $wallet->balance,
+            'currency' => $wallet->currency,
+        ]);
     }
 }

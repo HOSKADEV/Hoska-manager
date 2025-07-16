@@ -47,8 +47,12 @@ class InvoicesController extends Controller
     public function store(InvoiceRequest $request)
     {
         $data = $request->validated();
+
+        // تعيين is_paid تلقائياً كـ false (غير مدفوعة)
+        $data['is_paid'] = false;
+
+        // تعيين wallet_id و project_id كما هو من الريكوست
         $data['wallet_id'] = $request->wallet_id;
-        $data['is_paid'] = $request->is_paid;
         $data['project_id'] = $request->project_id;
 
         $project = Project::with('client')->findOrFail($request->project_id);
@@ -59,15 +63,15 @@ class InvoicesController extends Controller
 
         $data['client_id'] = $project->client->id;
 
-        // Calculate total paid amount for this project (only paid invoices)
+        // حساب المبلغ المدفوع مسبقاً للمشروع (الفواتير المدفوعة فقط)
         $paidAmount = $project->invoices()
             ->where('is_paid', true)
             ->sum('amount');
 
-        // Calculate remaining amount
+        // حساب المبلغ المتبقي
         $remaining = $project->total_amount - $paidAmount;
 
-        // Prevent invoice amount from exceeding the remaining amount
+        // منع إدخال مبلغ أكبر من المتبقي
         if ($data['amount'] > $remaining) {
             return back()->withErrors(['amount' => "The entered amount ({$data['amount']}) exceeds the remaining amount of the project ({$remaining})."]);
         }
@@ -90,9 +94,13 @@ class InvoicesController extends Controller
     public function update(InvoiceRequest $request, Invoice $invoice)
     {
         $data = $request->validated();
+
         $data['wallet_id'] = $request->wallet_id;
-        $data['is_paid'] = $request->is_paid;
         $data['project_id'] = $request->project_id;
+
+        // تعيين is_paid تلقائياً (مثلاً دايماً false أو تحافظ على القيمة الحالية)
+        // إذا تريد تبقي القيمة كما هي دون تعديل:
+        $data['is_paid'] = $invoice->is_paid;
 
         $project = Project::with('client')->findOrFail($request->project_id);
 
@@ -102,16 +110,14 @@ class InvoicesController extends Controller
 
         $data['client_id'] = $project->client->id;
 
-        // Calculate total paid amount excluding current invoice
+        // حساب المبلغ المدفوع مع استثناء الفاتورة الحالية
         $paidAmount = $project->invoices()
             ->where('is_paid', true)
             ->where('id', '!=', $invoice->id)
             ->sum('amount');
 
-        // Calculate remaining amount
         $remaining = $project->total_amount - $paidAmount;
 
-        // Prevent invoice amount from exceeding the remaining amount
         if ($data['amount'] > $remaining) {
             return back()->withErrors(['amount' => "The entered amount ({$data['amount']}) exceeds the remaining amount of the project ({$remaining})."]);
         }
@@ -144,6 +150,19 @@ class InvoicesController extends Controller
             'paid' => number_format($paidAmount, 2, '.', ''),
             'remaining' => number_format($remaining, 2, '.', ''),
             'currency' => $project->currency // ✅ أضفنا العملة هنا
+        ]);
+    }
+
+    public function info($id)
+    {
+        $invoice = Invoice::with(['project.client', 'wallet'])->findOrFail($id);
+
+        return response()->json([
+            'client_name'   => $invoice->project?->client?->name ?? 'N/A',
+            'project_name'  => $invoice->project?->name ?? 'N/A',
+            'wallet_name'   => $invoice->wallet?->name ?? 'N/A',
+            'amount'        => $invoice->amount,
+            'currency'      => $invoice->project?->currency ?? 'N/A',
         ]);
     }
 }

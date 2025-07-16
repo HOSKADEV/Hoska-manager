@@ -1,3 +1,28 @@
+<div class="mb-3">
+    <label for="invoice_id" class="form-label">Invoice</label>
+    <select name="invoice_id" id="invoice_id" class="form-control">
+        <option value="">Select Invoice</option>
+        @foreach ($invoices as $invoice)
+            <option value="{{ $invoice->id }}" @if (old('invoice_id', $payment->invoice_id ?? '') == $invoice->id) selected
+            @endif>
+                {{ $invoice->invoice_number }}
+            </option>
+        @endforeach
+    </select>
+</div>
+
+<div id="invoice-info" class="alert alert-info d-none">
+    <p>👤 Client: <strong id="client-name"></strong></p>
+    <p>📁 Project: <strong id="project-name"></strong></p>
+    <p><i class="fas fa-wallet text-success"></i> Wallet: <strong id="wallet-name"></strong></p>
+    <p>💵 Amount: <strong id="invoice-amount"></strong> <span id="invoice-currency"></span></p>
+</div>
+
+<div class="mb-3" id="exchange-rate-group">
+    <x-form.input type="text" step="0.0001" min="0" label="Exchange Rate" name="exchange_rate"
+        placeholder="Enter exchange rate" :oldval="old('exchange_rate', $payment->exchange_rate ?? '')" />
+</div>
+
 @if (isset($payment) && $payment->exists)
     <div class="mb-3">
         <x-form.input label="Amount" name="amount" placeholder="Enter Payment amount" :oldval="$payment->invoice->amount ?? ''" readonly />
@@ -12,24 +37,6 @@
 
 <div class="mb-3">
     <x-form.area label="Note" name="note" placeholder="Enter Payment Note" :oldval="$payment->note" />
-</div>
-
-<div class="mb-3">
-    <label for="invoice_id" class="form-label">Invoice</label>
-    <select name="invoice_id" id="invoice_id" class="form-control">
-        <option value="">Select Invoice</option>
-        @foreach ($invoices as $invoice)
-            <option value="{{ $invoice->id }}" @if (old('invoice_id', $payment->invoice_id ?? '') == $invoice->id) selected
-            @endif>
-                {{ $invoice->invoice_number }}
-            </option>
-        @endforeach
-    </select>
-</div>
-
-<div class="mb-3" id="exchange-rate-group">
-    <x-form.input type="text" step="0.0001" min="0" label="Exchange Rate" name="exchange_rate"
-        placeholder="Enter exchange rate" :oldval="old('exchange_rate', $payment->exchange_rate ?? '')" />
 </div>
 
 @push('js')
@@ -74,4 +81,46 @@
         invoiceSelect.addEventListener('change', updateExchangeRateVisibility);
         document.addEventListener('DOMContentLoaded', updateExchangeRateVisibility);
     </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const currencySymbols = {
+                'USD': '$',
+                'EUR': '€',
+                'DZD': 'DZ'
+            };
+
+            const selectInvoice = document.getElementById('invoice_id');
+
+            if (selectInvoice) {
+                selectInvoice.addEventListener('change', function () {
+                    const invoiceId = this.value;
+                    if (!invoiceId) return;
+
+                    fetch(`/admin/invoices/${invoiceId}/info`)
+                        .then(res => res.json())
+                        .then(data => {
+                            document.getElementById('client-name').textContent = data.client_name;
+                            document.getElementById('project-name').textContent = data.project_name;
+                            document.getElementById('wallet-name').textContent = data.wallet_name ?? 'N/A';
+                            document.getElementById('invoice-amount').textContent = data.amount;
+
+                            const currencySymbol = currencySymbols[data.currency] || data.currency;
+                            document.getElementById('invoice-currency').textContent = currencySymbol;
+
+                            document.getElementById('invoice-info').classList.remove('d-none');
+                        })
+                        .catch(err => {
+                            console.error("Failed to load invoice info:", err);
+                            document.getElementById('invoice-info').classList.add('d-none');
+                        });
+                });
+
+                if (selectInvoice.value) {
+                    selectInvoice.dispatchEvent(new Event('change'));
+                }
+            }
+        });
+    </script>
+
 @endpush

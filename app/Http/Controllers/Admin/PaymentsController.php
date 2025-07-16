@@ -28,8 +28,8 @@ class PaymentsController extends Controller
     public function create()
     {
         $payment = new Payment();
-        $invoices = Invoice::all();
-        // $invoices = Invoice::pluck('id', 'invoice_number')->toArray();
+        // فقط الفواتير الغير مدفوعة
+        $invoices = Invoice::where('is_paid', false)->get();
 
         return view('admin.payments.create', compact('payment', 'invoices'));
     }
@@ -96,7 +96,10 @@ class PaymentsController extends Controller
      */
     public function edit(Payment $payment)
     {
-        $invoices = Invoice::all();
+        $invoices = Invoice::where('is_paid', false)
+            ->orWhere('id', $payment->invoice_id)
+            ->get();
+
         return view('admin.payments.edit', compact('payment', 'invoices'));
     }
 

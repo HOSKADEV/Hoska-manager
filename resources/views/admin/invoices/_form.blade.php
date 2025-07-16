@@ -49,7 +49,7 @@
         :oldval="old('due_date', $invoice->due_date ?? '')" />
 </div>
 
-@php
+{{-- @php
     $selectedIsPaid = old('is_paid', $invoice->is_paid ?? '');
 @endphp
 
@@ -63,7 +63,10 @@
     @error('is_paid')
         <div class="invalid-feedback">{{ $message }}</div>
     @enderror
-</div>
+</div> --}}
+
+
+<input type="hidden" name="is_paid" value="0" />
 
 <div class="mb-3">
     <x-form.select label="Wallet" name="wallet_id" placeholder="Select Wallet" :options="$wallets"

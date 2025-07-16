@@ -21,7 +21,6 @@ class ProjectRequest extends FormRequest
      */
     public function rules(): array
     {
-
         $rules = 'nullable|unique:projects,name';
 
         if ($this->method() != 'POST') {
@@ -33,10 +32,19 @@ class ProjectRequest extends FormRequest
             'description' => 'nullable|string',
             'total_amount' => 'nullable|numeric',
             'currency' => 'required|in:EUR,USD,DZD',
-            'attachment' => $this->isMethod('post') ? 'nullable|array' : 'nullable|array',
+
+            // Attachments
+            'attachment' => 'nullable|array',
             'attachment.*' => 'file|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xls,xlsx,ppt,pptx,zip,rar|max:10240',
+
+            // Employees
             'employee_id' => 'nullable|array',
             'employee_id.*' => 'exists:employees,id',
+
+            // New fields
+            'start_date' => 'nullable|date',
+            'duration_days' => 'nullable|integer|min:1',
+            'delivery_date' => 'nullable|date|after_or_equal:start_date',
         ];
     }
 }

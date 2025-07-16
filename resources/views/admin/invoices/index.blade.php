@@ -19,13 +19,33 @@
             }
 
             .badge-project {
-                background-color: #28a745;
+                background-color: #c70cba;
                 /* بنفسجي */
             }
 
             .badge-muted {
                 background-color: #6c757d;
                 /* رمادي */
+            }
+
+            .badge-paid {
+                background-color: #28a745;
+                /* أخضر Bootstrap */
+                color: white;
+                font-weight: 600;
+                padding: 0.35em 0.7em;
+                border-radius: 0.4rem;
+                font-size: 0.85rem;
+            }
+
+            .badge-unpaid {
+                background-color: #dc3545;
+                /* أحمر Bootstrap */
+                color: white;
+                font-weight: 600;
+                padding: 0.35em 0.7em;
+                border-radius: 0.4rem;
+                font-size: 0.85rem;
             }
         </style>
     @endpush
@@ -90,7 +110,13 @@
                                 </td>
                                 <td>{{ $invoice->invoice_date->diffForHumans() }}</td>
                                 <td>{{ $invoice->due_date?->diffForHumans() ?? '_' }}</td>
-                                <td>{{ $invoice->is_paid ? 'Paid' : 'Unpaid' }}</td>
+                                <td>
+                                    @if($invoice->is_paid)
+                                        <span class="badge-paid">Paid</span>
+                                    @else
+                                        <span class="badge-unpaid">Unpaid</span>
+                                    @endif
+                                </td>
                                 <td>
                                     @if($invoice->project)
                                         <span class="badge-custom badge-project">{{ $invoice->project->name }}</span>

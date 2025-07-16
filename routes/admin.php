@@ -32,11 +32,14 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group
 
     Route::resource('clients', ClientsController::class);
     Route::resource('employees', EmployeesController::class);
+    Route::get('employees/{employee}/projects', [EmployeesController::class, 'projects']);
     Route::resource('projects', ProjectsController::class);
     Route::resource('developments', DevelopmentsController::class);
     Route::resource('invoices', InvoicesController::class);
-    // web.php
+    Route::get('/invoices/{id}/info', [InvoicesController::class, 'info']);
+
     Route::get('projects/{project}/financials', [InvoicesController::class, 'getProjectFinancials']);
+
 
     Route::resource('payments', PaymentsController::class);
     Route::resource('timesheets', TimesheetsController::class);
@@ -44,6 +47,7 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group
     Route::post('timesheets/export', [TimesheetsController::class, 'exportSelectedColumns'])->name('export.timesheet');
 
     Route::resource('wallets', WalletsController::class);
+    Route::get('wallets/{wallet}/balance', [WalletsController::class, 'getBalance'])->name('wallets.balance');
     Route::resource('wallet-transactions', WalletTransactionController::class);
 });
 

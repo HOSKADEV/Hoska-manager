@@ -19,7 +19,6 @@
                 </div>
             @endif
 
-
             <form action="{{ route('admin.wallet-transactions.store') }}" method="POST">
                 @csrf
 
@@ -38,6 +37,13 @@
                     @enderror
                 </div>
 
+                @php
+                    $currencySymbols = [
+                        'USD' => '$',
+                        'EUR' => '€',
+                        'DZD' => 'DZ',
+                    ];
+                @endphp
                 <div class="mb-3">
                     <label for="wallet_id" class="form-label">Wallet</label>
                     <select name="wallet_id" id="wallet_id"
@@ -45,10 +51,14 @@
                         <option value="" selected disabled>Select Wallet</option>
                         @foreach ($wallets as $wallet)
                             <option value="{{ $wallet->id }}" {{ old('wallet_id') == $wallet->id ? 'selected' : '' }}>
-                                {{ $wallet->name }}
+                                {{ $wallet->name }} ({{ $currencySymbols[$wallet->currency] ?? '' }})
                             </option>
                         @endforeach
                     </select>
+                    <div class="mb-2 text-muted" id="wallet-balance"
+                        style="display: none; font-weight: 600 !important; color: #1e7e34 !important; margin-top: 5px !important;">
+                        Balance: <span id="wallet-balance-value"></span>
+                    </div>
                     @error('wallet_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -61,10 +71,14 @@
                         <option value="" selected disabled>Select Related Wallet</option>
                         @foreach ($wallets as $wallet)
                             <option value="{{ $wallet->id }}" {{ old('related_wallet_id') == $wallet->id ? 'selected' : '' }}>
-                                {{ $wallet->name }}
+                                {{ $wallet->name }} ({{ $currencySymbols[$wallet->currency] ?? '' }})
                             </option>
                         @endforeach
                     </select>
+                    <div class="mb-2 text-muted" id="related-wallet-balance"
+                        style="display: none; font-weight: 600 !important; color: #155724 !important; margin-top: 5px !important;">
+                        Balance: <span id="related-wallet-balance-value"></span>
+                    </div>
                     @error('related_wallet_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -90,6 +104,10 @@
                     @enderror
                 </div>
 
+                <div class="mb-2 text-success" id="converted-amount" style="display: none;">
+                    Converted Amount: <span id="converted-amount-value"></span>
+                </div>
+
                 <div class="mb-3">
                     <label for="transaction_date" class="form-label">Transaction Date</label>
                     <input type="datetime-local" name="transaction_date" id="transaction_date"
@@ -111,9 +129,7 @@
                 </div>
 
                 <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save Transaction</button>
-
             </form>
-
         </div>
     </div>
 
@@ -121,10 +137,39 @@
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const typeSelect = document.getElementById('type');
-                const relatedWalletDiv = document.getElementById('related-wallet-div');
-                const exchangeRateDiv = document.getElementById('exchange-rate-div');
+                const walletSelect = document.getElementById('wallet_id');
+                const relatedWalletSelect = document.getElementById('related_wallet_id');
+                const amountInput = document.getElementById('amount');
+                const exchangeRateInput = document.getElementById('exchange_rate');
+                const exchangeRateLabel = document.querySelector('label[for="exchange_rate"]');
+
+                const balanceDiv = document.getElementById('wallet-balance');
+                const balanceSpan = document.getElementById('wallet-balance-value');
+                const relatedBalanceDiv = document.getElementById('related-wallet-balance');
+                const relatedBalanceSpan = document.getElementById('related-wallet-balance-value');
+
+                const convertedAmountDiv = document.getElementById('converted-amount');
+                const convertedAmountSpan = document.getElementById('converted-amount-value');
+
+                let currentBalance = 0;
+                let fromCurrency = '';
+                let toCurrency = '';
+
+                const currencySymbols = {
+                    'USD': '$',
+                    'EUR': '€',
+                    'DZD': 'DZ'
+                };
+
+                function formatBalance(balance, currency) {
+                    const symbol = currencySymbols[currency] || currency;
+                    return `${symbol} ${parseFloat(balance).toFixed(2)}`;
+                }
 
                 function toggleFields() {
+                    const relatedWalletDiv = document.getElementById('related-wallet-div');
+                    const exchangeRateDiv = document.getElementById('exchange-rate-div');
+
                     if (typeSelect.value === 'transfer') {
                         relatedWalletDiv.style.display = 'block';
                         exchangeRateDiv.style.display = 'block';
@@ -133,13 +178,132 @@
                         exchangeRateDiv.style.display = 'none';
                         document.getElementById('related_wallet_id').value = '';
                         document.getElementById('exchange_rate').value = '';
+                        exchangeRateInput.required = false;
+                        exchangeRateInput.disabled = false;
+                        exchangeRateLabel.textContent = 'Exchange Rate (For Transfer)';
+                        relatedBalanceDiv.style.display = 'none';
+                        convertedAmountDiv.style.display = 'none';
                     }
                 }
 
-                typeSelect.addEventListener('change', toggleFields);
+                function fetchWalletInfo(walletId, callback) {
+                    if (!walletId) {
+                        callback({ balance: 0, currency: '' });
+                        return;
+                    }
 
-                // Call once on load
+                    fetch(`/admin/wallets/${walletId}/balance`)
+                        .then(res => res.json())
+                        .then(data => callback(data));
+                }
+
+                function updateBalanceDisplay(data) {
+                    currentBalance = parseFloat(data.balance);
+                    fromCurrency = data.currency;
+                    balanceSpan.textContent = formatBalance(currentBalance, fromCurrency);
+                    balanceDiv.style.display = 'block';
+                    updateExchangeLabel();
+                }
+
+                function updateExchangeLabel() {
+                    if (typeSelect.value === 'transfer' && fromCurrency && toCurrency) {
+                        exchangeRateLabel.textContent = `Exchange Rate (From ${fromCurrency} to ${toCurrency})`;
+
+                        if (fromCurrency === toCurrency) {
+                            exchangeRateInput.required = false;
+                            exchangeRateInput.value = 1;
+                            exchangeRateInput.disabled = true;
+                        } else {
+                            exchangeRateInput.required = true;
+                            exchangeRateInput.disabled = false;
+                            if (!exchangeRateInput.value || exchangeRateInput.value == 1) {
+                                exchangeRateInput.value = '';
+                            }
+                        }
+                    } else {
+                        exchangeRateLabel.textContent = 'Exchange Rate (For Transfer)';
+                        exchangeRateInput.required = false;
+                        exchangeRateInput.disabled = false;
+                    }
+
+                    updateConvertedAmount();
+                }
+
+                function updateConvertedAmount() {
+                    const amount = parseFloat(amountInput.value);
+                    const exchangeRate = parseFloat(exchangeRateInput.value);
+
+                    if (
+                        typeSelect.value === 'transfer' &&
+                        !isNaN(amount) &&
+                        !isNaN(exchangeRate) &&
+                        toCurrency
+                    ) {
+                        const converted = (amount * exchangeRate).toFixed(2);
+                        const symbol = currencySymbols[toCurrency] || toCurrency;
+                        convertedAmountSpan.textContent = `${symbol} ${converted}`;
+                        convertedAmountDiv.style.display = 'block';
+                    } else {
+                        convertedAmountDiv.style.display = 'none';
+                    }
+                }
+
+                amountInput.addEventListener('input', function () {
+                    const amount = parseFloat(amountInput.value);
+                    const type = typeSelect.value;
+
+                    if (['expense', 'withdraw', 'transfer'].includes(type)) {
+                        if (amount > currentBalance) {
+                            amountInput.setCustomValidity('Insufficient balance in selected wallet.');
+                        } else {
+                            amountInput.setCustomValidity('');
+                        }
+                    } else {
+                        amountInput.setCustomValidity('');
+                    }
+
+                    updateConvertedAmount();
+                });
+
+                exchangeRateInput.addEventListener('input', updateConvertedAmount);
+
+                relatedWalletSelect.addEventListener('change', function () {
+                    fetchWalletInfo(relatedWalletSelect.value, function (data) {
+                        toCurrency = data.currency;
+                        updateExchangeLabel();
+                        relatedBalanceSpan.textContent = formatBalance(data.balance, toCurrency);
+                        relatedBalanceDiv.style.display = 'block';
+                        updateConvertedAmount();
+                    });
+                });
+
+                typeSelect.addEventListener('change', function () {
+                    toggleFields();
+                    updateExchangeLabel();
+                    amountInput.dispatchEvent(new Event('input'));
+                });
+
+                walletSelect.addEventListener('change', function () {
+                    fetchWalletInfo(walletSelect.value, function (data) {
+                        fromCurrency = data.currency;
+                        updateBalanceDisplay(data);
+                    });
+                });
+
                 toggleFields();
+
+                // Load initial wallet balance if preselected
+                if (walletSelect.value) {
+                    fetchWalletInfo(walletSelect.value, updateBalanceDisplay);
+                }
+                if (relatedWalletSelect.value) {
+                    fetchWalletInfo(relatedWalletSelect.value, function (data) {
+                        toCurrency = data.currency;
+                        relatedBalanceSpan.textContent = formatBalance(data.balance, toCurrency);
+                        relatedBalanceDiv.style.display = 'block';
+                        updateExchangeLabel();
+                    });
+                }
             });
         </script>
     @endpush

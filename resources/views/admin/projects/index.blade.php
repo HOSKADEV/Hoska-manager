@@ -49,12 +49,16 @@
                         <tr>
                             <th>#</th>
                             <th>Name</th>
-                            <th>Description</th>
+                            {{-- <th>Description</th> --}}
                             <th>TotalAmount</th>
-                            <th>Attachments</th>
+                            <th>Start Date</th>
+                            <th>Duration</th>
+                            <th>Delivery Date</th>
+                            <th>Remaining</th>
+                            {{-- <th>Attachments</th>
                             <th>Client Name</th>
-                            <th>Employee Name</th>
-                            <th>User Name</th>
+                            <th>Employee Name</th> --}}
+                            {{-- <th>User Name</th> --}}
                             <th>Created At</th>
                             <th>Updated At</th>
                             <th>Actions</th>
@@ -64,12 +68,16 @@
                         <tr>
                             <th>#</th>
                             <th>Name</th>
-                            <th>Description</th>
+                            {{-- <th>Description</th> --}}
                             <th>Total Amount</th>
-                            <th>Attachments</th>
+                            <th>Start Date</th>
+                            <th>Duration</th>
+                            <th>Delivery Date</th>
+                            <th>Remaining</th>
+                            {{-- <th>Attachments</th>
                             <th>Client Name</th>
-                            <th>Employee Name</th>
-                            <th>User Name</th>
+                            <th>Employee Name</th> --}}
+                            {{-- <th>User Name</th> --}}
                             <th>Created At</th>
                             <th>Updated At</th>
                             <th>Actions</th>
@@ -77,11 +85,24 @@
                     </tfoot>
                     <tbody>
                         @forelse ($projects as $project)
-                            <tr>
+                            @php
+                                $remainingDays = $project->remainingDays;
+                                $rowClass = '';
+
+                                if ($remainingDays !== null) {
+                                    if ($remainingDays < 0) {
+                                        $rowClass = 'table-danger';
+                                    } elseif ($remainingDays === 0) {
+                                        $rowClass = 'table-warning';
+                                    } else {
+                                        $rowClass = 'table-success';
+                                    }
+                                }
+                            @endphp
+                            <tr class="{{ $rowClass }}">
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $project->name }}</td>
-                                <td>{{ $project->description }}</td>
-                                {{-- <td>{{ $project->total_amount }}</td> --}}
+                                {{-- <td>{{ $project->description }}</td> --}}
                                 @php
                                     $currencySymbols = [
                                         'USD' => '$',
@@ -90,49 +111,74 @@
                                     ];
                                 @endphp
                                 <td>
-                                    {{ $currencySymbols[$project->currency] ?? '' }} {{ number_format( $project->total_amount, 2) }}
+                                    {{ $currencySymbols[$project->currency] ?? '' }}
+                                    {{ number_format($project->total_amount, 2) }}
                                 </td>
-                                {{-- <td>{{ $project->attachments->first()->file_name ?? '_'}}</td> --}}
+                                <td>{{ $project->start_date ?? '-' }}</td>
+                                <td>{{ $project->duration_days ? $project->duration_days . ' days' : '-' }}</td>
+                                <td>{{ $project->delivery_date ?? '-' }}</td>
                                 <td>
-                                    @php
-                                        $x = 1
-                                    @endphp
-                                    @if($project->attachments->isNotEmpty())
-                                        @foreach($project->attachments as $attachment)
-                                            <div>
-                                                <a href="{{ asset('storage/' . $attachment->file_path) }}" target="_blank"
-                                                    title="{{ basename($attachment->file_path) }}">
-                                                    {{-- {{ basename($attachment->file_path) }} --}}
-                                                    View File{{ $x++ }}
-                                                </a>
-                                            </div>
-                                        @endforeach
+                                    @if ($remainingDays !== null)
+                                        @php
+                                            $days = intval($remainingDays);
+                                        @endphp
+
+                                        @if ($days < 0)
+                                            <span class="badge badge-danger">Overdue {{ abs($days) }} day(s)</span>
+                                        @elseif ($days === 0)
+                                            <span class="badge badge-warning">Due Today</span>
+                                        @else
+                                            <span class="badge badge-success">{{ $days }} day(s)</span>
+                                        @endif
                                     @else
-                                        _
+                                        <span class="badge badge-secondary">N/A</span>
                                     @endif
                                 </td>
-                                <td>
-                                    @if($project->client)
-                                        <span class="badge-custom badge-client">{{ $project->client->name }}</span>
+                                {{-- <td>{{ $project->attachments->first()->file_name ?? '_'}}</td> --}}
+                                {{-- <td>
+                                    @php
+                                    $x = 1
+                                    @endphp
+                                    @if($project->attachments->isNotEmpty())
+                                    @foreach($project->attachments as $attachment)
+                                    <div>
+                                        <a href="{{ asset('storage/' . $attachment->file_path) }}" target="_blank"
+                                            title="{{ basename($attachment->file_path) }}"> --}}
+                                            {{-- {{ basename($attachment->file_path) }} --}}
+                                            {{-- View File{{ $x++ }}
+                                        </a>
+                                    </div>
+                                    @endforeach
                                     @else
-                                        <span class="badge-custom badge-muted">_</span>
+                                    _
+                                    @endif
+                                </td> --}}
+                                {{-- <td>
+                                    @if($project->client)
+                                    <span class="badge-custom badge-client">{{ $project->client->name }}</span>
+                                    @else
+                                    <span class="badge-custom badge-muted">_</span>
                                     @endif
                                 </td>
                                 <td>
                                     @if($project->employees && $project->employees->isNotEmpty())
-                                        @foreach($project->employees as $employee)
-                                            <span class="badge-custom badge-employee">{{ $employee->name }}</span>
-                                        @endforeach
+                                    @foreach($project->employees as $employee)
+                                    <span class="badge-custom badge-employee">{{ $employee->name }}</span>
+                                    @endforeach
                                     @else
-                                        <span class="badge-custom badge-muted">_</span>
+                                    <span class="badge-custom badge-muted">_</span>
                                     @endif
-                                </td>
-                                <td>
+                                </td> --}}
+                                {{-- <td>
                                     <span class="badge-custom badge-user">{{ auth()->user()->name }}</span>
-                                </td>
+                                </td> --}}
                                 <td>{{ $project->created_at->diffForHumans() }}</td>
                                 <td>{{ $project->updated_at->diffForHumans() }}</td>
                                 <td>
+                                    <a href="{{ route('admin.projects.show', $project->id) }}" class="btn btn-sm btn-info"
+                                        title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
                                     <a href="{{ route('admin.projects.edit', $project->id) }}"
                                         class="btn btn-sm btn-primary"><i class='fas fa-edit'></i></a>
                                     <form action="{{ route('admin.projects.destroy', $project->id) }}" method="POST"

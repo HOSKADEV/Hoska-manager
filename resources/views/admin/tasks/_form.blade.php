@@ -1,3 +1,26 @@
+@if(auth()->user()->type === 'admin')
+    <div class="mb-3">
+        <x-form.select3 label="Employee" name="employee_id"  id="employee_id" placeholder='Select Employee' :options="$employees"
+            :oldval="$task->employee_id" required />
+    </div>
+
+    <div class="mb-3">
+        <x-form.select3 label="Project" name="project_id"  id="project_id"  placeholder='Select Project' :options="$projects"
+            :oldval="$task->project_id" required />
+    </div>
+@elseif(auth()->user()->employee)
+    <input type="hidden" name="employee_id" value="{{ auth()->user()->employee->id }}">
+
+    <div class="mb-3">
+        <x-form.select3 label="Project" name="project_id" placeholder='Select Project' :options="$projects"
+            :oldval="$task->project_id" required />
+    </div>
+@else
+    <div class="alert alert-warning">
+        No employee linked to your account. Please contact admin.
+    </div>
+@endif
+
 <div class="mb-3">
     <x-form.input label="Title" name="title" placeholder="Enter Task Title" :oldval="$task->title ?? '' " required />
 </div>
@@ -89,29 +112,6 @@ $selectedValue = old('status', $task->status ?? '');
 </div>
 @endif --}}
 
-@if(auth()->user()->type === 'admin')
-    <div class="mb-3">
-        <x-form.select3 label="Employee" name="employee_id" placeholder='Select Employee' :options="$employees"
-            :oldval="$task->employee_id" required />
-    </div>
-
-    <div class="mb-3">
-        <x-form.select3 label="Project" name="project_id" placeholder='Select Project' :options="$projects"
-            :oldval="$task->project_id" required />
-    </div>
-@elseif(auth()->user()->employee)
-    <input type="hidden" name="employee_id" value="{{ auth()->user()->employee->id }}">
-
-    <div class="mb-3">
-        <x-form.select3 label="Project" name="project_id" placeholder='Select Project' :options="$projects"
-            :oldval="$task->project_id" required />
-    </div>
-@else
-    <div class="alert alert-warning">
-        No employee linked to your account. Please contact admin.
-    </div>
-@endif
-
 
 {{--
 <div class="mb-3">
@@ -164,4 +164,51 @@ $selectedValue = old('status', $task->status ?? '');
             calculateDuration();
         });
     </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const employeeSelect = document.getElementById('employee_id');
+            const projectSelect = document.getElementById('project_id');
+
+            if (employeeSelect) {
+                employeeSelect.addEventListener('change', function () {
+                    const employeeId = this.value;
+                    if (!employeeId) {
+                        projectSelect.innerHTML = '<option value="">Select Project</option>';
+                        return;
+                    }
+
+                    fetch(`/admin/employees/${employeeId}/projects`)
+                        .then(response => response.json())
+                        .then(projects => {
+                            // أفرغ الخيارات الحالية
+                            projectSelect.innerHTML = '<option value="">Select Project</option>';
+
+                            // أضف المشاريع الجديدة
+                            projects.forEach(project => {
+                                const option = document.createElement('option');
+                                option.value = project.id;
+                                option.textContent = project.name;
+                                projectSelect.appendChild(option);
+                            });
+
+                            // إذا عندك قيمة قديمة، اختارها
+                            @if(old('project_id') || isset($task->project_id))
+                                const oldProjectId = "{{ old('project_id', $task->project_id ?? '') }}";
+                                if (oldProjectId) {
+                                    projectSelect.value = oldProjectId;
+                                }
+                            @endif
+                            })
+                        .catch(err => console.error('Failed to load projects:', err));
+                });
+
+                // Trigger change event تلقائيًا لو فيه قيمة محددة مسبقًا
+                if (employeeSelect.value) {
+                    employeeSelect.dispatchEvent(new Event('change'));
+                }
+            }
+        });
+    </script>
+
 @endpush

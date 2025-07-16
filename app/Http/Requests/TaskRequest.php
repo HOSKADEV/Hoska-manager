@@ -23,12 +23,12 @@ class TaskRequest extends FormRequest
     public function rules(): array
     {
 
-        $taskId = $this->task->id ?? null;
+        // $taskId = $this->task->id ?? null;
 
         return [
             'title' => [
                 'required',
-                Rule::unique('tasks', 'title')->ignore($taskId),
+                // Rule::unique('tasks', 'title')->ignore($taskId),
             ],
             'description' => [
                 'nullable',

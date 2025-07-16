@@ -40,16 +40,19 @@ class AdminController extends Controller
                 if ($salaryType === 'monthly') {
                     $monthlyEarnings = $rate;
                 } elseif ($salaryType === 'hourly') {
-                    $completedTasks = Task::where('employee_id', $employee->id)
+                    // جلب المهام المكتملة للموظف خلال الشهر الحالي
+                    $employeeCompletedTasks = Task::where('employee_id', $employee->id)
                         ->where('status', 'completed')
                         ->whereYear('end_time', now()->year)
                         ->whereMonth('end_time', now()->month)
                         ->get();
 
-                    $totalHours = $completedTasks->sum(function ($task) {
+                    // حساب مجموع ساعات العمل من فرق start_time و end_time لكل مهمة
+                    $totalHours = $employeeCompletedTasks->sum(function ($task) {
                         return \Carbon\Carbon::parse($task->start_time)->diffInHours(\Carbon\Carbon::parse($task->end_time));
                     });
 
+                    // حساب الأجر الشهري بضرب مجموع الساعات بالسعر للساعة
                     $monthlyEarnings = $totalHours * $rate;
                 } elseif ($salaryType === 'per_project') {
                     $completedProjects = Project::whereHas('tasks', function ($query) use ($employee) {
@@ -100,7 +103,9 @@ class AdminController extends Controller
         ));
     }
 
-
+    /**
+     * Display the admin profile.
+     */
     public function profile()
     {
         $user = Auth::user();

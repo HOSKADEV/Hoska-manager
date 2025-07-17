@@ -24,10 +24,23 @@ class TasksController extends Controller
 
         if ($user->type === 'admin') {
             $tasks = Task::with(['employee', 'project'])->latest()->get();
-        } elseif (
-            $user->type === 'employee' && optional($user->role)->name
-            != 'accountant'
-        ) {
+
+            $totalTodayHours = Task::whereDate('start_time', Carbon::today())->get()->sum(function ($task) {
+                return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
+            });
+
+            $totalWeekHours = Task::whereDate('start_time', '>=', Carbon::now()->startOfWeek())->get()->sum(function ($task) {
+                return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
+            });
+
+            $totalMonthHours = Task::whereDate('start_time', '>=', Carbon::now()->startOfMonth())->get()->sum(function ($task) {
+                return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
+            });
+
+            $totalYearHours = Task::whereDate('start_time', '>=', Carbon::now()->startOfYear())->get()->sum(function ($task) {
+                return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
+            });
+        } elseif ($user->type === 'employee' && optional($user->role)->name != 'accountant') {
             $employee = $user->employee;
 
             if (!$employee) {
@@ -38,31 +51,37 @@ class TasksController extends Controller
                 ->where('employee_id', $employee->id)
                 ->latest()
                 ->get();
+
+            $totalTodayHours = Task::where('employee_id', $employee->id)
+                ->whereDate('start_time', Carbon::today())
+                ->get()
+                ->sum(function ($task) {
+                    return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
+                });
+
+            $totalWeekHours = Task::where('employee_id', $employee->id)
+                ->whereDate('start_time', '>=', Carbon::now()->startOfWeek())
+                ->get()
+                ->sum(function ($task) {
+                    return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
+                });
+
+            $totalMonthHours = Task::where('employee_id', $employee->id)
+                ->whereDate('start_time', '>=', Carbon::now()->startOfMonth())
+                ->get()
+                ->sum(function ($task) {
+                    return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
+                });
+
+            $totalYearHours = Task::where('employee_id', $employee->id)
+                ->whereDate('start_time', '>=', Carbon::now()->startOfYear())
+                ->get()
+                ->sum(function ($task) {
+                    return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
+                });
         } else {
             abort(403, 'نوع المستخدم غير مدعوم.');
         }
-
-        $today = Carbon::today();
-        $weekStart = Carbon::now()->startOfWeek();
-        $monthStart = Carbon::now()->startOfMonth();
-        $yearStart = Carbon::now()->startOfYear();
-
-        // لحساب الساعات نقوم بجلب المهام أولاً ثم استخدام sum مع حساب الفرق بين الوقتين
-        $totalTodayHours = Task::whereDate('start_time', $today)->get()->sum(function ($task) {
-            return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
-        });
-
-        $totalWeekHours = Task::whereDate('start_time', '>=', $weekStart)->get()->sum(function ($task) {
-            return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
-        });
-
-        $totalMonthHours = Task::whereDate('start_time', '>=', $monthStart)->get()->sum(function ($task) {
-            return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
-        });
-
-        $totalYearHours = Task::whereDate('start_time', '>=', $yearStart)->get()->sum(function ($task) {
-            return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
-        });
 
         return view('admin.tasks.index', compact(
             'tasks',

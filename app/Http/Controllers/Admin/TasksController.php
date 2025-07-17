@@ -24,7 +24,10 @@ class TasksController extends Controller
 
         if ($user->type === 'admin') {
             $tasks = Task::with(['employee', 'project'])->latest()->get();
-        } elseif ($user->type === 'employee' && $user->role->name != 'accountant') {
+        } elseif (
+            $user->type === 'employee' && optional($user->role)->name
+            != 'accountant'
+        ) {
             $employee = $user->employee;
 
             if (!$employee) {

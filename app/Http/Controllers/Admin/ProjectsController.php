@@ -12,23 +12,72 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class ProjectsController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $projects = Project::all()->map(function ($project) {
+        $selectedMonth = $request->input('month', now()->format('Y-m'));
+
+        // تحويل القيمة إلى تاريخ بداية ونهاية الشهر
+        if ($selectedMonth !== 'all') {
+            $startDate = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
+            $endDate = Carbon::createFromFormat('Y-m', $selectedMonth)->endOfMonth();
+            $projects = Project::whereBetween('created_at', [$startDate, $endDate])->get();
+        } else {
+            $projects = Project::all();
+        }
+
+        // التجميع حسب العملة
+        $totalsByCurrency = $projects->groupBy('currency')->map(function ($group) {
+            return $group->sum('total_amount');
+        });
+
+        // عدد المشاريع
+        $projectCount = $projects->count();
+
+        // أسعار الصرف إلى الدينار الجزائري
+        $exchangeRates = [
+            'USD' => 135.00,
+            'EUR' => 145.00,
+            'DZD' => 1,
+        ];
+
+        // حساب المجموع الكلي محول إلى الدينار الجزائري
+        $totalInDZD = 0;
+        foreach ($totalsByCurrency as $currency => $amount) {
+            $rate = $exchangeRates[$currency] ?? 1;
+            $totalInDZD += $amount * $rate;
+        }
+
+        // الأشهر المتوفرة في المشاريع
+        $availableMonths = Project::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as value, DATE_FORMAT(created_at, "%M %Y") as label')
+            ->groupBy('value', 'label')
+            ->orderBy('value', 'desc')
+            ->get()
+            ->toArray();
+
+        // حساب الأيام المتبقية والمبلغ المتبقي
+        foreach ($projects as $project) {
             $project->remainingDays = $project->delivery_date
                 ? Carbon::now()->diffInDays(Carbon::parse($project->delivery_date), false)
                 : null;
 
-            return $project;
-        });
+            $project->remaining_amount = $project->total_amount - $project->payments->sum('amount');
+        }
 
-        return view('admin.projects.index', compact('projects'));
+        return view('admin.projects.index', compact(
+            'projects',
+            'totalsByCurrency',
+            'projectCount',
+            'totalInDZD',
+            'availableMonths',
+            'selectedMonth'
+        ));
     }
 
     /**
@@ -91,7 +140,39 @@ class ProjectsController extends Controller
      */
     public function show(Project $project)
     {
-        return view('admin.projects.show', compact('project'));
+        // استدعاء المهام المكتملة فقط
+        $tasks = $project->tasks()->where('status', 'completed')->get();
+
+        // حساب مجموع الساعات لكل موظف
+        $hoursByEmployee = [];
+
+        foreach ($tasks as $task) {
+            $hours = $task->duration_in_hours;
+
+            if (!isset($hoursByEmployee[$task->employee_id])) {
+                $hoursByEmployee[$task->employee_id] = 0;
+            }
+            $hoursByEmployee[$task->employee_id] += $hours;
+        }
+
+        // جلب بيانات الموظفين (معدل الساعة)
+        $employees = Employee::whereIn('id', array_keys($hoursByEmployee))->get()->keyBy('id');
+
+        $totalHours = 0;
+        $totalCostDZD = 0;
+
+        foreach ($hoursByEmployee as $employeeId => $hours) {
+            $employee = $employees[$employeeId];
+
+            $totalHours += $hours;
+
+            // تحويل الأجر إلى DZD (إذا الأجر بعملة مختلفة يمكنك تعديلها حسب العملة)
+            $rateDZD = $employee->rate; // افترض أن الأجر بالدينار الجزائري مباشرة، أو قم بتحويل العملة
+
+            $totalCostDZD += $hours * $rateDZD;
+        }
+
+        return view('admin.projects.show', compact('project', 'totalHours', 'totalCostDZD'));
     }
 
     /**

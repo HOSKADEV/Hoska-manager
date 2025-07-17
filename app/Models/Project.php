@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
@@ -44,5 +45,42 @@ class Project extends Model
     public function timesheets()
     {
         return $this->hasMany(Timesheet::class);
+    }
+
+
+    // حساب الأيام المتبقية تلقائيًا
+    public function getRemainingDaysAttribute()
+    {
+        if (!$this->delivery_date) {
+            return null;
+        }
+        return Carbon::now()->diffInDays(Carbon::parse($this->delivery_date), false);
+    }
+
+    public function getStatusTextAttribute()
+    {
+        $remaining = $this->remaining_days;
+
+        if (is_null($remaining)) {
+            return 'unknown';
+        }
+
+        if ($remaining < 0) {
+            return 'expired';
+        } elseif ($remaining >= 0 && $remaining <= 1) {
+            return 'due_today';
+        } else {
+            return 'active';
+        }
+    }
+
+    public function getRowClassAttribute()
+    {
+        return match ($this->status_text) {
+            'expired' => 'table-danger',   // أحمر لمنتهٍ (expired)
+            'due_today' => 'table-warning', // برتقالي لليوم الأخير
+            'active' => 'table-success',   // أخضر للباقي (active)
+            default => '',
+        };
     }
 }

@@ -11,6 +11,7 @@ use App\Models\Timesheet;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class TasksController extends Controller
 {
@@ -22,10 +23,8 @@ class TasksController extends Controller
         $user = Auth::user();
 
         if ($user->type === 'admin') {
-            // إذا كان المستخدم مدير، عرض كل المهام
             $tasks = Task::with(['employee', 'project'])->latest()->get();
-        } elseif ($user->type === 'employee') {
-            // إذا كان المستخدم موظف، عرض فقط مهامه
+        } elseif ($user->type === 'employee' && $user->role->name != 'accountant') {
             $employee = $user->employee;
 
             if (!$employee) {
@@ -40,7 +39,35 @@ class TasksController extends Controller
             abort(403, 'نوع المستخدم غير مدعوم.');
         }
 
-        return view('admin.tasks.index', compact('tasks'));
+        $today = Carbon::today();
+        $weekStart = Carbon::now()->startOfWeek();
+        $monthStart = Carbon::now()->startOfMonth();
+        $yearStart = Carbon::now()->startOfYear();
+
+        // لحساب الساعات نقوم بجلب المهام أولاً ثم استخدام sum مع حساب الفرق بين الوقتين
+        $totalTodayHours = Task::whereDate('start_time', $today)->get()->sum(function ($task) {
+            return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
+        });
+
+        $totalWeekHours = Task::whereDate('start_time', '>=', $weekStart)->get()->sum(function ($task) {
+            return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
+        });
+
+        $totalMonthHours = Task::whereDate('start_time', '>=', $monthStart)->get()->sum(function ($task) {
+            return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
+        });
+
+        $totalYearHours = Task::whereDate('start_time', '>=', $yearStart)->get()->sum(function ($task) {
+            return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
+        });
+
+        return view('admin.tasks.index', compact(
+            'tasks',
+            'totalTodayHours',
+            'totalWeekHours',
+            'totalMonthHours',
+            'totalYearHours'
+        ));
     }
 
 

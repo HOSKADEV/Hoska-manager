@@ -17,7 +17,17 @@
             <p><strong>Start Date:</strong> {{ $task->start_time }}</p>
             <p><strong>End Date:</strong> {{ $task->end_time ?? '-' }}</p>
             <p><strong>Duration (Hours):</strong> {{ $task->duration_in_hours }}</p>
-            <p><strong>Cost:</strong> <span class="text-success">{{ number_format($task->cost, 2) }} $</span></p>
+            @php
+                $currencySymbols = [
+                    'USD' => '$',
+                    'EUR' => '€',
+                    'DZD' => 'DZ',
+                ];
+            @endphp
+            <p><strong>Cost:</strong> <span
+                    class="text-success">{{ $currencySymbols[$task->employee?->currency] ?? '' }}
+                    {{ number_format($task->cost, 2) }}
+                </span></p>
 
             <hr class="my-4">
 

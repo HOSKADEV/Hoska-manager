@@ -83,6 +83,14 @@ class TimesheetsController extends Controller
 
         $columns = Schema::getColumnListing('timesheets');
 
+        // ✅ مجموع الرواتب حسب العملة من جدول الموظفين
+        $salariesByCurrency = [];
+
+        foreach ((clone $statsQuery)->with('employee')->get() as $timesheet) {
+            $currency = $timesheet->employee->currency ?? 'UNKNOWN';
+            $salariesByCurrency[$currency] = ($salariesByCurrency[$currency] ?? 0) + $timesheet->month_salary;
+        }
+
         return view('admin.timesheets.index', compact(
             'timesheets',
             'availableMonths',
@@ -93,6 +101,7 @@ class TimesheetsController extends Controller
             'monthFilter',
             'isPaidFilter',
             'columns',
+            'salariesByCurrency' // أضفنا هذا المتغير الجديد
         ));
     }
 

@@ -40,7 +40,7 @@
 </div>
 
 <div class="mb-3">
-    <x-form.input label="Start Date" name="start_date" type="date" :oldval="old('start_date', optional($project->start_date)->format('Y-m-d'))" />
+    <x-form.input label="Start Date" name="start_date" type="date" :oldval="old('start_date', $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('Y-m-d') : '')" />
 </div>
 
 <div class="mb-3">
@@ -48,7 +48,8 @@
 </div>
 
 <div class="mb-3">
-    <x-form.input label="Delivery Date" name="delivery_date" type="date" :oldval="old('delivery_date', optional($project->delivery_date)->format('Y-m-d'))" readonly="true" />
+    <x-form.input label="Delivery Date" name="delivery_date" type="date" :oldval="old('delivery_date', $project->delivery_date ? \Carbon\Carbon::parse($project->delivery_date)->format('Y-m-d') : '')"
+        readonly="true" />
 </div>
 
 @push('js')

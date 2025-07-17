@@ -4,9 +4,7 @@
             .badge-custom {
                 display: inline-block;
                 padding: 0.5em 0.8em;
-                /* زيادة البادينغ */
                 font-size: 0.9rem;
-                /* تكبير حجم الخط */
                 font-weight: 600;
                 color: #fff;
                 border-radius: 0.5rem;
@@ -15,120 +13,27 @@
 
             .badge-project {
                 background-color: #6f42c1;
-                /* بنفسجي */
             }
 
             .badge-employee {
                 background-color: #20c997;
-                /* أخضر فاتح */
             }
 
             .badge-muted {
                 background-color: #6c757d;
-                /* رمادي */
             }
 
             .badge-danger {
                 background-color: #dc3545;
-                /* أحمر */
             }
         </style>
-
     @endpush
-    <!-- Page Heading -->
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-gray-800">All Tasks</h1>
         <a href="{{ route('admin.tasks.create') }}" class="btn btn-info"><i class="fas fa-plus"></i>Add New</a>
     </div>
 
-    <!-- Team Hours Summary Cards -->
-    <div class="row mb-4">
-        <!-- Today's Hours -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Hours Today
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                {{ number_format($totalTodayHours, 2) }} hrs
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-calendar-day fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- This Week's Hours -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Hours This Week
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                {{ number_format($totalWeekHours, 2) }} hrs
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-calendar-week fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- This Month's Hours -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                Hours This Month
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                {{ number_format($totalMonthHours, 2) }} hrs
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- This Year's Hours -->
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Hours This Year
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                {{ number_format($totalYearHours, 2) }} hrs
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tasks Table -->
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
@@ -137,16 +42,14 @@
                         <tr>
                             <th>#</th>
                             <th>Title</th>
-                            {{-- <th>Description</th> --}}
-                            {{-- <th>Status</th> --}}
-                            {{-- <th>Due Date</th> --}}
                             <th>Start Date</th>
                             <th>End Date</th>
                             <th>Duration (hours)</th>
-                            {{-- <th>Cost</th> --}}
                             <th>Budget Amount</th>
-                            <th>Project ID</th>
-                            <th>Employee ID</th>
+                            <th>Project Name</th>
+                            @if(Auth::user()->type !== 'employee')
+                                <th>Employee Name</th>
+                            @endif
                             <th>Created At</th>
                             <th>Updated At</th>
                             <th>Actions</th>
@@ -156,16 +59,14 @@
                         <tr>
                             <th>#</th>
                             <th>Title</th>
-                            {{-- <th>Description</th> --}}
-                            {{-- <th>Status</th> --}}
-                            {{-- <th>Due Date</th> --}}
                             <th>Start Date</th>
                             <th>End Date</th>
                             <th>Duration (hours)</th>
-                            {{-- <th>Cost</th> --}}
                             <th>Budget Amount</th>
-                            <th>Project ID</th>
-                            <th>Employee ID</th>
+                            <th>Project Name</th>
+                            @if(Auth::user()->type !== 'employee')
+                                <th>Employee Name</th>
+                            @endif
                             <th>Created At</th>
                             <th>Updated At</th>
                             <th>Actions</th>
@@ -176,9 +77,6 @@
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $task->title }}</td>
-                                {{-- <td class="col-md-3">{{ $task->description }}</td> --}}
-                                {{-- <td>{{ $task->status }}</td> --}}
-                                {{-- <td>{{ $task->due_date->diffForHumans() }}</td> --}}
                                 <td>{{ $task->start_time->format('D, Y/m/d H:i A') }}</td>
                                 <td>{{ $task->end_time ? $task->end_time->format('D, Y/m/d H:i A') : '-' }}</td>
                                 @php
@@ -186,7 +84,6 @@
                                     $hours = intdiv($totalMinutes, 60);
                                     $minutes = $totalMinutes % 60;
                                 @endphp
-
                                 <td>
                                     <span class="font-weight-bold text-primary">
                                         {{ $hours }}h {{ $minutes }}m
@@ -195,8 +92,6 @@
                                         ({{ number_format($task->duration_in_hours, 2) }} hours)
                                     </div>
                                 </td>
-
-                                {{-- <td>{{ number_format($task->cost, 2) }} $</td> --}}
                                 @php
                                     $currencySymbols = [
                                         'USD' => '$',
@@ -208,8 +103,6 @@
                                     {{ $currencySymbols[$task->employee?->currency] ?? '' }}
                                     {{ number_format($task->cost, 2) }}
                                 </td>
-
-                                {{-- <td>{{ $task->budget_amount }}</td> --}}
                                 <td>
                                     @if($task->project)
                                         <span class="badge-custom badge-project">
@@ -219,40 +112,41 @@
                                         <span class="badge-custom badge-muted">N/A</span>
                                     @endif
                                 </td>
-
-                                <td>
-                                    @if($task->employee)
-                                        <span class="badge-custom badge-employee">
-                                            {{ $task->employee->name }}
-                                        </span>
-                                    @else
-                                        <span class="badge-custom badge-danger">-</span>
-                                    @endif
-                                </td>
-
-                                {{-- <td>{{ $task->employee->name ?? '-' }}</td> --}}
+                                @if(Auth::user()->type !== 'employee')
+                                    <td>
+                                        @if($task->employee)
+                                            <span class="badge-custom badge-employee">
+                                                {{ $task->employee->name }}
+                                            </span>
+                                        @else
+                                            <span class="badge-custom badge-danger">-</span>
+                                        @endif
+                                    </td>
+                                @endif
                                 <td>{{ $task->created_at->format('Y/m/d H:i A') }}</td>
                                 <td>{{ $task->updated_at->format('Y/m/d H:i A') }}</td>
-                                <td class="col-md-4">
+                                <td>
                                     <a href="{{ route('admin.tasks.show', $task->id) }}" class="btn btn-sm btn-info">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('admin.tasks.edit', $task->id) }}" class="btn btn-sm btn-primary"><i
-                                            class='fas fa-edit'></i>
+                                    <a href="{{ route('admin.tasks.edit', $task->id) }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i>
                                     </a>
                                     <form action="{{ route('admin.tasks.destroy', $task->id) }}" method="POST"
                                         style="display: inline-block">
                                         @csrf
                                         @method('DELETE')
                                         <button onclick="return confirm('Are you sure?!')" type="submit"
-                                            class="btn btn-sm btn-danger"><i class='fas fa-trash'></i></button>
+                                            class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
                                     </form>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td class="d-none"></td>
-                                <td colspan="15" class="text-center">No Data Found</td>
+                                <td colspan="{{ Auth::user()->type !== 'employee' ? 11 : 10 }}" class="text-center">No Data
+                                    Found</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -262,16 +156,12 @@
     </div>
 
     @push('css')
-        <!-- Custom styles for this page -->
         <link href="{{ asset('assets/vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
     @endpush
 
     @push('js')
-        <!-- Page level plugins -->
         <script src="{{ asset('assets/vendor/datatables/jquery.dataTables.min.js') }}"></script>
         <script src="{{ asset('assets/vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
-
-        <!-- Page level custom scripts -->
         <script src="{{ asset('assets/js/demo/datatables-demo.js') }}"></script>
     @endpush
 </x-dashboard>

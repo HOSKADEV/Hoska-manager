@@ -74,8 +74,8 @@
             </div>
         @empty
             <div class="link-group d-flex gap-2 mb-2">
-                <input type="url" name="links[new][0][url]" class="form-control" placeholder="Link URL" />
-                <input type="text" name="links[new][0][label]" class="form-control" placeholder="Label (optional)" />
+                <input type="url" name="links[new][0][url]" class="form-control mr-2" placeholder="Link URL" />
+                <input type="text" name="links[new][0][label]" class="form-control mr-2" placeholder="Label (optional)" />
                 <button type="button" class="btn btn-danger btn-sm remove-link">✕</button>
             </div>
         @endforelse

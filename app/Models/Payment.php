@@ -17,4 +17,8 @@ class Payment extends Model
     {
         return $this->hasOneThrough(Project::class, Invoice::class, 'id', 'id', 'invoice_id', 'project_id');
     }
+        public function wallet()
+    {
+        return $this->belongsTo(Wallet::class);
+    }
 }

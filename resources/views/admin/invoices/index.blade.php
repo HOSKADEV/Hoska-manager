@@ -69,7 +69,7 @@
                             <th>Is Paid</th>
                             <th>Project Name</th>
                             <th>Client Name</th>
-                            <th>Wallet</th> <!-- هذا العمود الجديد -->
+                            {{-- <th>Wallet</th>  --}}
                             <th>Created At</th>
                             <th>Updated At</th>
                             <th>Actions</th>
@@ -85,7 +85,7 @@
                             <th>Is Paid</th>
                             <th>Project Name</th>
                             <th>Client Name</th>
-                            <th>Wallet</th> <!-- نفس العمود بالـ footer -->
+                            {{-- <th>Wallet</th> --}}
                             <th>Created At</th>
                             <th>Updated At</th>
                             <th>Actions</th>
@@ -131,13 +131,13 @@
                                         <span class="badge-custom badge-muted">N/A</span>
                                     @endif
                                 </td>
-                                <td>
+                                {{-- <td>
                                     @if($invoice->wallet)
                                         <span class="badge-custom badge-muted">{{ $invoice->wallet->name }}</span>
                                     @else
                                         <span class="badge-custom badge-muted">N/A</span>
                                     @endif
-                                </td>
+                                </td> --}}
                                 <td>{{ $invoice->created_at->diffForHumans() }}</td>
                                 <td>{{ $invoice->updated_at->diffForHumans() }}</td>
                                 <td>

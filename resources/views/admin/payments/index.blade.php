@@ -41,6 +41,7 @@
                             <th>Payment Date</th>
                             <th>Note</th>
                             <th>Invoice Number</th>
+                            <th>Wallet</th>
                             <th>Created At</th>
                             <th>Updated At</th>
                             <th>Actions</th>
@@ -53,6 +54,7 @@
                             <th>Payment Date</th>
                             <th>Note</th>
                             <th>Invoice Number</th>
+                            <th>Wallet</th>
                             <th>Created At</th>
                             <th>Updated At</th>
                             <th>Actions</th>
@@ -81,6 +83,13 @@
                                         <span class="badge-custom badge-invoice">{{ $payment->invoice->invoice_number }}</span>
                                     @else
                                         <span class="badge-custom badge-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($payment->wallet)
+                                        <span class="badge-custom badge-muted">{{ $payment->wallet->name }}</span>
+                                    @else
+                                        <span class="badge-custom badge-muted">N/A</span>
                                     @endif
                                 </td>
                                 <td>{{ $payment->created_at->diffForHumans() }}</td>

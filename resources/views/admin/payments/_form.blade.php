@@ -14,7 +14,6 @@
 <div id="invoice-info" class="alert alert-info d-none">
     <p>👤 Client: <strong id="client-name"></strong></p>
     <p>📁 Project: <strong id="project-name"></strong></p>
-    <p><i class="fas fa-wallet text-success"></i> Wallet: <strong id="wallet-name"></strong></p>
     <p>💵 Amount: <strong id="invoice-amount"></strong> <span id="invoice-currency"></span></p>
 </div>
 
@@ -29,6 +28,11 @@
     </div>
 @endif
 
+<div class="mb-3">
+    <x-form.select3 label="Wallet" name="wallet_id" placeholder="Select Wallet" :options="$wallets"
+        :oldval="old('wallet_id', $payment->wallet_id ?? '')" />
+</div>
+
 
 <div class="mb-3">
     <x-form.input type="datetime-local" label="Payment Date" name="payment_date" placeholder="Enter Payment Date"
@@ -41,7 +45,9 @@
 
 @push('js')
     <script>
-        const invoices = @json($invoices->load(['wallet', 'project']));
+        const wallets = @json($walletsFull); // قائمة المحافظ مع خصائصها بما فيها العملة
+        const invoices = @json($invoices->load(['project', 'client'])); // الفواتير مع المشاريع والعميل فقط
+
         const currencySymbols = {
             'USD': '$',
             'EUR': '€',
@@ -49,23 +55,28 @@
         };
 
         const invoiceSelect = document.getElementById('invoice_id');
+        const walletSelect = document.getElementById('wallet_id');
         const exchangeRateGroup = document.getElementById('exchange-rate-group');
 
         function updateExchangeRateVisibility() {
             const selectedInvoiceId = invoiceSelect.value;
+            const selectedWalletId = walletSelect.value;
+
             const invoice = invoices.find(inv => inv.id == selectedInvoiceId);
+            const selectedWallet = wallets.find(w => w.id == selectedWalletId);
+
             const label = exchangeRateGroup.querySelector('label');
 
-            if (!invoice || !invoice.wallet || !invoice.project) {
+            if (!invoice || !invoice.project || !selectedWallet) {
                 exchangeRateGroup.style.display = 'none';
                 if (label) label.textContent = 'Exchange Rate';
                 return;
             }
 
-            const walletCurrency = invoice.wallet.currency;
             const projectCurrency = invoice.project.currency;
+            const walletCurrency = selectedWallet.currency;
 
-            if (walletCurrency === projectCurrency) {
+            if (!walletCurrency || walletCurrency === projectCurrency) {
                 exchangeRateGroup.style.display = 'none';
                 if (label) label.textContent = 'Exchange Rate';
             } else {
@@ -78,8 +89,19 @@
             }
         }
 
+        // حدث عند تغيير الفاتورة أو المحفظة
         invoiceSelect.addEventListener('change', updateExchangeRateVisibility);
-        document.addEventListener('DOMContentLoaded', updateExchangeRateVisibility);
+        walletSelect.addEventListener('change', updateExchangeRateVisibility);
+
+        // عند تحميل الصفحة نفذ الوظيفة
+        document.addEventListener('DOMContentLoaded', () => {
+            updateExchangeRateVisibility();
+
+            if (invoiceSelect.value) {
+                invoiceSelect.dispatchEvent(new Event('change'));
+            }
+        });
+
     </script>
 
     <script>
@@ -102,7 +124,6 @@
                         .then(data => {
                             document.getElementById('client-name').textContent = data.client_name;
                             document.getElementById('project-name').textContent = data.project_name;
-                            document.getElementById('wallet-name').textContent = data.wallet_name ?? 'N/A';
                             document.getElementById('invoice-amount').textContent = data.amount;
 
                             const currencySymbol = currencySymbols[data.currency] || data.currency;

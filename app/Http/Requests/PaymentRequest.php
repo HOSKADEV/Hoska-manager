@@ -32,6 +32,7 @@ class PaymentRequest extends FormRequest
             ],
             'invoice_id' => ['required', 'exists:invoices,id'],
             'exchange_rate' => ['nullable', 'numeric', 'min:0.0001'],
+            'wallet_id' => 'required|exists:wallets,id',
         ];
     }
 }

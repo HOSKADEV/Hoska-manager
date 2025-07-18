@@ -9,6 +9,13 @@ use App\Models\Invoice;
 use App\Models\Project;
 use App\Models\Wallet;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
 
 class InvoicesController extends Controller
 {
@@ -52,7 +59,7 @@ class InvoicesController extends Controller
         $data['is_paid'] = false;
 
         // تعيين wallet_id و project_id كما هو من الريكوست
-        $data['wallet_id'] = $request->wallet_id;
+        // $data['wallet_id'] = $request->wallet_id;
         $data['project_id'] = $request->project_id;
 
         $project = Project::with('client')->findOrFail($request->project_id);
@@ -95,7 +102,7 @@ class InvoicesController extends Controller
     {
         $data = $request->validated();
 
-        $data['wallet_id'] = $request->wallet_id;
+        // $data['wallet_id'] = $request->wallet_id;
         $data['project_id'] = $request->project_id;
 
         // تعيين is_paid تلقائياً (مثلاً دايماً false أو تحافظ على القيمة الحالية)
@@ -155,14 +162,125 @@ class InvoicesController extends Controller
 
     public function info($id)
     {
-        $invoice = Invoice::with(['project.client', 'wallet'])->findOrFail($id);
+        $invoice = Invoice::with(['project.client'])->findOrFail($id);
 
         return response()->json([
             'client_name'   => $invoice->project?->client?->name ?? 'N/A',
             'project_name'  => $invoice->project?->name ?? 'N/A',
-            'wallet_name'   => $invoice->wallet?->name ?? 'N/A',
             'amount'        => $invoice->amount,
             'currency'      => $invoice->project?->currency ?? 'N/A',
         ]);
+    }
+
+    /**
+     * Export invoice details to Excel.
+     *
+     * @param int $invoiceId
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     */
+    public function exportInvoiceExcel($invoiceId)
+    {
+        $invoice = Invoice::with(['project', 'client', 'payments'])->findOrFail($invoiceId);
+
+        $totalAmount = $invoice->amount;
+        $paidAmount = $invoice->payments->sum(fn($p) => $p->amount * ($p->exchange_rate ?? 1));
+        $remainingAmount = $totalAmount - $paidAmount;
+        $paidPercentage = $totalAmount > 0 ? round(($paidAmount / $totalAmount) * 100, 2) : 0;
+        $currency = $invoice->project->currency ?? '';
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Project Financial Summary Title
+        $sheet->setCellValue('A1', 'Project Financial Summary');
+
+        // تنسيق العنوان
+        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF007BFF'); // أزرق
+        $sheet->getStyle('A1')->getFont()->getColor()->setARGB('FFFFFFFF'); // أبيض
+        $sheet->mergeCells('A1:B1');
+        $sheet->getStyle('A1:B1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // عناوين الملخص
+        $summaryLabels = ['Total Amount', 'Paid Amount', 'Remaining Amount', 'Paid Percentage'];
+        $summaryValues = [
+            number_format($totalAmount, 2) . ' ' . $currency,
+            number_format($paidAmount, 2) . ' ' . $currency,
+            number_format($remainingAmount, 2) . ' ' . $currency,
+            $paidPercentage . '%'
+        ];
+
+        $row = 3;
+        foreach ($summaryLabels as $index => $label) {
+            $sheet->setCellValue("A{$row}", $label);
+            $sheet->setCellValue("B{$row}", $summaryValues[$index]);
+
+            // تنسيق العناوين والبيانات
+            $sheet->getStyle("A{$row}:B{$row}")->getFont()->setBold(true);
+            $sheet->getStyle("A{$row}:B{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("A{$row}:B{$row}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+            $row++;
+        }
+
+        // بدء بيانات الفاتورة من الصف 8
+        $startRow = 8;
+
+        // عناوين جدول الفاتورة
+        $headers = ['Invoice Number', 'Project', 'Client', 'Amount', 'Currency', 'Is Paid', 'Invoice Date', 'Due Date', 'Created At', 'Updated At'];
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue("{$col}{$startRow}", $header);
+            // تنسيق العناوين
+            $sheet->getStyle("{$col}{$startRow}")->getFont()->setBold(true);
+            $sheet->getStyle("{$col}{$startRow}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCE5FF'); // لون فاتح أزرق
+            $sheet->getStyle("{$col}{$startRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("{$col}{$startRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+            $col++;
+        }
+
+        // بيانات الفاتورة - الصف التالي
+        $dataRow = $startRow + 1;
+
+        $data = [
+            $invoice->invoice_number,
+            $invoice->project->name ?? '-',
+            $invoice->client->name ?? '-',
+            $invoice->amount,
+            $currency,
+            $invoice->is_paid ? 'Yes' : 'No',
+            $invoice->invoice_date?->format('Y-m-d') ?? '-',
+            $invoice->due_date?->format('Y-m-d') ?? '-',
+            $invoice->created_at->format('Y-m-d H:i'),
+            $invoice->updated_at->format('Y-m-d H:i'),
+        ];
+
+        $col = 'A';
+        foreach ($data as $value) {
+            $sheet->setCellValue("{$col}{$dataRow}", $value);
+            $sheet->getStyle("{$col}{$dataRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle("{$col}{$dataRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+            $col++;
+        }
+
+        // ضبط عرض الأعمدة تلقائياً
+        foreach (range('A', $col) as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
+
+        // حفظ الملف وارساله للمتصفح
+        $writer = new Xlsx($spreadsheet);
+
+        $response = new StreamedResponse(function () use ($writer) {
+            $writer->save('php://output');
+        });
+
+        $filename = 'invoice-' . $invoice->invoice_number . '.xlsx';
+
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $response->headers->set('Content-Disposition', "attachment;filename=\"$filename\"");
+        $response->headers->set('Cache-Control', 'max-age=0');
+
+        return $response;
     }
 }

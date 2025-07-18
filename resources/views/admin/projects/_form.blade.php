@@ -52,6 +52,38 @@
         readonly="true" />
 </div>
 
+<div class="mb-3">
+    <label class="form-label">Project Links</label>
+
+    <div id="project-links">
+        @php
+            $links = old('links', isset($project) ? $project->links : []);
+        @endphp
+
+        @forelse($links as $i => $link)
+            <div class="link-group d-flex gap-2 mb-2">
+                <input type="hidden" name="links[existing][{{ is_object($link) ? $link->id : $i }}][id]"
+                    value="{{ is_object($link) ? $link->id : $link['id'] ?? '' }}">
+                <input type="url" name="links[existing][{{ is_object($link) ? $link->id : $i }}][url]" class="form-control mr-2"
+                    placeholder="Link URL"
+                    value="{{ old("links.existing.$i.url", is_object($link) ? $link->url : $link['url'] ?? '') }}" />
+                <input type="text" name="links[existing][{{ is_object($link) ? $link->id : $i }}][label]"
+                    class="form-control mr-2" placeholder="Label (optional)"
+                    value="{{ old("links.existing.$i.label", is_object($link) ? $link->label : $link['label'] ?? '') }}" />
+                <button type="button" class="btn btn-danger btn-sm remove-link">✕</button>
+            </div>
+        @empty
+            <div class="link-group d-flex gap-2 mb-2">
+                <input type="url" name="links[new][0][url]" class="form-control" placeholder="Link URL" />
+                <input type="text" name="links[new][0][label]" class="form-control" placeholder="Label (optional)" />
+                <button type="button" class="btn btn-danger btn-sm remove-link">✕</button>
+            </div>
+        @endforelse
+    </div>
+
+    <button type="button" class="btn btn-sm btn-primary mt-2" id="add-link">+ Add Link</button>
+</div>
+
 @push('js')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -79,6 +111,30 @@
             durationInput.addEventListener('input', calculateDelivery);
 
             calculateDelivery(); // Initial run
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let linkIndex = 0;
+
+            document.getElementById('add-link').addEventListener('click', function () {
+                const group = document.createElement('div');
+                group.classList.add('link-group', 'd-flex', 'gap-2', 'mb-2');
+                group.innerHTML = `
+                    <input type="url" name="links[new][${linkIndex}][url]" class="form-control mr-2" placeholder="Link URL" />
+                    <input type="text" name="links[new][${linkIndex}][label]" class="form-control mr-2" placeholder="Label (optional)" />
+                    <button type="button" class="btn btn-danger btn-sm remove-link">✕</button>
+                `;
+                document.getElementById('project-links').appendChild(group);
+                linkIndex++;
+            });
+
+            document.addEventListener('click', function (e) {
+                if (e.target.classList.contains('remove-link')) {
+                    e.target.closest('.link-group').remove();
+                }
+            });
         });
     </script>
 @endpush

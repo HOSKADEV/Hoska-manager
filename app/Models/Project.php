@@ -46,6 +46,10 @@ class Project extends Model
     {
         return $this->hasMany(Timesheet::class);
     }
+    public function links()
+    {
+        return $this->hasMany(ProjectLink::class);
+    }
 
 
     // حساب الأيام المتبقية تلقائيًا

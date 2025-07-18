@@ -68,10 +68,10 @@
 
 <input type="hidden" name="is_paid" value="0" />
 
-<div class="mb-3">
+{{-- <div class="mb-3">
     <x-form.select label="Wallet" name="wallet_id" placeholder="Select Wallet" :options="$wallets"
         :oldval="old('wallet_id', $invoice->wallet_id ?? '')" />
-</div>
+</div> --}}
 
 @push('js')
     <script>

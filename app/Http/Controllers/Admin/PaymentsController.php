@@ -7,6 +7,7 @@ use App\Http\Requests\PaymentRequest;
 use App\Models\Employee;
 use App\Models\Invoice;
 use App\Models\Payment;
+use App\Models\Wallet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,11 +29,19 @@ class PaymentsController extends Controller
     public function create()
     {
         $payment = new Payment();
-        // فقط الفواتير الغير مدفوعة
-        $invoices = Invoice::where('is_paid', false)->get();
 
-        return view('admin.payments.create', compact('payment', 'invoices'));
+        // الفواتير غير المدفوعة
+        $invoices = Invoice::where('is_paid', false)->with(['wallet', 'project'])->get();
+
+        // جلب كل المحافظ مع العملة واسم المحفظة (مهم للـ JS)
+        $walletsFull = Wallet::all(); // لا تستخدم pluck هنا، بل كامل الكائن
+
+        // لجعل الـ select يعمل بترتيب الاسم فقط، يمكنك تحضير قائمة منفصلة:
+        $wallets = $walletsFull->pluck('name', 'id');
+
+        return view('admin.payments.create', compact('payment', 'invoices', 'wallets', 'walletsFull'));
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -43,13 +52,13 @@ class PaymentsController extends Controller
 
         $data = $request->validated();
         $data['invoice_id'] = $invoice->id;
+        $data['wallet_id'] = $request->wallet_id;
         $data['amount'] = $invoice->amount;
 
-        // العملة الخاصة بالفاتورة (من المشروع) وعملة المحفظة
         $invoiceCurrency = $invoice->project->currency ?? null;
-        $walletCurrency = $invoice->wallet->currency ?? null;
+        $wallet = Wallet::findOrFail($data['wallet_id']);
+        $walletCurrency = $wallet->currency ?? null;
 
-        // إذا نفس العملة: سعر الصرف = 1
         if ($invoiceCurrency === $walletCurrency) {
             $data['exchange_rate'] = 1;
             $convertedAmount = $invoice->amount;
@@ -60,12 +69,9 @@ class PaymentsController extends Controller
 
         $payment = Payment::create($data);
 
-        // استخدام المبلغ المحول فقط
-        if ($invoice->wallet) {
-            $invoice->wallet->increment('balance', $convertedAmount);
-        }
+        // خصم من المحفظة المختارة
+        $wallet->increment('balance', $convertedAmount);
 
-        // تحديث حالة الفاتورة إلى مدفوعة إذا كانت غير مدفوعة
         if (!$invoice->is_paid) {
             $invoice->is_paid = 1;
             $invoice->save();
@@ -74,6 +80,7 @@ class PaymentsController extends Controller
         flash()->success('Payment created successfully and wallet balance updated');
         return redirect()->route('admin.payments.index');
     }
+
 
     /**
      * Display the specified resource.
@@ -100,7 +107,10 @@ class PaymentsController extends Controller
             ->orWhere('id', $payment->invoice_id)
             ->get();
 
-        return view('admin.payments.edit', compact('payment', 'invoices'));
+        // جلب جميع المحافظ مع الحقول id, name, currency
+        $wallets = Wallet::select('id', 'name', 'currency')->get();
+
+        return view('admin.payments.edit', compact('payment', 'invoices', 'wallets'));
     }
 
     /**
@@ -108,22 +118,23 @@ class PaymentsController extends Controller
      */
     public function update(PaymentRequest $request, Payment $payment)
     {
-        // الفاتورة القديمة مع المحفظة والمشروع
-        $oldInvoice = $payment->invoice()->with(['wallet', 'project'])->first();
         $oldConvertedAmount = $payment->amount * ($payment->exchange_rate ?? 1);
 
-        // الفاتورة الجديدة مع المحفظة والمشروع
-        $newInvoice = Invoice::with(['wallet', 'project'])->findOrFail($request->invoice_id);
+        $oldWallet = Wallet::find($payment->wallet_id);
+        if ($oldWallet) {
+            $oldWallet->increment('balance', $oldConvertedAmount); // استرجاع الرصيد
+        }
 
+        $newInvoice = Invoice::with(['wallet', 'project'])->findOrFail($request->invoice_id);
         $data = $request->validated();
         $data['invoice_id'] = $newInvoice->id;
+        $data['wallet_id'] = $request->wallet_id;
         $data['amount'] = $newInvoice->amount;
 
-        // عملات الفاتورة والمحفظة الجديدة
         $invoiceCurrency = $newInvoice->project->currency ?? null;
-        $walletCurrency = $newInvoice->wallet->currency ?? null;
+        $newWallet = Wallet::findOrFail($data['wallet_id']);
+        $walletCurrency = $newWallet->currency ?? null;
 
-        // تحديد سعر الصرف والمبلغ المحول
         if ($invoiceCurrency === $walletCurrency) {
             $data['exchange_rate'] = 1;
             $newConvertedAmount = $newInvoice->amount;
@@ -132,27 +143,10 @@ class PaymentsController extends Controller
             $newConvertedAmount = $newInvoice->amount * $request->exchange_rate;
         }
 
-        // تحديث الدفعة
         $payment->update($data);
 
-        // خصم المبلغ المحول القديم من المحفظة القديمة
-        if ($oldInvoice && $oldInvoice->wallet) {
-            $oldInvoice->wallet->decrement('balance', $oldConvertedAmount);
+        $newWallet->decrement('balance', $newConvertedAmount);
 
-            // تحقق إذا هذه الفاتورة لم يعد لها دفعات مرتبطة، إذا نعم اجعلها غير مدفوعة
-            $remainingPayments = $oldInvoice->payments()->sum('amount');
-            if ($remainingPayments == 0) {
-                $oldInvoice->is_paid = 0;
-                $oldInvoice->save();
-            }
-        }
-
-        // إضافة المبلغ المحول الجديد إلى المحفظة الجديدة
-        if ($newInvoice->wallet) {
-            $newInvoice->wallet->increment('balance', $newConvertedAmount);
-        }
-
-        // تحديث حالة الفاتورة الجديدة إلى مدفوعة إذا لم تكن كذلك
         if (!$newInvoice->is_paid) {
             $newInvoice->is_paid = 1;
             $newInvoice->save();

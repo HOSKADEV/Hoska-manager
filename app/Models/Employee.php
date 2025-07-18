@@ -65,34 +65,35 @@ class Employee extends Model
 
 
         static::updated(function ($employee) {
-            $monthStart = now()->startOfMonth()->toDateString();
+            // قيمة الساعات الجديدة (إن وجدت في الطلب)
             $hoursFromTask = request()->input('hours_worked', null);
 
-            $timesheet = Timesheet::where('employee_id', $employee->id)
-                ->whereDate('work_date', $monthStart)
-                ->first();
+            // نبحث عن كل الأشهر الغير مدفوعة للموظف
+            $timesheets = Timesheet::where('employee_id', $employee->id)
+                ->where('is_paid', false)
+                ->get();
 
-            if (!$timesheet) {
-                // لا تقم بإنشاء جديد
-                return;
-            }
+            foreach ($timesheets as $timesheet) {
+                // نستخدم الساعات المرسلة أو الساعات الحالية للسجل
+                $hours = $hoursFromTask ?? $timesheet->hours_worked;
 
-            if (!is_null($hoursFromTask)) {
-                $monthSalary = 0;
-                if ($employee->payment_type === 'monthly') {
-                    // الراتب ثابت شهريًا
-                    $monthSalary = $employee->rate;
-                } elseif ($employee->payment_type === 'hourly') {
-                    $monthSalary = $hoursFromTask * $employee->rate;
-                } elseif ($employee->payment_type === 'per_project') {
-                    $monthSalary = ($hoursFromTask / 8) * $employee->rate;
+                // لا تحدث إلا إذا تغيّر السعر أو أُرسلت الساعات
+                if (!is_null($hoursFromTask) || $employee->isDirty('rate')) {
+                    $monthSalary = 0;
+
+                    if ($employee->payment_type === 'monthly') {
+                        $monthSalary = $employee->rate;
+                    } elseif ($employee->payment_type === 'hourly') {
+                        $monthSalary = $hours * $employee->rate;
+                    } elseif ($employee->payment_type === 'per_project') {
+                        $monthSalary = ($hours / 8) * $employee->rate;
+                    }
+
+                    $timesheet->update([
+                        'hours_worked' => $hours,
+                        'month_salary' => $monthSalary,
+                    ]);
                 }
-
-                $timesheet->update([
-                    'hours_worked' => $hoursFromTask,
-                    'month_salary' => $monthSalary,
-                    // is_paid لا يتغير
-                ]);
             }
         });
     }

@@ -91,9 +91,10 @@ class WalletsController extends Controller
     {
         $transactions = $wallet->transactions()->latest()->paginate(20);
 
-        $payments = Payment::whereHas('invoice', function ($q) use ($wallet) {
-            $q->where('wallet_id', $wallet->id);
-        })->paginate(15);
+        // جلب الدفعات المرتبطة مباشرة بالمحفظة (من عمود wallet_id في جدول payments)
+        $payments = Payment::where('wallet_id', $wallet->id)
+            ->with('invoice')  // لتحميل بيانات الفاتورة المرتبطة للعرض
+            ->paginate(15);
 
         // الرصيد الداخل: income, funding, transfer_in
         $totalIn = $wallet->transactions()
@@ -105,10 +106,9 @@ class WalletsController extends Controller
             ->whereIn('type', ['expense', 'withdraw', 'transfer_out'])
             ->sum('amount');
 
-        // مجموع الدفعات
-        $totalPayments = Payment::whereHas('invoice', function ($q) use ($wallet) {
-            $q->where('wallet_id', $wallet->id);
-        })->sum(DB::raw('amount * IFNULL(exchange_rate, 1)'));
+        // مجموع الدفعات المرتبطة بالمحفظة مباشرةً
+        $totalPayments = Payment::where('wallet_id', $wallet->id)
+            ->sum(DB::raw('amount * IFNULL(exchange_rate, 1)'));
 
         return view('admin.wallets.show', compact(
             'wallet',

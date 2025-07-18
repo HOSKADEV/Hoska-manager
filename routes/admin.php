@@ -42,7 +42,10 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group
     Route::resource('projects', ProjectsController::class);
     Route::resource('developments', DevelopmentsController::class);
     Route::resource('invoices', InvoicesController::class);
-    Route::get('/invoices/{id}/info', [InvoicesController::class, 'info']);
+    Route::get('invoices/{id}/info', [InvoicesController::class, 'info']);
+
+    Route::get('invoices/{invoice}/export-excel', [InvoicesController::class, 'exportInvoiceExcel'])->name('invoices.exportExcel');
+
 
     Route::get('projects/{project}/financials', [InvoicesController::class, 'getProjectFinancials']);
 

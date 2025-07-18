@@ -1,5 +1,45 @@
 <x-dashboard title="Project Details - {{ $project->name }}">
 
+    @push('css')
+        <style>
+            /* لون الأيقونة والمسافة بينها وبين الرابط */
+            .project-links li i.fas.fa-link {
+                color: #0d6efd;
+                /* أزرق بوتستراب */
+                margin-right: 8px;
+                font-size: 1.1em;
+            }
+
+            /* تنسيق الرابط */
+            .project-links li a {
+                font-weight: 500;
+                transition: color 0.3s ease;
+            }
+
+            .project-links li a:hover {
+                color: #0a58ca;
+                text-decoration: underline;
+            }
+
+            /* تنسيق الوصف (label) */
+            .project-links li span.text-muted {
+                font-style: italic;
+                font-size: 0.9em;
+                margin-left: 10px;
+                color: #6c757d;
+                /* رمادي */
+            }
+
+            /* تباعد أفضل بين عناصر كل رابط */
+            .project-links li {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 12px;
+            }
+        </style>
+    @endpush
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-gray-800">Project Details</h1>
         <a href="{{ route('admin.projects.index') }}" class="btn btn-outline-primary">
@@ -118,6 +158,24 @@
                         </ul>
                     @else
                         <p class="text-muted">No attachments available.</p>
+                    @endif
+                    <hr>
+                    <p><strong>Project Links:</strong></p>
+                    @if($project->links->isNotEmpty())
+                        <ul class="list-group list-group-flush project-links">
+                            @foreach($project->links as $link)
+                                <li>
+                                    <i class="fas fa-link"></i>
+                                    <a href="{{ $link->url }}" target="_blank">{{ $link->url }}</a>
+                                    @if( $link->label)
+                                        <span class="text-muted">({{$link->label }})</span>
+                                    @endif
+                                    <hr>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="text-muted">No links available.</p>
                     @endif
                 </div>
             </div>

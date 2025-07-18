@@ -131,6 +131,18 @@ class ProjectsController extends Controller
             }
         }
 
+        // حفظ الروابط المرتبطة بالمشروع
+        if ($request->has('links')) {
+            foreach ($request->input('links') as $link) {
+                if (!empty($link['url'])) {
+                    $project->links()->create([
+                        'url' => $link['url'],
+                        'label' => $link['label'] ?? null,
+                    ]);
+                }
+            }
+        }
+
         flash()->success('Project created successfully');
         return redirect()->route('admin.projects.index');
     }
@@ -234,6 +246,38 @@ class ProjectsController extends Controller
                     'file_name' => $filename,
                     'file_path' => $path,
                 ]);
+            }
+        }
+
+        // التعامل مع روابط المشروع
+        $existingIds = [];
+
+        // 1. تحديث الروابط القديمة
+        if ($request->has('links.existing')) {
+            foreach ($request->input('links.existing') as $id => $linkData) {
+                $link = $project->links()->find($id);
+                if ($link && !empty($linkData['url'])) {
+                    $link->update([
+                        'url' => $linkData['url'],
+                        'label' => $linkData['label'] ?? null,
+                    ]);
+                    $existingIds[] = $link->id;
+                }
+            }
+        }
+
+        // 2. حذف الروابط المحذوفة
+        $project->links()->whereNotIn('id', $existingIds)->delete();
+
+        // 3. إضافة الروابط الجديدة
+        if ($request->has('links.new')) {
+            foreach ($request->input('links.new') as $linkData) {
+                if (!empty($linkData['url'])) {
+                    $project->links()->create([
+                        'url' => $linkData['url'],
+                        'label' => $linkData['label'] ?? null,
+                    ]);
+                }
             }
         }
 

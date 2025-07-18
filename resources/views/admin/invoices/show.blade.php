@@ -86,10 +86,6 @@
                         <td>{{ $invoice->due_date ? $invoice->due_date->format('Y-m-d H:i') : '-' }}</td>
                     </tr>
                     <tr>
-                        <th>Wallet</th>
-                        <td>{{ $invoice->wallet->name ?? '-' }}</td>
-                    </tr>
-                    <tr>
                         <th>Created At</th>
                         <td>{{ $invoice->created_at->format('Y-m-d H:i') }}</td>
                     </tr>
@@ -103,9 +99,13 @@
     </div>
 
     <div class="d-flex justify-content-center mb-5">
-        <button class="btn btn-primary btn-lg" onclick="printInvoice()">
+        {{-- <button class="btn btn-primary btn-lg" onclick="printInvoice()">
             <i class="fas fa-print"></i> Print Invoice
-        </button>
+        </button> --}}
+
+        <a href="{{ route('admin.invoices.exportExcel', $invoice->id) }}" class="btn btn-success btn-lg ms-3">
+            <i class="fas fa-file-excel"></i> Download Excel
+        </a>
     </div>
 
     @push('js')

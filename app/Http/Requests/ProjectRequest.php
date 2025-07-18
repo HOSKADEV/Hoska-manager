@@ -45,6 +45,8 @@ class ProjectRequest extends FormRequest
             'start_date' => 'nullable|date',
             'duration_days' => 'nullable|integer|min:1',
             'delivery_date' => 'nullable|date|after_or_equal:start_date',
+            'links.*.url' => ['nullable', 'url'],
+            'links.*.label' => ['nullable', 'string', 'max:255'],
         ];
     }
 }

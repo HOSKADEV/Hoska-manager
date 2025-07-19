@@ -89,7 +89,7 @@
                 <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-file-alt"></i>
                 </div>
-                <div class="sidebar-brand-text mx-3">{{ env('APP_NAME') }}</div>
+                <div class="sidebar-brand-text mx-3">{{ config('app.name') }}</div>
             </a>
 
 
@@ -364,7 +364,17 @@
                             <i class="fas fa-fw fa-tachometer-alt"></i>
                             <span>Dashboard</span></a>
                     </li>
-                    
+
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Projects Menu -->
+                    <li class="nav-item {{ request()->routeIs('admin.projects.index') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.projects.index') }}">
+                            <i class="fas fa-project-diagram"></i>
+                            <span>All Projects</span>
+                        </a>
+                    </li>
+
                     <!-- Divider -->
                     <hr class="sidebar-divider my-0">
                     <li

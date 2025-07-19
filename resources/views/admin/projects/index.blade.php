@@ -38,44 +38,47 @@
     <!-- Page Heading -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-gray-800">All Projects</h1>
-        <a href="{{ route('admin.projects.create') }}" class="btn btn-info"><i class="fas fa-plus"></i>Add New</a>
+        @unless(Auth::user()->type === 'employee')
+            <a href="{{ route('admin.projects.create') }}" class="btn btn-info"><i class="fas fa-plus"></i>Add New</a>
+        @endunless
     </div>
 
     <!-- Project Summary Cards -->
     <div class="row mb-4">
-
-        <!-- Total Amount by Currency -->
-        <div class="col-xl-12 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center mb-2">
-                        <div class="col">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Total Amount by Currency
-                            </div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-coins fa-2x text-gray-300"></i>
-                        </div>
-                    </div>
-                    <div class="row">
-                        @php
-                            $currencySymbols = ['USD' => '$', 'EUR' => '€', 'DZD' => 'DZ'];
-                        @endphp
-                        @foreach($totalsByCurrency as $currency => $amount)
-                            <div class="col-md-4 text-center">
-                                <div class="h6 font-weight-bold text-gray-800">
-                                    {{ $currencySymbols[$currency] ?? '' }} {{ number_format($amount, 2) }}
+        @if(auth()->user()->type !== 'employee')
+            <!-- Total Amount by Currency -->
+            <div class="col-xl-12 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center mb-2">
+                            <div class="col">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Total Amount by Currency
                                 </div>
                             </div>
-                        @endforeach
+                            <div class="col-auto">
+                                <i class="fas fa-coins fa-2x text-gray-300"></i>
+                            </div>
+                        </div>
+                        <div class="row">
+                            @php
+                                $currencySymbols = ['USD' => '$', 'EUR' => '€', 'DZD' => 'DZ'];
+                            @endphp
+                            @foreach($totalsByCurrency as $currency => $amount)
+                                <div class="col-md-4 text-center">
+                                    <div class="h6 font-weight-bold text-gray-800">
+                                        {{ $currencySymbols[$currency] ?? '' }} {{ number_format($amount, 2) }}
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        @endif
 
         <!-- Total Projects Count -->
-        <div class="col-xl-6 col-md-6 mb-4">
+        <div class="{{ auth()->user()->type === 'employee' ? 'col-xl-12' : 'col-xl-6 col-md-6' }} mb-4">
             <div class="card border-left-primary shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
@@ -95,27 +98,29 @@
             </div>
         </div>
 
-        <!-- Total Amount in DZD -->
-        <div class="col-xl-6 col-md-12 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center mb-2">
-                        <div class="col">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Total Amount Converted to DZD
+        @if(auth()->user()->type !== 'employee')
+            <!-- Total Amount in DZD -->
+            <div class="col-xl-6 col-md-12 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center mb-2">
+                            <div class="col">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                    Total Amount Converted to DZD
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="fas fa-exchange-alt fa-2x text-gray-300"></i>
                             </div>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-exchange-alt fa-2x text-gray-300"></i>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800 text-center">
+                            {{ number_format($totalInDZD, 2) }} DZ
                         </div>
-                    </div>
-                    <div class="h5 mb-0 font-weight-bold text-gray-800 text-center">
-                        {{ number_format($totalInDZD, 2) }} DZ
                     </div>
                 </div>
             </div>
-        </div>
 
+        @endif
     </div>
 
     <!-- Projects Table -->
@@ -146,12 +151,16 @@
                             <th>#</th>
                             <th>Name</th>
                             {{-- <th>Description</th> --}}
-                            <th>TotalAmount</th>
+                            @unless(Auth::user()->type === 'employee')
+                                <th>Total Amount</th>
+                            @endunless
                             <th>Start Date</th>
                             <th>Duration</th>
                             <th>Delivery Date</th>
                             <th>Remaining Days</th>
-                            <th>Remaining Amount</th>
+                            @unless(Auth::user()->type === 'employee')
+                                <th>Remaining Amount</th>
+                            @endunless
                             {{-- <th>Attachments</th>
                             <th>Client Name</th>
                             <th>Employee Name</th> --}}
@@ -166,12 +175,16 @@
                             <th>#</th>
                             <th>Name</th>
                             {{-- <th>Description</th> --}}
-                            <th>Total Amount</th>
+                            @unless(Auth::user()->type === 'employee')
+                                <th>Total Amount</th>
+                            @endunless
                             <th>Start Date</th>
                             <th>Duration</th>
                             <th>Delivery Date</th>
                             <th>Remaining Days</th>
-                            <th>Remaining Amount</th>
+                            @unless(Auth::user()->type === 'employee')
+                                <th>Remaining Amount</th>
+                            @endunless
                             {{-- <th>Attachments</th>
                             <th>Client Name</th>
                             <th>Employee Name</th> --}}
@@ -196,10 +209,19 @@
                                     $top = floor($project->remaining_days);
                                     $down = ceil($project->remaining_days);
                                 @endphp
-                                <td>
+                                @php
+                                    $currencySymbols = ['USD' => '$', 'EUR' => '€', 'DZD' => 'DZ'];
+                                @endphp
+                                @unless(Auth::user()->type === 'employee')
+                                    <td>
+                                        {{ $currencySymbols[$project->currency] ?? '' }}
+                                        {{ number_format($project->total_amount, 2) }}
+                                    </td>
+                                @endunless
+                                {{-- <td>
                                     {{ $currencySymbols[$project->currency] ?? '' }}
                                     {{ number_format($project->total_amount, 2) }}
-                                </td>
+                                </td> --}}
                                 <td>{{ $project->start_date ?? '-' }}</td>
                                 <td>{{ $project->duration_days ? $project->duration_days . ' days' : '-' }}</td>
                                 <td>{{ $project->delivery_date ?? '-' }}</td>
@@ -217,27 +239,32 @@
                                         <span class="badge badge-secondary">N/A</span>
                                     @endif
                                 </td>
-                                <td>
-                                    {{ $currencySymbols[$project->currency] ?? '' }} {{ number_format($project->remaining_amount, 2) }}
-                                </td>
+                                @unless(Auth::user()->type === 'employee')
+                                    <td>
+                                        {{ $currencySymbols[$project->currency] ?? '' }}
+                                        {{ number_format($project->remaining_amount, 2) }}
+                                    </td>
+                                @endunless
                                 <td>
                                     <a href="{{ route('admin.projects.show', $project->id) }}" class="btn btn-sm btn-info"
                                         title="View">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('admin.projects.edit', $project->id) }}"
-                                        class="btn btn-sm btn-primary">
-                                        <i class='fas fa-edit'></i>
-                                    </a>
-                                    <form action="{{ route('admin.projects.destroy', $project->id) }}" method="POST"
-                                        style="display: inline-block">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button onclick="return confirm('Are you sure?!')" type="submit"
-                                            class="btn btn-sm btn-danger">
-                                            <i class='fas fa-trash'></i>
-                                        </button>
-                                    </form>
+                                    @if(Auth::user()->type !== 'employee')
+                                        <a href="{{ route('admin.projects.edit', $project->id) }}"
+                                            class="btn btn-sm btn-primary">
+                                            <i class='fas fa-edit'></i>
+                                        </a>
+                                        <form action="{{ route('admin.projects.destroy', $project->id) }}" method="POST"
+                                            style="display: inline-block">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button onclick="return confirm('Are you sure?!')" type="submit"
+                                                class="btn btn-sm btn-danger">
+                                                <i class='fas fa-trash'></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

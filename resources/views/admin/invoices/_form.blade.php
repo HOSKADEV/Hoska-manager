@@ -11,8 +11,11 @@
 @endphp
 
 <div class="mb-3">
-    <x-form.input label="Invoice Number" name="invoice_number" placeholder="Enter Invoice Number"
-        :oldval="old('invoice_number', $invoice->invoice_number ?? '')" />
+    @if(isset($invoice) && $invoice->exists)
+        <!-- عرض الحقل في حالة التعديل -->
+        <x-form.input label="Invoice Number" name="invoice_number" placeholder="Enter Invoice Number"
+            :oldval="old('invoice_number', $invoice->invoice_number ?? '')" />
+    @endif
 </div>
 
 <div class="mb-3">
@@ -50,18 +53,18 @@
 </div>
 
 {{-- @php
-    $selectedIsPaid = old('is_paid', $invoice->is_paid ?? '');
+$selectedIsPaid = old('is_paid', $invoice->is_paid ?? '');
 @endphp
 
 <div class="mb-3">
     <label for="is_paid" class="form-label">Select Is Paid</label>
     <select class="form-control @error('is_paid') is-invalid @enderror mt-2" id="is_paid" name="is_paid">
-        <option value="" disabled {{ $selectedIsPaid === '' ? 'selected' : '' }}>Select Is Paid</option>
-        <option value="1" {{ $selectedIsPaid == 1 ? 'selected' : '' }}>Paid</option>
-        <option value="0" {{ $selectedIsPaid == 0 ? 'selected' : '' }}>Unpaid</option>
+        <option value="" disabled {{ $selectedIsPaid==='' ? 'selected' : '' }}>Select Is Paid</option>
+        <option value="1" {{ $selectedIsPaid==1 ? 'selected' : '' }}>Paid</option>
+        <option value="0" {{ $selectedIsPaid==0 ? 'selected' : '' }}>Unpaid</option>
     </select>
     @error('is_paid')
-        <div class="invalid-feedback">{{ $message }}</div>
+    <div class="invalid-feedback">{{ $message }}</div>
     @enderror
 </div> --}}
 

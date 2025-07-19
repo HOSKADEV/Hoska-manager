@@ -21,24 +21,38 @@ class ProjectsController extends Controller
      */
     public function index(Request $request)
     {
+        $user = Auth::user();
         $selectedMonth = $request->input('month', now()->format('Y-m'));
 
-        // تحويل القيمة إلى تاريخ بداية ونهاية الشهر
+        // تاريخ البداية والنهاية إذا تم اختيار شهر
         if ($selectedMonth !== 'all') {
             $startDate = Carbon::createFromFormat('Y-m', $selectedMonth)->startOfMonth();
             $endDate = Carbon::createFromFormat('Y-m', $selectedMonth)->endOfMonth();
-            $projects = Project::whereBetween('created_at', [$startDate, $endDate])->get();
-        } else {
-            $projects = Project::all();
         }
+
+        // جلب المشاريع حسب نوع المستخدم
+        $projectsQuery = Project::query();
+
+        // إذا كان موظف، جلب فقط المشاريع المرتبطة به
+        if ($user->type === 'employee') {
+            $employeeId = $user->employee->id ?? null;
+
+            $projectsQuery->whereHas('employees', function ($query) use ($employeeId) {
+                $query->where('employee_id', $employeeId);
+            });
+        }
+
+        // تطبيق التصفية بالشهر
+        if ($selectedMonth !== 'all') {
+            $projectsQuery->whereBetween('created_at', [$startDate, $endDate]);
+        }
+
+        $projects = $projectsQuery->with('payments')->get();
 
         // التجميع حسب العملة
         $totalsByCurrency = $projects->groupBy('currency')->map(function ($group) {
             return $group->sum('total_amount');
         });
-
-        // عدد المشاريع
-        $projectCount = $projects->count();
 
         // أسعار الصرف إلى الدينار الجزائري
         $exchangeRates = [
@@ -47,21 +61,23 @@ class ProjectsController extends Controller
             'DZD' => 1,
         ];
 
-        // حساب المجموع الكلي محول إلى الدينار الجزائري
-        $totalInDZD = 0;
-        foreach ($totalsByCurrency as $currency => $amount) {
+        // حساب المجموع الكلي بالدينار الجزائري
+        $totalInDZD = $totalsByCurrency->reduce(function ($carry, $amount, $currency) use ($exchangeRates) {
             $rate = $exchangeRates[$currency] ?? 1;
-            $totalInDZD += $amount * $rate;
-        }
+            return $carry + ($amount * $rate);
+        }, 0);
 
-        // الأشهر المتوفرة في المشاريع
+        // عدد المشاريع
+        $projectCount = $projects->count();
+
+        // الأشهر المتاحة في المشاريع
         $availableMonths = Project::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as value, DATE_FORMAT(created_at, "%M %Y") as label')
             ->groupBy('value', 'label')
             ->orderBy('value', 'desc')
             ->get()
             ->toArray();
 
-        // حساب الأيام المتبقية والمبلغ المتبقي
+        // حساب الأيام المتبقية والمبلغ المتبقي لكل مشروع
         foreach ($projects as $project) {
             $project->remainingDays = $project->delivery_date
                 ? Carbon::now()->diffInDays(Carbon::parse($project->delivery_date), false)
@@ -85,8 +101,18 @@ class ProjectsController extends Controller
      */
     public function create()
     {
+        // منع الموظفين من إنشاء مشاريع
+        if (Auth::user()->type === 'employee') {
+            abort(403, 'Unauthorized');
+        }
+
         $project = new Project();
-        $users = User::all();
+
+        // تحميل المستخدمين (إذا كان هناك مديرين أو مشرفين فقط)
+        $users = User::whereHas('role', function ($q) {
+            $q->whereIn('name', ['admin', 'manager']);
+        })->get();
+
         $clients = Client::all();
         $employees = Employee::all();
 
@@ -98,31 +124,35 @@ class ProjectsController extends Controller
      */
     public function store(ProjectRequest $request)
     {
+        // لا يُسمح للموظف بإنشاء مشروع
+        if (Auth::user()->type === 'employee') {
+            abort(403, 'Unauthorized');
+        }
 
-        // التحقق من صحة الطلب
+        // تحقق من صحة البيانات
         $data = $request->validated();
-        $data['user_id'] = Auth::user()->id; // استخدام معرف المستخدم الحالي بدلاً من معرف المستخدم من الطلب
+
+        // ربط المشروع بالمستخدم الحالي
+        $data['user_id'] = Auth::id();
         $data['client_id'] = $request->client_id;
 
-        // إزالة الحقول غير المرتبطة مباشرة بـ Project
+        // إزالة الحقول غير المرتبطة مباشرة بالمشروع
         unset($data['attachment'], $data['employee_id']);
 
         // إنشاء المشروع
         $project = Project::create($data);
 
-        // استخراج employee_ids من الطلب
-        $employeeIds = $request->input('employee_id', []);
-
         // ربط الموظفين بالمشروع
+        $employeeIds = $request->input('employee_id', []);
         if (!empty($employeeIds)) {
             $project->employees()->sync($employeeIds);
         }
 
-        // رفع الملفات وربطها بالمشروع
+        // رفع الملفات وربطها
         if ($request->hasFile('attachment')) {
             foreach ($request->file('attachment') as $file) {
                 $filename = rand() . time() . $file->getClientOriginalName();
-                $path = $file->store('attachments', 'public');
+                $path = $file->storeAs('attachments', $filename, 'public');
 
                 $project->attachments()->create([
                     'file_name' => $filename,
@@ -131,8 +161,8 @@ class ProjectsController extends Controller
             }
         }
 
-        // حفظ الروابط المرتبطة بالمشروع
-        if ($request->has('links')) {
+        // حفظ الروابط المرتبطة
+        if ($request->filled('links')) {
             foreach ($request->input('links') as $link) {
                 if (!empty($link['url'])) {
                     $project->links()->create([
@@ -152,15 +182,23 @@ class ProjectsController extends Controller
      */
     public function show(Project $project)
     {
-        // استدعاء المهام المكتملة فقط
+        $user = Auth::user();
+
+        // تحقق إذا كان الموظف مرتبطاً بالمشروع
+        if ($user->type === 'employee') {
+            $employeeId = $user->employee->id ?? null;
+            if (!$employeeId || !$project->employees()->where('employees.id', $employeeId)->exists()) {
+                abort(403, 'Unauthorized: You can only view projects assigned to you.');
+            }
+        }
+
+        // المهام المكتملة
         $tasks = $project->tasks()->where('status', 'completed')->get();
 
         // حساب مجموع الساعات لكل موظف
         $hoursByEmployee = [];
-
         foreach ($tasks as $task) {
             $hours = $task->duration_in_hours;
-
             if (!isset($hoursByEmployee[$task->employee_id])) {
                 $hoursByEmployee[$task->employee_id] = 0;
             }
@@ -172,19 +210,24 @@ class ProjectsController extends Controller
 
         $totalHours = 0;
         $totalCostDZD = 0;
-
         foreach ($hoursByEmployee as $employeeId => $hours) {
             $employee = $employees[$employeeId];
-
             $totalHours += $hours;
-
-            // تحويل الأجر إلى DZD (إذا الأجر بعملة مختلفة يمكنك تعديلها حسب العملة)
-            $rateDZD = $employee->rate; // افترض أن الأجر بالدينار الجزائري مباشرة، أو قم بتحويل العملة
-
+            $rateDZD = $employee->rate; // افتراض أن الأجر بالدينار الجزائري
             $totalCostDZD += $hours * $rateDZD;
         }
 
-        return view('admin.projects.show', compact('project', 'totalHours', 'totalCostDZD'));
+        // حساب المبالغ المالية
+        $paidAmount = $project->payments->sum('amount');
+        $remainingAmount = $project->total_amount - $paidAmount;
+
+        return view('admin.projects.show', compact(
+            'project',
+            'totalHours',
+            'totalCostDZD',
+            'paidAmount',
+            'remainingAmount'
+        ));
     }
 
     /**
@@ -192,9 +235,28 @@ class ProjectsController extends Controller
      */
     public function edit(Project $project)
     {
+        $user = Auth::user();
+
+        // إذا كان الدور "موظف" Employee
+        if ($user->type === 'employee') {
+            // نتحقق هل الموظف مرتبط بهذا المشروع
+            $isAssigned = $project->employees()->where('id', $user->employee->id)->exists();
+
+            if (! $isAssigned) {
+                abort(403, 'Unauthorized: You can only edit projects assigned to you.');
+            }
+
+            // يمكن جلب فقط الموظف الحالي لأنه موظف
+            $employees = Employee::where('id', $user->employee->id)->get();
+        } else {
+            // باقي المستخدمين (مدير، أدمن، ... ) يشوفوا كل الموظفين
+            $employees = Employee::all();
+        }
+
+        // المستخدمين والعملاء ممكن يشوفوا الكل، أو حسب صلاحياتك تعدل هنا لو تريد
         $users = User::all();
         $clients = Client::all();
-        $employees = Employee::all();
+
         return view('admin.projects.edit', compact('project', 'users', 'clients', 'employees'));
     }
 
@@ -203,29 +265,39 @@ class ProjectsController extends Controller
      */
     public function update(ProjectRequest $request, Project $project)
     {
+        $user = Auth::user();
+
+        // تحقق صلاحية الموظف
+        if ($user->type === 'employee') {
+            $isAssigned = $project->employees()->where('id', $user->employee->id)->exists();
+            if (! $isAssigned) {
+                abort(403, 'Unauthorized: You can only update projects assigned to you.');
+            }
+        }
 
         $data = $request->validated();
-        $data['user_id'] = Auth::user()->id; // استخدام معرف المستخدم الحالي بدلاً من معرف المستخدم من الطلب
+        $data['user_id'] = $user->id; // معرف المستخدم الحالي
         $data['client_id'] = $request->client_id;
 
-        unset($data['attachment']); // نحذف المرفقات من البيانات الرئيسية
-        unset($data['employee_id']); // لأننا سنستخدم employee_ids للمزامنة
+        unset($data['attachment']);
+        unset($data['employee_id']);
 
-        // تحديث بيانات المشروع
         $project->update($data);
 
-        // استخرج مصفوفة الموظفين من الطلب
         $employeeIds = $request->input('employee_id', []);
 
-        // مزامنة الموظفين (إضافة وحذف تلقائي حسب المصفوفة)
+        // إذا كان المستخدم موظف، يسمح فقط بتحديث نفسه في الموظفين المرتبطين
+        if ($user->type === 'employee') {
+            $employeeIds = [$user->employee->id];
+        }
+
         if (!empty($employeeIds)) {
             $project->employees()->sync($employeeIds);
         } else {
-            // لو المصفوفة فارغة، تفريغ العلاقة:
             $project->employees()->sync([]);
         }
 
-        // حذف المرفقات المختارة من المستخدم
+        // حذف المرفقات المحددة
         if ($request->has('delete_attachments')) {
             foreach ($request->delete_attachments as $attachmentId) {
                 $attachment = $project->attachments()->find($attachmentId);
@@ -236,7 +308,7 @@ class ProjectsController extends Controller
             }
         }
 
-        // رفع ملفات جديدة (إن وجدت)
+        // رفع ملفات جديدة
         if ($request->hasFile('attachment')) {
             foreach ($request->file('attachment') as $file) {
                 $filename = rand() . time() . $file->getClientOriginalName();
@@ -252,7 +324,6 @@ class ProjectsController extends Controller
         // التعامل مع روابط المشروع
         $existingIds = [];
 
-        // 1. تحديث الروابط القديمة
         if ($request->has('links.existing')) {
             foreach ($request->input('links.existing') as $id => $linkData) {
                 $link = $project->links()->find($id);
@@ -266,10 +337,8 @@ class ProjectsController extends Controller
             }
         }
 
-        // 2. حذف الروابط المحذوفة
         $project->links()->whereNotIn('id', $existingIds)->delete();
 
-        // 3. إضافة الروابط الجديدة
         if ($request->has('links.new')) {
             foreach ($request->input('links.new') as $linkData) {
                 if (!empty($linkData['url'])) {
@@ -291,6 +360,16 @@ class ProjectsController extends Controller
      */
     public function destroy(Project $project)
     {
+        $user = Auth::user();
+
+        // إذا كان المستخدم موظف، يتحقق هل المشروع مرتبط به
+        if ($user->type === 'employee') {
+            $isAssigned = $project->employees()->where('id', $user->employee->id)->exists();
+            if (! $isAssigned) {
+                abort(403, 'Unauthorized: You can only delete projects assigned to you.');
+            }
+        }
+
         $project->delete();
 
         flash()->success('Project deleted successfully');

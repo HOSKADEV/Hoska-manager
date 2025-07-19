@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\Project;
 use App\Models\Wallet;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -15,6 +16,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use PhpOffice\PhpSpreadsheet\Style\Font;
 
 
 class InvoicesController extends Controller
@@ -35,12 +37,8 @@ class InvoicesController extends Controller
         return view('admin.invoices.create', compact('invoice', 'projects', 'clients', 'wallets'));
     }
 
-    public function show(Invoice $invoice)
+    private function calculateProjectSummary($invoice)
     {
-        $projects = Project::all(); // لو تحتاج للخيارات أو عرض بيانات المشروع
-        $wallets = Wallet::all();
-
-        // احسب بيانات المشروع المالية
         $paidAmount = $invoice->project->invoices()
             ->where('is_paid', true)
             ->sum('amount');
@@ -48,7 +46,32 @@ class InvoicesController extends Controller
         $remainingAmount = $totalAmount - $paidAmount;
         $paidPercentage = $totalAmount > 0 ? round(($paidAmount / $totalAmount) * 100, 2) : 0;
 
+        return compact('paidAmount', 'totalAmount', 'remainingAmount', 'paidPercentage');
+    }
+
+    public function show(Invoice $invoice)
+    {
+        $projects = Project::all(); // حسب الحاجة
+        $wallets = Wallet::all();
+
+        extract($this->calculateProjectSummary($invoice));
+
         return view('admin.invoices.show', compact('invoice', 'wallets', 'paidAmount', 'totalAmount', 'remainingAmount', 'paidPercentage'));
+    }
+
+    private function generateInvoiceNumber()
+    {
+        $prefix = 'INV';
+        $year = now()->format('Y');
+        $month = now()->format('m');
+
+        $count = \App\Models\Invoice::whereYear('created_at', $year)
+            ->whereMonth('created_at', $month)
+            ->count();
+
+        $serial = str_pad($count + 1, 3, '0', STR_PAD_LEFT);
+
+        return "$prefix-$year-$month-$serial";
     }
 
     public function store(InvoiceRequest $request)
@@ -69,6 +92,9 @@ class InvoicesController extends Controller
         }
 
         $data['client_id'] = $project->client->id;
+
+        // توليد رقم الفاتورة
+        $data['invoice_number'] = $this->generateInvoiceNumber();
 
         // حساب المبلغ المدفوع مسبقاً للمشروع (الفواتير المدفوعة فقط)
         $paidAmount = $project->invoices()
@@ -116,6 +142,11 @@ class InvoicesController extends Controller
         }
 
         $data['client_id'] = $project->client->id;
+
+        // تحقق من عدم ترك رقم الفاتورة فارغاً (يمكن تعديل هذا حسب رغبتك)
+        if (empty($data['invoice_number'])) {
+            return back()->withErrors(['invoice_number' => 'Invoice number cannot be empty.']);
+        }
 
         // حساب المبلغ المدفوع مع استثناء الفاتورة الحالية
         $paidAmount = $project->invoices()
@@ -172,115 +203,174 @@ class InvoicesController extends Controller
         ]);
     }
 
-    /**
-     * Export invoice details to Excel.
-     *
-     * @param int $invoiceId
-     * @return \Symfony\Component\HttpFoundation\StreamedResponse
-     */
     public function exportInvoiceExcel($invoiceId)
     {
-        $invoice = Invoice::with(['project', 'client', 'payments'])->findOrFail($invoiceId);
+        $invoice = Invoice::with(['project', 'client', 'items'])->findOrFail($invoiceId);
 
-        $totalAmount = $invoice->amount;
-        $paidAmount = $invoice->payments->sum(fn($p) => $p->amount * ($p->exchange_rate ?? 1));
-        $remainingAmount = $totalAmount - $paidAmount;
-        $paidPercentage = $totalAmount > 0 ? round(($paidAmount / $totalAmount) * 100, 2) : 0;
-        $currency = $invoice->project->currency ?? '';
+        extract($this->calculateProjectSummary($invoice));
+
+        $exchangeRate = $invoice->project->exchange_rate ?? 1;
+        $totalAmountDz = $totalAmount * $exchangeRate;
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Invoice');
 
-        // Project Financial Summary Title
-        $sheet->setCellValue('A1', 'Project Financial Summary');
+        // إعداد الخط الأساسي
+        $defaultFont = $spreadsheet->getDefaultStyle()->getFont();
+        $defaultFont->setName('Arial')->setSize(11);
 
-        // تنسيق العنوان
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
-        $sheet->getStyle('A1')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF007BFF'); // أزرق
-        $sheet->getStyle('A1')->getFont()->getColor()->setARGB('FFFFFFFF'); // أبيض
-        $sheet->mergeCells('A1:B1');
-        $sheet->getStyle('A1:B1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        // العنوان الرئيسي للشركة
+        $sheet->mergeCells('B2:G2');
+        $sheet->setCellValue('B2', 'EURL Hoska Dev');
+        $sheet->getStyle('B2')->getFont()->setBold(true)->setSize(16);
+        $sheet->getStyle('B2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-        // عناوين الملخص
-        $summaryLabels = ['Total Amount', 'Paid Amount', 'Remaining Amount', 'Paid Percentage'];
+        // عنوان الفاتورة
+        $sheet->mergeCells('B4:G4');
+        $sheet->setCellValue('B4', 'Invoice Details');
+        $sheet->getStyle('B4')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('B4')->getFill()->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('FFB6C1'); // وردي فاتح
+        $sheet->getStyle('B4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // بيانات الفاتورة الأساسية
+        $basicInfoLabels = [
+            'B6' => 'Invoice Number:',
+            'B7' => 'Project:',
+            'B8' => 'Client:',
+            'B9' => 'Invoice Date:',
+            'B10' => 'Due Date:',
+            'B11' => 'Status:',
+        ];
+        $basicInfoValues = [
+            'C6' => $invoice->invoice_number,
+            'C7' => $invoice->project->name ?? '-',
+            'C8' => $invoice->client->name ?? '-',
+            'C9' => $invoice->invoice_date ? $invoice->invoice_date->format('Y-m-d') : '-',
+            'C10' => $invoice->due_date ? $invoice->due_date->format('Y-m-d') : '-',
+            'C11' => $invoice->is_paid ? 'Paid' : 'Unpaid',
+        ];
+
+        foreach ($basicInfoLabels as $cell => $text) {
+            $sheet->setCellValue($cell, $text);
+            $sheet->getStyle($cell)->getFont()->setBold(true);
+            $sheet->getStyle($cell)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        }
+        foreach ($basicInfoValues as $cell => $value) {
+            $sheet->setCellValue($cell, $value);
+            $sheet->getStyle($cell)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+        }
+
+        // تلوين الحالة (Paid / Unpaid)
+        $statusCell = 'C11';
+        if ($invoice->is_paid) {
+            $sheet->getStyle($statusCell)->getFont()->getColor()->setRGB('008000'); // أخضر
+        } else {
+            $sheet->getStyle($statusCell)->getFont()->getColor()->setRGB('FFA500'); // برتقالي
+        }
+
+        // ملخص المشروع المالي
+        $sheet->mergeCells('E4:G4');
+        $sheet->setCellValue('E4', 'Project Financial Summary');
+        $sheet->getStyle('E4')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('E4')->getFill()->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('87CEEB'); // أزرق فاتح
+        $sheet->getStyle('E4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        $summaryLabels = [
+            'E6' => 'Total Amount:',
+            'E7' => 'Paid Amount:',
+            'E8' => 'Remaining Amount:',
+            'E9' => 'Paid Percentage:',
+        ];
         $summaryValues = [
-            number_format($totalAmount, 2) . ' ' . $currency,
-            number_format($paidAmount, 2) . ' ' . $currency,
-            number_format($remainingAmount, 2) . ' ' . $currency,
-            $paidPercentage . '%'
+            'F6' => number_format($totalAmount, 2) . ' ' . ($invoice->project->currency ?? ''),
+            'F7' => number_format($paidAmount, 2) . ' ' . ($invoice->project->currency ?? ''),
+            'F8' => number_format($remainingAmount, 2) . ' ' . ($invoice->project->currency ?? ''),
+            'F9' => $paidPercentage . '%',
         ];
 
-        $row = 3;
-        foreach ($summaryLabels as $index => $label) {
-            $sheet->setCellValue("A{$row}", $label);
-            $sheet->setCellValue("B{$row}", $summaryValues[$index]);
-
-            // تنسيق العناوين والبيانات
-            $sheet->getStyle("A{$row}:B{$row}")->getFont()->setBold(true);
-            $sheet->getStyle("A{$row}:B{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle("A{$row}:B{$row}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-
-            $row++;
+        foreach ($summaryLabels as $cell => $text) {
+            $sheet->setCellValue($cell, $text);
+            $sheet->getStyle($cell)->getFont()->setBold(true);
+            $sheet->getStyle($cell)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        }
+        foreach ($summaryValues as $cell => $value) {
+            $sheet->setCellValue($cell, $value);
+            $sheet->getStyle($cell)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
         }
 
-        // بدء بيانات الفاتورة من الصف 8
-        $startRow = 8;
+        // جدول البنود - العناوين
+        $startRow = 13;
+        $sheet->setCellValue("B{$startRow}", 'Description');
+        $sheet->setCellValue("E{$startRow}", 'Quantity');
+        $sheet->setCellValue("F{$startRow}", 'Unit Price');
+        $sheet->setCellValue("G{$startRow}", 'Line Total');
 
-        // عناوين جدول الفاتورة
-        $headers = ['Invoice Number', 'Project', 'Client', 'Amount', 'Currency', 'Is Paid', 'Invoice Date', 'Due Date', 'Created At', 'Updated At'];
-        $col = 'A';
-        foreach ($headers as $header) {
-            $sheet->setCellValue("{$col}{$startRow}", $header);
-            // تنسيق العناوين
-            $sheet->getStyle("{$col}{$startRow}")->getFont()->setBold(true);
-            $sheet->getStyle("{$col}{$startRow}")->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCE5FF'); // لون فاتح أزرق
-            $sheet->getStyle("{$col}{$startRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle("{$col}{$startRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-            $col++;
+        // تنسيق رأس الجدول
+        $headerRange = "B{$startRow}:G{$startRow}";
+        $sheet->getStyle($headerRange)->getFont()->setBold(true)->getColor()->setRGB('FFFFFF');
+        $sheet->getStyle($headerRange)->getFill()
+            ->setFillType(Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('FF69B4'); // وردي
+        $sheet->getStyle($headerRange)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle($headerRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+        // تعبئة البنود
+        $itemsStartRow = $startRow + 1;
+        $totalItems = 0;
+        foreach ($invoice->items as $i => $item) {
+            $row = $itemsStartRow + $i;
+            $sheet->setCellValue("B{$row}", $item->description);
+            $sheet->setCellValue("E{$row}", $item->quantity);
+            $sheet->setCellValue("F{$row}", number_format($item->unit_price, 2));
+            $lineTotal = $item->quantity * $item->unit_price;
+            $sheet->setCellValue("G{$row}", 'dz' . number_format($lineTotal * $exchangeRate, 2));
+            $totalItems += $lineTotal;
+
+            // حدود الصف
+            $sheet->getStyle("B{$row}:G{$row}")
+                ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+            // تظليل الصفوف الزوجية قليلاً لتحسين القراءة
+            if ($i % 2 == 0) {
+                $sheet->getStyle("B{$row}:G{$row}")->getFill()
+                    ->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setRGB('FFF0F5'); // وردي فاتح جداً
+            }
         }
 
-        // بيانات الفاتورة - الصف التالي
-        $dataRow = $startRow + 1;
+        // إجمالي البنود بالعملة الأصلية (للمقارنة)
+        $totalRow = $itemsStartRow + count($invoice->items) + 1;
+        $sheet->setCellValue("F{$totalRow}", 'Total Items (original):');
+        $sheet->setCellValue("G{$totalRow}", number_format($totalItems, 2) . ' ' . ($invoice->project->currency ?? ''));
+        $sheet->getStyle("F{$totalRow}:G{$totalRow}")->getFont()->setBold(true);
+        $sheet->getStyle("F{$totalRow}:G{$totalRow}")->getBorders()->getTop()->setBorderStyle(Border::BORDER_MEDIUM);
 
-        $data = [
-            $invoice->invoice_number,
-            $invoice->project->name ?? '-',
-            $invoice->client->name ?? '-',
-            $invoice->amount,
-            $currency,
-            $invoice->is_paid ? 'Yes' : 'No',
-            $invoice->invoice_date?->format('Y-m-d') ?? '-',
-            $invoice->due_date?->format('Y-m-d') ?? '-',
-            $invoice->created_at->format('Y-m-d H:i'),
-            $invoice->updated_at->format('Y-m-d H:i'),
-        ];
-
-        $col = 'A';
-        foreach ($data as $value) {
-            $sheet->setCellValue("{$col}{$dataRow}", $value);
-            $sheet->getStyle("{$col}{$dataRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle("{$col}{$dataRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-            $col++;
-        }
+        // الإجمالي بعد تحويل العملة (المبلغ الحقيقي)
+        $totalRow2 = $totalRow + 1;
+        $sheet->setCellValue("F{$totalRow2}", 'Total (DZ):');
+        $sheet->setCellValue("G{$totalRow2}", 'dz' . number_format($totalAmountDz, 2));
+        $sheet->getStyle("F{$totalRow2}:G{$totalRow2}")->getFont()->setBold(true);
+        $sheet->getStyle("F{$totalRow2}:G{$totalRow2}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle("F{$totalRow2}:G{$totalRow2}")->getBorders()->getTop()->setBorderStyle(Border::BORDER_MEDIUM);
 
         // ضبط عرض الأعمدة تلقائياً
-        foreach (range('A', $col) as $columnID) {
-            $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        foreach (['B', 'C', 'D', 'E', 'F', 'G'] as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        // حفظ الملف وارساله للمتصفح
+        // تفعيل لف الصفحات للعرض أو الطباعة
+        $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+        $sheet->getPageSetup()->setFitToWidth(1);
+
+        // تحميل الملف
         $writer = new Xlsx($spreadsheet);
-
-        $response = new StreamedResponse(function () use ($writer) {
+        return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
-        });
-
-        $filename = 'invoice-' . $invoice->invoice_number . '.xlsx';
-
-        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        $response->headers->set('Content-Disposition', "attachment;filename=\"$filename\"");
-        $response->headers->set('Cache-Control', 'max-age=0');
-
-        return $response;
+        }, 'invoice-' . $invoice->invoice_number . '.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
     }
 }

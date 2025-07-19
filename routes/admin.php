@@ -24,6 +24,8 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth'])->group(function (
     Route::get('/profile', [AdminController::class, 'profile'])->name('profile');
     Route::put('/profile', [AdminController::class, 'profile_save']);
 
+    Route::resource('projects', ProjectsController::class);
+
     Route::resource('tasks', TasksController::class);
     Route::resource('notes', NotesController::class);
 });
@@ -39,7 +41,7 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group
     Route::resource('clients', ClientsController::class);
     Route::resource('employees', EmployeesController::class);
     Route::get('employees/{employee}/projects', [EmployeesController::class, 'projects']);
-    Route::resource('projects', ProjectsController::class);
+    // Route::resource('projects', ProjectsController::class);
     Route::resource('developments', DevelopmentsController::class);
     Route::resource('invoices', InvoicesController::class);
     Route::get('invoices/{id}/info', [InvoicesController::class, 'info']);

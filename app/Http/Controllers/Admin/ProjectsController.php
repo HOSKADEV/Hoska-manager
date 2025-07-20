@@ -108,15 +108,24 @@ class ProjectsController extends Controller
 
         $project = new Project();
 
-        // تحميل المستخدمين (إذا كان هناك مديرين أو مشرفين فقط)
+        // تحميل المستخدمين بصلاحيات admin و manager فقط
         $users = User::whereHas('role', function ($q) {
             $q->whereIn('name', ['admin', 'manager']);
         })->get();
 
-        $clients = Client::all();
+        $clients   = Client::all();
         $employees = Employee::all();
 
-        return view('admin.projects.create', compact('project', 'users', 'clients', 'employees'));
+        // يمكنك أيضًا تمرير قائمة العملات إن كنت تستخدم exchange_rate أو currency
+        $currencies = ['USD', 'EUR', 'DZD', 'SAR']; // أو جلبها من جدول إن كنت تستخدم جدول عملات
+
+        return view('admin.projects.create', compact(
+            'project',
+            'users',
+            'clients',
+            'employees',
+            'currencies'
+        ));
     }
 
     /**
@@ -124,31 +133,45 @@ class ProjectsController extends Controller
      */
     public function store(ProjectRequest $request)
     {
-        // لا يُسمح للموظف بإنشاء مشروع
         if (Auth::user()->type === 'employee') {
             abort(403, 'Unauthorized');
         }
 
-        // تحقق من صحة البيانات
         $data = $request->validated();
 
-        // ربط المشروع بالمستخدم الحالي
         $data['user_id'] = Auth::id();
         $data['client_id'] = $request->client_id;
 
-        // إزالة الحقول غير المرتبطة مباشرة بالمشروع
-        unset($data['attachment'], $data['employee_id']);
+        $data['is_manual'] = $request->boolean('is_manual');
 
-        // إنشاء المشروع
-        $project = Project::create($data);
-
-        // ربط الموظفين بالمشروع
-        $employeeIds = $request->input('employee_id', []);
-        if (!empty($employeeIds)) {
-            $project->employees()->sync($employeeIds);
+        if ($data['is_manual']) {
+            $data['manual_hours_spent'] = $request->manual_hours_spent ?? 0;
+            $data['manual_cost'] = $request->manual_cost ?? 0;
+        } else {
+            $data['manual_hours_spent'] = null;
+            $data['manual_cost'] = null;
         }
 
-        // رفع الملفات وربطها
+        unset($data['attachment'], $data['employee_id']);
+
+        $project = Project::create($data);
+
+        if (!$data['is_manual']) {
+            $employeeIds = $request->input('employee_id', []);
+            if (!empty($employeeIds)) {
+                $project->employees()->sync($employeeIds);
+            }
+        }
+
+        // تسجيل دفعة كاملة تلقائياً إذا المشروع يدوي
+        if ($data['is_manual']) {
+            $project->payments()->create([
+                'amount' => $data['total_amount'],
+                'paid_at' => now(),
+                // أضف حقول أخرى حسب جدول المدفوعات عندك
+            ]);
+        }
+
         if ($request->hasFile('attachment')) {
             foreach ($request->file('attachment') as $file) {
                 $filename = rand() . time() . $file->getClientOriginalName();
@@ -161,7 +184,6 @@ class ProjectsController extends Controller
             }
         }
 
-        // حفظ الروابط المرتبطة
         if ($request->filled('links')) {
             foreach ($request->input('links') as $link) {
                 if (!empty($link['url'])) {
@@ -176,6 +198,8 @@ class ProjectsController extends Controller
         flash()->success('Project created successfully');
         return redirect()->route('admin.projects.index');
     }
+
+
 
     /**
      * Display the specified resource.
@@ -205,19 +229,38 @@ class ProjectsController extends Controller
             $hoursByEmployee[$task->employee_id] += $hours;
         }
 
-        // جلب بيانات الموظفين (معدل الساعة)
+        // جلب بيانات الموظفين (بما فيها المعدل والعملة)
         $employees = Employee::whereIn('id', array_keys($hoursByEmployee))->get()->keyBy('id');
 
+        // حساب التكلفة لكل موظف حسب المعدل والعملة الخاصة به
+        $costsByEmployee = [];
         $totalHours = 0;
         $totalCostDZD = 0;
         foreach ($hoursByEmployee as $employeeId => $hours) {
             $employee = $employees[$employeeId];
             $totalHours += $hours;
-            $rateDZD = $employee->rate; // افتراض أن الأجر بالدينار الجزائري
-            $totalCostDZD += $hours * $rateDZD;
+            $rate = $employee->rate; // الأجر حسب موظف (افتراض)
+            $cost = $hours * $rate;
+            $costsByEmployee[$employeeId] = $cost;
+
+            // تحويل التكلفة إلى دينار جزائري (مثلاً إذا الموظف بعملة أخرى تحتاج تحويل)
+            // هنا نفترض المعدل بالدينار، أو اضف التحويل حسب العملة:
+            $currency = $employee->currency ?? $project->currency;
+            if ($currency !== 'DZD') {
+                // مثال لتحويل (يجب تعديل حسب قاعدة بيانات أسعار الصرف)
+                $exchangeRates = [
+                    'USD' => 140,  // مثلا 1 دولار = 140 دينار
+                    'EUR' => 150,  // 1 يورو = 150 دينار
+                    // أضف العملات حسب الحاجة
+                ];
+                $rateToDZD = $exchangeRates[$currency] ?? 1;
+                $totalCostDZD += $cost * $rateToDZD;
+            } else {
+                $totalCostDZD += $cost;
+            }
         }
 
-        // حساب المبالغ المالية
+        // حساب المبالغ المالية للمشروع
         $paidAmount = $project->payments->sum('amount');
         $remainingAmount = $project->total_amount - $paidAmount;
 
@@ -226,7 +269,10 @@ class ProjectsController extends Controller
             'totalHours',
             'totalCostDZD',
             'paidAmount',
-            'remainingAmount'
+            'remainingAmount',
+            'hoursByEmployee',
+            'employees',
+            'costsByEmployee'
         ));
     }
 
@@ -257,6 +303,7 @@ class ProjectsController extends Controller
         $users = User::all();
         $clients = Client::all();
 
+        // تمرير معلومات المشروع، المستخدمين، العملاء، الموظفين، ومؤشر إذا كان المشروع يدوي
         return view('admin.projects.edit', compact('project', 'users', 'clients', 'employees'));
     }
 
@@ -283,6 +330,14 @@ class ProjectsController extends Controller
         unset($data['employee_id']);
 
         $project->update($data);
+        // إذا كان المشروع يدوي، حدث عدد الساعات والتكلفة اليدوية
+        if ($project->is_manual) {
+            $project->update([
+                'manual_hours_spent' => $request->input('manual_hours_spent'),
+                'manual_cost' => $request->input('manual_cost'),
+            ]);
+        }
+
 
         $employeeIds = $request->input('employee_id', []);
 

@@ -10,6 +10,12 @@ class Project extends Model
     //
     protected $guarded = [];
 
+    protected $casts = [
+        'is_manual' => 'boolean',
+        'manual_hours_spent' => 'float',
+        'manual_cost' => 'float',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

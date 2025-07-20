@@ -64,8 +64,8 @@
             <div class="link-group d-flex gap-2 mb-2">
                 <input type="hidden" name="links[existing][{{ is_object($link) ? $link->id : $i }}][id]"
                     value="{{ is_object($link) ? $link->id : $link['id'] ?? '' }}">
-                <input type="url" name="links[existing][{{ is_object($link) ? $link->id : $i }}][url]" class="form-control mr-2"
-                    placeholder="Link URL"
+                <input type="url" name="links[existing][{{ is_object($link) ? $link->id : $i }}][url]"
+                    class="form-control mr-2" placeholder="Link URL"
                     value="{{ old("links.existing.$i.url", is_object($link) ? $link->url : $link['url'] ?? '') }}" />
                 <input type="text" name="links[existing][{{ is_object($link) ? $link->id : $i }}][label]"
                     class="form-control mr-2" placeholder="Label (optional)"
@@ -83,6 +83,26 @@
 
     <button type="button" class="btn btn-sm btn-primary mt-2" id="add-link">+ Add Link</button>
 </div>
+
+
+<div id="manualFields">
+    <div class="mb-3">
+        <x-form.input label="Manual Hours Spent" name="manual_hours_spent" type="number" step="0.1" min="0"
+            :oldval="old('manual_hours_spent', $project->manual_hours_spent)" placeholder="Enter manual hours spent" />
+    </div>
+
+    <div class="mb-3">
+        <x-form.input label="Manual Cost" name="manual_cost" type="number" step="0.01" min="0"
+            :oldval="old('manual_cost', $project->manual_cost)" placeholder="Enter manual cost" />
+    </div>
+</div>
+
+<div class="form-check mb-3">
+    <input type="checkbox" id="is_manual" name="is_manual" value="1" {{ old('is_manual', $project->is_manual) ? 'checked' : '' }}>
+
+    <label class="form-check-label" for="is_manual">Is Manual</label>
+</div>
+
 
 @push('js')
     <script>
@@ -122,10 +142,10 @@
                 const group = document.createElement('div');
                 group.classList.add('link-group', 'd-flex', 'gap-2', 'mb-2');
                 group.innerHTML = `
-                    <input type="url" name="links[new][${linkIndex}][url]" class="form-control mr-2" placeholder="Link URL" />
-                    <input type="text" name="links[new][${linkIndex}][label]" class="form-control mr-2" placeholder="Label (optional)" />
-                    <button type="button" class="btn btn-danger btn-sm remove-link">✕</button>
-                `;
+                                <input type="url" name="links[new][${linkIndex}][url]" class="form-control mr-2" placeholder="Link URL" />
+                                <input type="text" name="links[new][${linkIndex}][label]" class="form-control mr-2" placeholder="Label (optional)" />
+                                <button type="button" class="btn btn-danger btn-sm remove-link">✕</button>
+                            `;
                 document.getElementById('project-links').appendChild(group);
                 linkIndex++;
             });
@@ -135,6 +155,27 @@
                     e.target.closest('.link-group').remove();
                 }
             });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const isManualCheckbox = document.getElementById('is_manual');
+            const manualFields = document.getElementById('manualFields');
+
+            function toggleManualFields() {
+                if (isManualCheckbox.checked) {
+                    manualFields.style.display = 'block';
+                } else {
+                    manualFields.style.display = 'none';
+                }
+            }
+
+            // initial toggle on page load
+            toggleManualFields();
+
+            // toggle on checkbox change
+            isManualCheckbox.addEventListener('change', toggleManualFields);
         });
     </script>
 @endpush

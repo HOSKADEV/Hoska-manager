@@ -19,7 +19,7 @@ class ProjectRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules() : array
+    public function rules(): array
     {
         $rules = 'nullable|unique:projects,name';
 
@@ -48,14 +48,14 @@ class ProjectRequest extends FormRequest
             'links.*.url' => ['nullable', 'url'],
             'links.*.label' => ['nullable', 'string', 'max:255'],
 
-            // Manual fields: required only if is_manual = true
-            'is_manual' => 'required|boolean',
+            'is_manual' => 'nullable|boolean',
+
             'manual_hours_spent' => [
                 'nullable',
                 'integer',
                 'min:0',
                 function ($attribute, $value, $fail) {
-                    if ($this->input('is_manual') && ($value === null || $value === '')) {
+                    if ($this->input('is_manual') == true && ($value === null || $value === '')) {
                         $fail('The ' . $attribute . ' field is required when the project is manual.');
                     }
                 }
@@ -65,7 +65,7 @@ class ProjectRequest extends FormRequest
                 'numeric',
                 'min:0',
                 function ($attribute, $value, $fail) {
-                    if ($this->input('is_manual') && ($value === null || $value === '')) {
+                    if ($this->input('is_manual') == true && ($value === null || $value === '')) {
                         $fail('The ' . $attribute . ' field is required when the project is manual.');
                     }
                 }

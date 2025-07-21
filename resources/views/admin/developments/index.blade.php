@@ -37,9 +37,13 @@
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Name</th>
-                            <th>Rate</th>
+                            <th>description</th>
+                            <th>amount</th>
                             <th>Project Name</th>
+                            <th>Start Date</th>
+                            <th>Duration (Days)</th>
+                            <th>Delivery Date</th>
+                            <th>Remaining Days</th>
                             <th>Created At</th>
                             <th>Updated At</th>
                             <th>Actions</th>
@@ -51,6 +55,10 @@
                             <th>description</th>
                             <th>amount</th>
                             <th>Project Name</th>
+                            <th>Start Date</th>
+                            <th>Duration (Days)</th>
+                            <th>Delivery Date</th>
+                            <th>Remaining Days</th>
                             <th>Created At</th>
                             <th>Updated At</th>
                             <th>Actions</th>
@@ -58,19 +66,22 @@
                     </tfoot>
                     <tbody>
                         @forelse ($developments as $development)
-                            <tr>
+                            <tr class=" {{ $development->row_class }}">
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $development->description }}</td>
-                                <td>{{ $development->amount }}</td>
+                                {{-- <td>{{ $development->amount }}</td> --}}
                                 @php
                                     $currencySymbols = [
                                         'USD' => '$',
                                         'EUR' => '€',
                                         'DZD' => 'DZ',
                                     ];
+                                    $top = floor($development->remaining_days);
+                                    $down = ceil($development->remaining_days);
                                 @endphp
                                 <td>
-                                    {{ $currencySymbols[$development->project?->currency] ?? '' }} {{ number_format($development->amount, 2) }}
+                                    {{ $currencySymbols[$development->currency] ?? '' }}
+                                    {{ number_format($development->amount, 2) }}
                                 </td>
                                 <td>
                                     @if($development->project)
@@ -79,6 +90,39 @@
                                         <span class="badge-custom badge-muted">_</span>
                                     @endif
                                 </td>
+                                <td>{{ $development->start_date ? \Carbon\Carbon::parse($development->start_date)->format('Y-m-d') : '-' }}
+                                </td>
+
+                                <td>{{ $development->duration_days ?? '-' }}</td>
+
+                                <td>{{ $development->delivery_date ? \Carbon\Carbon::parse($development->delivery_date)->format('Y-m-d') : '-' }}
+                                </td>
+
+                                @php
+                                    if ($development->delivery_date) {
+                                        $today = \Carbon\Carbon::now();
+                                        $deliveryDate = \Carbon\Carbon::parse($development->delivery_date);
+                                        $remainingDays = $deliveryDate->diffInDays($today, false);
+                                    } else {
+                                        $remainingDays = null;
+                                    }
+                                @endphp
+
+                                <td>
+                                    @if (!is_null($development->remaining_days))
+                                        @if ($development->remaining_days < 0)
+                                            <span class="badge badge-danger">Overdue {{ abs($top) }}
+                                                day(s)</span>
+                                        @elseif ($development->remaining_days >= 0 && $development->remaining_days <= 1)
+                                            <span class="badge badge-warning">Due Today</span>
+                                        @else
+                                            <span class="badge badge-success">{{ $top }} day(s)</span>
+                                        @endif
+                                    @else
+                                        <span class="badge badge-secondary">N/A</span>
+                                    @endif
+                                </td>
+
                                 <td>{{ $development->created_at->diffForHumans() }}</td>
                                 <td>{{ $development->updated_at->diffForHumans() }}</td>
                                 <td>
@@ -96,7 +140,7 @@
                         @empty
                             <tr>
                                 <td class="d-none"></td>
-                                <td colspan="7" class="text-center">No Data Found</td>
+                                <td colspan="8" class="text-center">No Data Found</td>
                             </tr>
                         @endforelse
                     </tbody>

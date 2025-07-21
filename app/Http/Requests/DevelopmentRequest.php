@@ -21,18 +21,23 @@ class DevelopmentRequest extends FormRequest
      */
     public function rules(): array
     {
-        $rules = 'nullable|unique:developments,description';
-        $rule_rate = 'nullable|numeric|min:0';
+        // $rules = 'nullable|unique:developments,description';
+        // $rule_rate = 'nullable|numeric|min:0';
 
-        if ($this->method() != 'POST') {
-            $rules = 'nullable|unique:developments,description,' . $this->development->id;
-            // فقط تحقق من الرقم ولا تجبره أن يكون فريدًا
-            $rule_rate = 'nullable|numeric|min:0';
-        }
+        // if ($this->method() != 'POST') {
+        //     $rules = 'nullable|unique:developments,description,' . $this->development->id;
+        //     // فقط تحقق من الرقم ولا تجبره أن يكون فريدًا
+        //     $rule_rate = 'nullable|numeric|min:0';
+        // }
 
         return [
-            'description' => $rules,
-            'amount' => $rule_rate,
+            'description' => 'nullable',
+            'amount' => 'nullable|numeric|min:0',
+            'currency' => 'nullable|in:EUR,USD,DZD',
+            'start_date' => 'nullable|date',
+            'duration_days' => 'nullable|integer|min:0',
+            'delivery_date' => 'nullable|date|after_or_equal:start_date',
+            'project_id' => 'required|exists:projects,id',
         ];
     }
 }

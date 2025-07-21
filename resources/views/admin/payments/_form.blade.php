@@ -22,6 +22,10 @@
         placeholder="Enter exchange rate" :oldval="old('exchange_rate', $payment->exchange_rate ?? '')" />
 </div>
 
+<div id="converted-amount-info" class="mt-2 alert alert-warning d-none">
+    💱 Converted Amount: <strong id="converted-amount"></strong>
+</div>
+
 @if (isset($payment) && $payment->exists)
     <div class="mb-3">
         <x-form.input label="Amount" name="amount" placeholder="Enter Payment amount" :oldval="$payment->invoice->amount ?? ''" readonly />
@@ -142,6 +146,43 @@
                 }
             }
         });
+    </script>
+
+    <script>
+        const exchangeRateInput = document.querySelector('input[name="exchange_rate"]');
+        const convertedAmountDiv = document.getElementById('converted-amount-info');
+        const convertedAmountText = document.getElementById('converted-amount');
+
+        const invoiceSelect2 = document.getElementById('invoice_id');
+
+        function updateConvertedAmount() {
+            const exchangeRate = parseFloat(exchangeRateInput?.value || 0);
+            const selectedInvoiceId = invoiceSelect2?.value;
+
+            if (!exchangeRate || !selectedInvoiceId) {
+                convertedAmountDiv.classList.add('d-none');
+                return;
+            }
+
+            const invoice = invoices.find(inv => inv.id == selectedInvoiceId);
+            if (!invoice || !invoice.amount) {
+                convertedAmountDiv.classList.add('d-none');
+                return;
+            }
+
+            const converted = parseFloat(invoice.amount) * exchangeRate;
+            convertedAmountText.textContent = converted.toFixed(2);
+            convertedAmountDiv.classList.remove('d-none');
+        }
+
+        if (exchangeRateInput) {
+            exchangeRateInput.addEventListener('input', updateConvertedAmount);
+        }
+        if (invoiceSelect2) {
+            invoiceSelect2.addEventListener('change', updateConvertedAmount);
+        }
+
+        document.addEventListener('DOMContentLoaded', updateConvertedAmount);
     </script>
 
 @endpush

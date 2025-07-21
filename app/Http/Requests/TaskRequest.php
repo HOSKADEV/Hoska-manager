@@ -4,6 +4,8 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
+use Carbon\Carbon;
 
 class TaskRequest extends FormRequest
 {
@@ -45,5 +47,25 @@ class TaskRequest extends FormRequest
             'employee_id' => ['required', 'exists:employees,id'],
             'project_id' => ['required', 'exists:projects,id'],
         ];
+    }
+
+    public function withValidator(Validator $validator)
+    {
+        $validator->after(function ($validator) {
+            if ($this->start_time && $this->end_time) {
+                $start = Carbon::parse($this->start_time);
+                $end = Carbon::parse($this->end_time);
+
+                $hours = $start->diffInMinutes($end) / 60;
+
+                if ($hours > 24) {
+                    $validator->errors()->add('end_time', 'The duration between start and end time must not exceed 24 hours.');
+                }
+
+                if ($end->lessThanOrEqualTo($start)) {
+                    $validator->errors()->add('end_time', 'End time must be after start time.');
+                }
+            }
+        });
     }
 }

@@ -97,6 +97,7 @@
                             <th>Description</th>
                             <th>Related Wallet</th>
                             <th>Date</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tfoot>
@@ -109,6 +110,7 @@
                             <th>Description</th>
                             <th>Related Wallet</th>
                             <th>Date</th>
+                            <th>Action</th>
                         </tr>
                     </tfoot>
                     <tbody>
@@ -143,10 +145,20 @@
                                 <td>{{ $txn->description ?? '-' }}</td>
                                 <td>{{ $txn->relatedWallet ? $txn->relatedWallet->name : '-' }}</td>
                                 <td>{{ \Carbon\Carbon::parse($txn->transaction_date)->format('Y-m-d H:i') }}</td>
+                                <td>
+                                    <a href="{{ route('admin.wallet-transactions.edit', $txn->id) }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="{{ route('admin.wallet-transactions.destroy', $txn->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this transaction?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="text-center">No transactions found.</td>
+                                <td colspan="12" class="text-center">No transactions found.</td>
                             </tr>
                         @endforelse
                     </tbody>

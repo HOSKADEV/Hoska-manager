@@ -19,7 +19,7 @@ class DevelopmentsController extends Controller
     {
         $developments = Development::all();
 
-        return view('admin.developments.index', compact('developments' ));
+        return view('admin.developments.index', compact('developments'));
     }
 
     /**
@@ -70,6 +70,11 @@ class DevelopmentsController extends Controller
     {
         $data = $request->validated();
         $data['project_id'] = $request->project_id;
+
+        if (isset($data['duration_days'])) {
+            $data['duration_days'] = (int) $data['duration_days'];
+        }
+
         $development->update($data);
 
         flash()->success('Development updated successfully');

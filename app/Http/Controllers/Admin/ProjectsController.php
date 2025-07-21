@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProjectRequest;
 use App\Models\Client;
+use App\Models\Development;
 use App\Models\Employee;
 use App\Models\Project;
 use App\Models\User;
@@ -86,13 +87,17 @@ class ProjectsController extends Controller
             $project->remaining_amount = $project->total_amount - $project->payments->sum('amount');
         }
 
+
+        $developments = Development::all(); // Assuming you want to fetch all developments
+
         return view('admin.projects.index', compact(
             'projects',
             'totalsByCurrency',
             'projectCount',
             'totalInDZD',
             'availableMonths',
-            'selectedMonth'
+            'selectedMonth',
+            'developments'
         ));
     }
 
@@ -264,6 +269,9 @@ class ProjectsController extends Controller
         $paidAmount = $project->payments->sum('amount');
         $remainingAmount = $project->total_amount - $paidAmount;
 
+        // جلب التطويرات (التحديثات) المرتبطة بالمشروع
+        $developments = $project->developments()->latest()->get();
+
         return view('admin.projects.show', compact(
             'project',
             'totalHours',
@@ -272,9 +280,11 @@ class ProjectsController extends Controller
             'remainingAmount',
             'hoursByEmployee',
             'employees',
-            'costsByEmployee'
+            'costsByEmployee',
+            'developments'  // أضفنا التطويرات هنا
         ));
     }
+
 
     /**
      * Show the form for editing the specified resource.

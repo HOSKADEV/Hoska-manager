@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsAdminOrAccountant;
+use App\Http\Middleware\IsAdminOrMarketer;
 use App\Http\Middleware\isAuth;
 use App\Http\Middleware\IsEmployeeOrAdmin;
 use Illuminate\Foundation\Application;
@@ -20,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'IsAdmin' => IsAdmin::class,
             'IsAdminOrAccountant' => IsAdminOrAccountant::class,
             'IsEmployeeOrAdmin' => IsEmployeeOrAdmin::class,
+            'IsAdminOrMarketer' => IsAdminOrMarketer::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

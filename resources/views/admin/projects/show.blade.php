@@ -401,76 +401,102 @@
                     @endif
                 </div>
             </div>
+
+            @if(auth()->user()->type === 'admin' &&$marketer &&$marketerCommissionPercent)
+                <div class="card shadow-sm mt-4 h-100">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">Marketer Info</h5>
+                    </div>
+                    <div class="">
+                        <div class="card-body">
+                            <p>
+                                <strong>Name:</strong>
+                                <span class="badge bg-success p-2 me-2 mb-2 text-white">
+                                    {{ $marketer->name }}
+                                </span>
+                            </p>
+                            <p><strong>Email:</strong> {{ $marketer->email }}</p>
+                            <p><strong>Commission:</strong> {{ $marketerCommissionPercent }}%</p>
+                            <p>
+                                <strong>Commission Amount:</strong>
+                                {{ $currencySymbols[$project->currency] ?? '' }}
+                                {{ number_format($marketerCommissionAmount, 2) }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
         </div>
     </div>
-
-    <div class="row gy-4 align-items-stretch mt-4">
-        <div class="col-lg-12">
-            <div class="card mb-5 shadow-sm h-100">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">Developments Information</h5>
-                </div>
-                <div class="card-body">
-                    @if($developments->isNotEmpty())
-                        <table class="table table-bordered table-striped mb-0" style="font-size: 0.9rem;">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Description</th>
-                                     @unless ($isEmployee)
-                                    <th>Amount</th>
-                                    @endunless
-                                    <th>Project Name</th>
-                                    <th>Start Date</th>
-                                    <th>Duration (Days)</th>
-                                    <th>Delivery Date</th>
-                                    <th>Remaining Days</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($developments as $index => $development)
-                                    @php
-                                        $currencySymbols = ['USD' => '$', 'EUR' => '€', 'DZD' => 'DZ'];
-                                        $currency = $development->currency ?? 'DZD';  // العملة من التطوير نفسه
-                                        $remainingDays = $development->remaining_days;
-                                        $days = floor($remainingDays);
-                                    @endphp
+    @if($developments->isNotEmpty())
+        <div class="row gy-4 align-items-stretch mt-4">
+            <div class="col-lg-12">
+                <div class="card mb-5 shadow-sm h-100">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">Developments Information</h5>
+                    </div>
+                    <div class="card-body">
+                        @if($developments->isNotEmpty())
+                            <table class="table table-bordered table-striped mb-0" style="font-size: 0.9rem;">
+                                <thead>
                                     <tr>
-                                        <td>{{ $index + 1 }}</td>
-                                        <td>{{ $development->description ?? '-' }}</td>
+                                        <th>#</th>
+                                        <th>Description</th>
                                         @unless ($isEmployee)
-
-                                        <td>{{ $currencySymbols[$currency] ?? '' }}{{ number_format($development->amount, 2) }}</td>
+                                        <th>Amount</th>
                                         @endunless
-                                        <td>{{ $development->project->name ?? '-' }}</td>
-                                        <td>{{ $development->start_date ? \Carbon\Carbon::parse($development->start_date)->format('Y-m-d') : '-' }}</td>
-                                        <td>{{ $development->duration_days ?? '-' }}</td>
-                                        <td>{{ $development->delivery_date ? \Carbon\Carbon::parse($development->delivery_date)->format('Y-m-d') : '-' }}</td>
-                                        <td>
-                                            @if(!is_null($remainingDays))
-                                                @if($days < 0)
-                                                    <span class="badge bg-danger">Overdue {{ abs($days) }} day(s)</span>
-                                                @elseif($days == 0)
-                                                    <span class="badge bg-warning text-dark">Due Today</span>
-                                                @else
-                                                    <span class="badge bg-success">{{ $days }} day(s)</span>
-                                                @endif
-                                            @else
-                                                <span class="badge bg-secondary">N/A</span>
-                                            @endif
-                                        </td>
+                                        <th>Project Name</th>
+                                        <th>Start Date</th>
+                                        <th>Duration (Days)</th>
+                                        <th>Delivery Date</th>
+                                        <th>Remaining Days</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    @else
-                        <p class="text-muted text-center">No developments found.</p>
-                    @endif
+                                </thead>
+                                <tbody>
+                                    @foreach($developments as $index => $development)
+                                        @php
+                                            $currencySymbols = ['USD' => '$', 'EUR' => '€', 'DZD' => 'DZ'];
+                                            $currency = $development->currency ?? 'DZD';  // العملة من التطوير نفسه
+                                            $remainingDays = $development->remaining_days;
+                                            $days = floor($remainingDays);
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $development->description ?? '-' }}</td>
+                                            @unless ($isEmployee)
+
+                                            <td>{{ $currencySymbols[$currency] ?? '' }}{{ number_format($development->amount, 2) }}</td>
+                                            @endunless
+                                            <td>{{ $development->project->name ?? '-' }}</td>
+                                            <td>{{ $development->start_date ? \Carbon\Carbon::parse($development->start_date)->format('Y-m-d') : '-' }}</td>
+                                            <td>{{ $development->duration_days ?? '-' }}</td>
+                                            <td>{{ $development->delivery_date ? \Carbon\Carbon::parse($development->delivery_date)->format('Y-m-d') : '-' }}</td>
+                                            <td>
+                                                @if(!is_null($remainingDays))
+                                                    @if($days < 0)
+                                                        <span class="badge bg-danger">Overdue {{ abs($days) }} day(s)</span>
+                                                    @elseif($days == 0)
+                                                        <span class="badge bg-warning text-dark">Due Today</span>
+                                                    @else
+                                                        <span class="badge bg-success">{{ $days }} day(s)</span>
+                                                    @endif
+                                                @else
+                                                    <span class="badge bg-secondary">N/A</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        @else
+                            <p class="text-muted text-center">No developments found.</p>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-
+    @endif
     <div class="mt-4 p-3 border rounded bg-white text-dark mb-3 small d-flex justify-content-between align-items-center flex-wrap"
         style="max-width: 100%;">
         <div class="mb-2 d-flex align-items-center">

@@ -52,6 +52,7 @@ class EmployeeRequest extends FormRequest
                 'min:6',
                 // 'confirmed', // إذا كنت تستخدم حقل password_confirmation
             ],
+            'user.is_marketer' => ['nullable', 'boolean'], // حالة التسويق اختيارية 
         ];
     }
 }

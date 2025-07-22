@@ -5,6 +5,17 @@
         <a href="{{ route('admin.employees.index') }}" class="btn btn-info"><i class="fas fa-long-arrow-alt-left"></i>All Employees</a>
     </div>
 
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" id="error-alert">
+            <strong>The following fields are required:</strong>
+            <ul class="mb-0">
+                @foreach ($errors->keys() as $field)
+                    <li>{{ $fieldLabels[$field] ?? ucfirst(str_replace('_', ' ', $field)) }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="card">
         <div class="card-body">
             <form action="{{ route('admin.employees.update', $employee->id) }}" method="POST" enctype="multipart/form-data">

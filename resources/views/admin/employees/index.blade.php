@@ -193,6 +193,7 @@
                                                 <p><strong>Username:</strong> {{ $employee->user->name }}</p>
                                                 <p><strong>Email:</strong> {{ $employee->user->email }}</p>
                                                 <p><strong>User Type:</strong> {{ ucfirst($employee->user->type) }}</p>
+                                                <p><strong>Marketer Status:</strong> {{ $employee->user && $employee->user->is_marketer ? 'Yes' : 'No' }}</p>
                                             @else
                                                 <p>No login information available.</p>
                                             @endif

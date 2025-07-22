@@ -16,10 +16,19 @@ class ClientsController extends Controller
      */
     public function index()
     {
-        $clients = Client::all();
+        $user = Auth::user();
+
+        if ($user->is_marketer) {
+            // جلب العملاء الذين أضافهم هذا المسوق فقط
+            $clients = Client::where('user_id', $user->id)->get();
+        } else {
+            // جلب جميع العملاء للأدمن أو غير المسوقين
+            $clients = Client::all();
+        }
 
         return view('admin.clients.index', compact('clients'));
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -102,5 +111,12 @@ class ClientsController extends Controller
 
         flash()->success('Client deleted successfully');
         return redirect()->route('admin.clients.index');
+    }
+
+    public function hasProjects(Client $client)
+    {
+        return response()->json([
+            'hasProjects' => $client->projects()->exists(),
+        ]);
     }
 }

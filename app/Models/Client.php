@@ -24,4 +24,15 @@ class Client extends Model
     {
         return $this->morphMany(Contact::class, 'contactable');
     }
+
+
+    public function addedBy()
+    {
+        return $this->belongsTo(User::class, 'added_by');
+    }
+
+    public function marketer()
+    {
+        return $this->belongsTo(User::class, 'marketer_id');
+    }
 }

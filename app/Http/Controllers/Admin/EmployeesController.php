@@ -56,6 +56,7 @@ class EmployeesController extends Controller
                 'email' => $request->input('user.email'),
                 'password' => bcrypt($request->input('user.password')),
                 'type' => 'employee',
+                'is_marketer' => $request->has('user.is_marketer'), // إضافة حالة التسويق
             ]);
 
             $employee->user()->associate($user);
@@ -117,6 +118,7 @@ class EmployeesController extends Controller
                 $updateData = [
                     'name' => $request->input('user.name'),
                     'email' => $request->input('user.email'),
+                    'is_marketer' => $request->has('user.is_marketer'),
                 ];
 
                 if ($request->filled('user.password')) {
@@ -132,6 +134,7 @@ class EmployeesController extends Controller
                         'email' => $request->input('user.email'),
                         'password' => bcrypt($request->input('user.password')),
                         'type' => 'employee',
+                        'is_marketer' => $request->has('user.is_marketer'),
                     ]);
 
                     // ربط المستخدم بالموظف

@@ -365,6 +365,29 @@
                             <span>Dashboard</span></a>
                     </li>
 
+                    <!-- ✅ إضافة قسم خاص بالعملاء إذا كان المستخدم مسوق -->
+                    @if($user->is_marketer)
+                        <hr class="sidebar-divider my-0">
+                        <li
+                            class="nav-item {{ request()->routeIs('admin.clients.index') || request()->routeIs('admin.clients.create') ? 'active' : ''}}">
+                            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseClients"
+                                aria-expanded="true" aria-controls="collapseClients">
+                                <i class="fas fa-users"></i>
+                                <span>My Clients</span>
+                            </a>
+                            <div id="collapseClients"
+                                class="collapse {{ request()->routeIs('admin.clients.index') || request()->routeIs('admin.clients.create') ? 'show' : ''}}"
+                                aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                                <div class="bg-white py-2 collapse-inner rounded">
+                                    <a class="collapse-item {{ request()->routeIs('admin.clients.index') ? 'active' : ''}}"
+                                        href="{{ route('admin.clients.index') }}">Clients I Added</a>
+                                    <a class="collapse-item {{ request()->routeIs('admin.clients.create') ? 'active' : ''}}"
+                                        href="{{ route('admin.clients.create') }}">Add New Client</a>
+                                </div>
+                            </div>
+                        </li>
+                    @endif
+
                     <!-- Divider -->
                     <hr class="sidebar-divider my-0">
                     <!-- Nav Item - Projects Menu -->

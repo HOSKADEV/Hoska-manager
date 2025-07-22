@@ -35,10 +35,18 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdminOrAccounta
     Route::resource('wallet-transactions', WalletTransactionController::class);
 });
 
+Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdminOrMarketer'])->group(function () {
+    // مثلاً السماح للمسوق برؤية العملاء وإضافة عملاء جدد
+    // Route::resource('clients', ClientsController::class)->only(['index', 'create', 'store']);
+    Route::resource('clients', ClientsController::class);
+
+});
+
 
 Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group(function () {
 
-    Route::resource('clients', ClientsController::class);
+    // Route::resource('clients', ClientsController::class);
+    Route::get('clients/{client}/has-projects', [ClientsController::class, 'hasProjects'])->name('clients.hasProjects');
     Route::resource('employees', EmployeesController::class);
     Route::get('employees/{employee}/projects', [EmployeesController::class, 'projects']);
     // Route::resource('projects', ProjectsController::class);

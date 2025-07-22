@@ -73,7 +73,7 @@
                                 <td>{{ $client->contacts->first()->address ?? '-' }}</td>
                                 <td>{{ $client->notes ?? '_' }}</td>
                                 <td>
-                                    <span class="badge-custom badge-user">{{ auth()->user()->name }}</span>
+                                    <span class="badge-custom badge-user">{{ $client->user->name ?? 'Unknown' }}</span>
                                 </td>
                                 <td>{{ $client->created_at->diffForHumans() }}</td>
                                 <td>{{ $client->updated_at->diffForHumans() }}</td>

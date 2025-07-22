@@ -118,18 +118,30 @@ class ProjectsController extends Controller
             $q->whereIn('name', ['admin', 'manager']);
         })->get();
 
+        // تحميل المسوقين (إن وجد دور مسوق)
+        $marketers = User::where('is_marketer', true)->get();
+
         $clients   = Client::all();
+        $clientOptions = $clients->mapWithKeys(function ($client) {
+            $name = $client->name;
+            if ($client->marketer) {
+                $name .= " (Marketer: " . $client->marketer->name . ")";
+            }
+            return [$client->id => $name];
+        });
+
         $employees = Employee::all();
 
-        // يمكنك أيضًا تمرير قائمة العملات إن كنت تستخدم exchange_rate أو currency
-        $currencies = ['USD', 'EUR', 'DZD', 'SAR']; // أو جلبها من جدول إن كنت تستخدم جدول عملات
+        $currencies = ['USD', 'EUR', 'DZD', 'SAR'];
 
         return view('admin.projects.create', compact(
             'project',
             'users',
+            'marketers',
             'clients',
             'employees',
-            'currencies'
+            'currencies',
+            'clientOptions'  // إضافة خيارات العملاء
         ));
     }
 
@@ -146,6 +158,19 @@ class ProjectsController extends Controller
 
         $data['user_id'] = Auth::id();
         $data['client_id'] = $request->client_id;
+
+        // تحقق إذا العميل عنده مشاريع سابقة
+        $clientHasProjects = Project::where('client_id', $data['client_id'])->exists();
+
+        if ($clientHasProjects) {
+            // لا تحفظ عمولة أو مسوق جديد في حال وجود مشاريع سابقة
+            $data['marketer_id'] = null;
+            $data['marketer_commission_percent'] = null;
+        } else {
+            // فقط إذا تم إرسال بيانات المسوق والنسبة قم بحفظها
+            $data['marketer_id'] = $request->input('marketer_id');
+            $data['marketer_commission_percent'] = $request->input('marketer_commission_percent');
+        }
 
         $data['is_manual'] = $request->boolean('is_manual');
 
@@ -272,6 +297,15 @@ class ProjectsController extends Controller
         // جلب التطويرات (التحديثات) المرتبطة بالمشروع
         $developments = $project->developments()->latest()->get();
 
+        // المسوق ونسبة العمولة
+        $marketer = $project->marketer;
+        $marketerCommissionPercent = $project->marketer_commission_percent;
+        $marketerCommissionAmount = 0;
+
+        if ($marketer && $marketerCommissionPercent) {
+            $marketerCommissionAmount = ($project->total_amount * $marketerCommissionPercent) / 100;
+        }
+
         return view('admin.projects.show', compact(
             'project',
             'totalHours',
@@ -281,7 +315,10 @@ class ProjectsController extends Controller
             'hoursByEmployee',
             'employees',
             'costsByEmployee',
-            'developments'  // أضفنا التطويرات هنا
+            'developments',  // أضفنا التطويرات هنا
+            'marketer',
+            'marketerCommissionPercent',
+            'marketerCommissionAmount'
         ));
     }
 
@@ -289,32 +326,29 @@ class ProjectsController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
+
     public function edit(Project $project)
     {
         $user = Auth::user();
 
-        // إذا كان الدور "موظف" Employee
         if ($user->type === 'employee') {
-            // نتحقق هل الموظف مرتبط بهذا المشروع
             $isAssigned = $project->employees()->where('id', $user->employee->id)->exists();
 
             if (! $isAssigned) {
                 abort(403, 'Unauthorized: You can only edit projects assigned to you.');
             }
 
-            // يمكن جلب فقط الموظف الحالي لأنه موظف
             $employees = Employee::where('id', $user->employee->id)->get();
         } else {
-            // باقي المستخدمين (مدير، أدمن، ... ) يشوفوا كل الموظفين
             $employees = Employee::all();
         }
 
-        // المستخدمين والعملاء ممكن يشوفوا الكل، أو حسب صلاحياتك تعدل هنا لو تريد
         $users = User::all();
         $clients = Client::all();
+        // تحميل المسوقين (إن وجد دور مسوق)
+        $marketers = User::where('is_marketer', true)->get();
 
-        // تمرير معلومات المشروع، المستخدمين، العملاء، الموظفين، ومؤشر إذا كان المشروع يدوي
-        return view('admin.projects.edit', compact('project', 'users', 'clients', 'employees'));
+        return view('admin.projects.edit', compact('project', 'users', 'clients', 'employees', 'marketers'));
     }
 
     /**
@@ -338,6 +372,22 @@ class ProjectsController extends Controller
 
         unset($data['attachment']);
         unset($data['employee_id']);
+
+        // تحقق إذا العميل عنده مشاريع سابقة غير المشروع الحالي
+        $clientHasOtherProjects = Project::where('client_id', $data['client_id'])
+            ->where('id', '!=', $project->id)
+            ->exists();
+
+        if ($clientHasOtherProjects) {
+            // إذا العميل لديه مشاريع أخرى، امسح بيانات المسوق والعمولة
+            $data['marketer_id'] = null;
+            $data['marketer_commission_percent'] = null;
+        } else {
+            // فقط إذا تم إرسال بيانات المسوق والنسبة، خزّنها
+            $data['marketer_id'] = $request->input('marketer_id');
+            $data['marketer_commission_percent'] = $request->input('marketer_commission_percent');
+        }
+
 
         $project->update($data);
         // إذا كان المشروع يدوي، حدث عدد الساعات والتكلفة اليدوية

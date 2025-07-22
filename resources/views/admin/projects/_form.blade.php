@@ -26,7 +26,26 @@
 
 <div class="mb-3">
     <x-form.select label="Client" name="client_id" placeholder='Select Client' :options="$clients"
-        :oldval="$project->client_id" />
+        :oldval="$project->client_id" id="client_id" />
+</div>
+
+<div id="marketer-fields" style="display:none;" data-has-marketer="{{ $project->marketer_id ? 'true' : 'false' }}">
+    <div class="mb-3">
+        <x-form.select label="Marketer" name="marketer_id" :options="$marketers" :oldval="$project->marketer_id"
+            placeholder="Select marketer" />
+    </div>
+
+    <div class="mb-3">
+        <label for="marketer_commission_percent" class="form-label">Marketer Commission Percent</label>
+        <div class="input-group">
+            <input type="number" step="0.01" min="0" max="100" class="form-control" name="marketer_commission_percent"
+                id="marketer_commission_percent"
+                value="{{ old('marketer_commission_percent', $project->marketer_commission_percent) }}"
+                placeholder="Enter commission percent" />
+            <span class="input-group-text">%</span>
+        </div>
+    </div>
+
 </div>
 
 <div class="mb-3">
@@ -87,13 +106,12 @@
 
 <div id="manualFields">
     <div class="mb-3">
-        <x-form.input label="Manual Hours Spent" name="manual_hours_spent" type="number" step="0.1" min="0"
+        <x-form.input label="Manual Hours Spent" name="manual_hours_spent" type="text" step="0.1" min="0"
             :oldval="old('manual_hours_spent', $project->manual_hours_spent)" placeholder="Enter manual hours spent" />
     </div>
 
     <div class="mb-3">
-        <x-form.input label="Manual Cost" name="manual_cost" type="number" step="0.01" min="0"
-            :oldval="old('manual_cost', $project->manual_cost)" placeholder="Enter manual cost" />
+        <x-form.input label="Manual Cost" name="manual_cost" type="text" step="0.01" min="0" :oldval="old('manual_cost', $project->manual_cost)" placeholder="Enter manual cost" />
     </div>
 </div>
 
@@ -142,10 +160,10 @@
                 const group = document.createElement('div');
                 group.classList.add('link-group', 'd-flex', 'gap-2', 'mb-2');
                 group.innerHTML = `
-                                <input type="url" name="links[new][${linkIndex}][url]" class="form-control mr-2" placeholder="Link URL" />
-                                <input type="text" name="links[new][${linkIndex}][label]" class="form-control mr-2" placeholder="Label (optional)" />
-                                <button type="button" class="btn btn-danger btn-sm remove-link">✕</button>
-                            `;
+                                                        <input type="url" name="links[new][${linkIndex}][url]" class="form-control mr-2" placeholder="Link URL" />
+                                                        <input type="text" name="links[new][${linkIndex}][label]" class="form-control mr-2" placeholder="Label (optional)" />
+                                                        <button type="button" class="btn btn-danger btn-sm remove-link">✕</button>
+                                                    `;
                 document.getElementById('project-links').appendChild(group);
                 linkIndex++;
             });
@@ -177,5 +195,82 @@
             // toggle on checkbox change
             isManualCheckbox.addEventListener('change', toggleManualFields);
         });
+    </script>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const clientSelect = document.getElementById('client_id');
+    const marketerFields = document.getElementById('marketer-fields');
+    const marketerSelect = document.querySelector('select[name="marketer_id"]');
+    const commissionInput = document.querySelector('input[name="marketer_commission_percent"]');
+
+    // خزن العميل الأصلي عند التحميل (قيمة موجودة في المشروع)
+    const originalClientId = clientSelect.value;
+
+    async function checkClientProjects(clientId) {
+        if (!clientId) {
+            marketerFields.style.display = 'none';
+            return;
+        }
+
+        try {
+            const response = await fetch(`/admin/clients/${clientId}/has-projects`);
+            const data = await response.json();
+
+            if (data.hasProjects === false) {
+                if (marketerSelect.value) {
+                    marketerFields.style.display = 'block';
+                } else {
+                    marketerFields.style.display = 'none';
+                }
+            } else {
+                if (!marketerSelect.value) {
+                    marketerFields.style.display = 'none';
+                } else {
+                    marketerFields.style.display = 'block';
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching client projects status:', error);
+            marketerFields.style.display = 'none';
+        }
+    }
+
+    clientSelect.addEventListener('change', function () {
+        // لو العميل المحدد هو نفسه الأصلي، نعيد عرض المسوق ونسبته بدون مسح
+        if (this.value === originalClientId) {
+            marketerFields.style.display = 'block';
+            // قيم المسوق ونسبة العمولة تبقى كما هي (ما نمسحها)
+        } else {
+            // غير ذلك، خفي الحقول وامسح القيم
+            marketerSelect.value = '';
+            if (commissionInput) {
+                commissionInput.value = '';
+            }
+            marketerFields.style.display = 'none';
+
+            checkClientProjects(this.value);
+        }
+    });
+
+    marketerSelect.addEventListener('change', function () {
+        if (this.value) {
+            marketerFields.style.display = 'block';
+        } else {
+            marketerFields.style.display = 'none';
+        }
+    });
+
+    // تحقق أولي عند تحميل الصفحة:
+    if (marketerSelect.value) {
+        marketerFields.style.display = 'block';
+    } else if (clientSelect.value) {
+        checkClientProjects(clientSelect.value);
+    } else {
+        marketerFields.style.display = 'none';
+    }
+});
+
+
     </script>
 @endpush

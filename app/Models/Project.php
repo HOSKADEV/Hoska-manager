@@ -28,6 +28,10 @@ class Project extends Model
     {
         return $this->belongsTo(Client::class);
     }
+    public function marketer()
+    {
+        return $this->belongsTo(User::class, 'marketer_id');
+    }
     public function developments()
     {
         return $this->hasMany(Development::class);

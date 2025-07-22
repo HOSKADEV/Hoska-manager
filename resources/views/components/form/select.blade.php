@@ -1,11 +1,12 @@
-@props(['label' => '', 'name' => '', 'placeholder' => '', 'oldval' => '', 'options' => []])
+@props(['label' => '', 'name' => '', 'placeholder' => '', 'oldval' => '', 'options' => [], 'attributes' => ''])
+
 
 @if ($label)
     <label for="{{ $name }}" class="form-label">{{ $label }}</label>
     @if ($attributes->has('required')) <span class="text-danger">*</span> @endif
 @endif
 
-<select class="form-control @error($name) is-invalid @enderror mt-2" id="{{ $name }}" name="{{ $name }}">
+<select class="form-control @error($name) is-invalid @enderror mt-2" id="{{ $name }}" name="{{ $name }}" {{ $attributes }}>
     @if ($placeholder)
         <option value="" disabled selected>{{ $placeholder }}</option>
     @endif

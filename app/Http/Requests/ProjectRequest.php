@@ -70,6 +70,13 @@ class ProjectRequest extends FormRequest
                     }
                 }
             ],
+            'marketer_commission_percent' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                'max:100',
+            ],
+            'marketer_id' => 'nullable|exists:users,id',
         ];
     }
 }

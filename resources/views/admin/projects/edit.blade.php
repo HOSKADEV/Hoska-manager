@@ -5,6 +5,16 @@
         <a href="{{ route('admin.projects.index') }}" class="btn btn-info"><i class="fas fa-long-arrow-alt-left"></i>All Projects</a>
     </div>
 
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="card">
         <div class="card-body">
             <form action="{{ route('admin.projects.update', $project->id) }}" method="POST" enctype="multipart/form-data">

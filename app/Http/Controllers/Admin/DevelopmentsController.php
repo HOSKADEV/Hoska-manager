@@ -17,7 +17,7 @@ class DevelopmentsController extends Controller
      */
     public function index()
     {
-        $developments = Development::all();
+        $developments = Development::latest()->get();
 
         return view('admin.developments.index', compact('developments'));
     }
@@ -90,5 +90,20 @@ class DevelopmentsController extends Controller
 
         flash()->success('Development deleted successfully');
         return redirect()->route('admin.developments.index');
+    }
+
+    public function details($id)
+    {
+        $development = Development::findOrFail($id);
+
+        $total = $development->amount;
+        $paid = $development->invoices()->where('is_paid', true)->sum('amount');
+
+        return response()->json([
+            'development_total' => number_format($total, 2),
+            'development_paid' => number_format($paid, 2),
+            'development_remaining' => number_format($total - $paid, 2),
+            'currency' => $development->project->currency ?? 'USD',
+        ]);
     }
 }

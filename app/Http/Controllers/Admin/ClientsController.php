@@ -20,10 +20,10 @@ class ClientsController extends Controller
 
         if ($user->is_marketer) {
             // جلب العملاء الذين أضافهم هذا المسوق فقط
-            $clients = Client::where('user_id', $user->id)->get();
+            $clients = Client::where('user_id', $user->id)->latest()->get();
         } else {
             // جلب جميع العملاء للأدمن أو غير المسوقين
-            $clients = Client::all();
+            $clients = Client::latest()->get();
         }
 
         return view('admin.clients.index', compact('clients'));

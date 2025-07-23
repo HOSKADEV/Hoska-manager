@@ -29,7 +29,8 @@ class InvoiceRequest extends FormRequest
             'amount' => $rule_amount,
             'invoice_date' => $rule_invoice_date,
             'due_date' => $rule_due_date,
-            'project_id' => 'required|exists:projects,id',
+            'project_id' => 'nullable|exists:projects,id',
+            'development_id' => 'nullable|exists:developments,id',
             // 'wallet_id' => 'required|exists:wallets,id',
         ];
 

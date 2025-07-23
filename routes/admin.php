@@ -39,7 +39,6 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdminOrMarketer
     // مثلاً السماح للمسوق برؤية العملاء وإضافة عملاء جدد
     // Route::resource('clients', ClientsController::class)->only(['index', 'create', 'store']);
     Route::resource('clients', ClientsController::class);
-
 });
 
 
@@ -51,6 +50,8 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group
     Route::get('employees/{employee}/projects', [EmployeesController::class, 'projects']);
     // Route::resource('projects', ProjectsController::class);
     Route::resource('developments', DevelopmentsController::class);
+    Route::get('developments/{id}/details', [DevelopmentsController::class, 'details']);
+
     Route::resource('invoices', InvoicesController::class);
     Route::get('invoices/{id}/info', [InvoicesController::class, 'info']);
 

@@ -6,12 +6,12 @@
     @if ($attributes->has('required')) <span class="text-danger">*</span> @endif
 @endif
 
-<select class="form-control @error($name) is-invalid @enderror mt-2" id="{{ $name }}" name="{{ $name }}" {{ $attributes }}>
+<select class="form-control @error($name) is-invalid @enderror" id="{{ $name }}" name="{{ $name }}" {{ $attributes }}>
     @if ($placeholder)
         <option value="" disabled selected>{{ $placeholder }}</option>
     @endif
     @foreach ($options as $option)
-        <option value="{{ $option->id }}" @if ($option->id == old('invoice_id', $oldval)) selected @endif>{{ $option->name }}
+        <option value="{{ $option->id }}" @if ($option->id == old($name, $oldval)) selected @endif>{{ $option->name }}
         </option>
     @endforeach
 </select>

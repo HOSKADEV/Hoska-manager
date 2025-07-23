@@ -14,6 +14,13 @@ class Development extends Model
         return $this->belongsTo(Project::class);
     }
 
+public function invoices()
+{
+    return $this->hasMany(Invoice::class, 'development_id');
+}
+
+
+
     // ✅ احتساب delivery_date تلقائيًا عند تعيين start_date أو duration_days
     protected static function booted()
     {

@@ -57,7 +57,7 @@ class TimesheetsController extends Controller
             $query->where('is_paid', $isPaidFilter);
         }
 
-        $timesheets = $query->with('employee', 'project')->get();
+        $timesheets = $query->with('employee', 'project')->latest()->get();
 
         // إحصائيات ضمن فترة الشهر المختار
         $statsQuery = Timesheet::whereBetween('work_date', [$monthStart, $monthEnd]);

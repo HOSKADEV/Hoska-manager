@@ -48,7 +48,7 @@ class ProjectsController extends Controller
             $projectsQuery->whereBetween('created_at', [$startDate, $endDate]);
         }
 
-        $projects = $projectsQuery->with('payments')->get();
+        $projects = $projectsQuery->with('payments')->latest()->get();
 
         // التجميع حسب العملة
         $totalsByCurrency = $projects->groupBy('currency')->map(function ($group) {

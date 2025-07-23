@@ -16,7 +16,7 @@ class NotesController extends Controller
      */
     public function index()
     {
-        $notes = Note::all();
+        $notes = Note::latest()->get();
 
         return view('admin.notes.index', compact('notes'));
     }

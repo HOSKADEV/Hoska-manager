@@ -17,7 +17,7 @@ class WalletsController extends Controller
      */
     public function index()
     {
-        $wallets = Wallet::all();
+        $wallets = Wallet::latest()->get();
 
         $currencySymbols = [
             'USD' => '$',

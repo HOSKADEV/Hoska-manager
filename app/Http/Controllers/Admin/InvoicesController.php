@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InvoiceRequest;
 use App\Models\Client;
+use App\Models\Development;
 use App\Models\Invoice;
 use App\Models\Project;
 use App\Models\Wallet;
@@ -24,7 +25,7 @@ class InvoicesController extends Controller
 {
     public function index()
     {
-        $invoices = Invoice::all();
+        $invoices = Invoice::with(['project', 'development.project'])->latest()->get();
         return view('admin.invoices.index', compact('invoices'));
     }
 
@@ -32,10 +33,17 @@ class InvoicesController extends Controller
     {
         $invoice = new Invoice();
         $projects = Project::all();
+        $developments = Development::all(); // جلب التطويرات
+        $developmentsOptions = $developments->mapWithKeys(function ($development) {
+            $projectName = $development->project->name ?? 'No Project';
+            $label = $projectName . " - Development #{$development->id}";
+            // $label = $projectName; // ممكن تغير التنسيق حسب رغبتك
+            return [$development->id => $label];
+        })->toArray();
         $clients = Client::all();
         $wallets = Wallet::all(); // جلب المحافظ
 
-        return view('admin.invoices.create', compact('invoice', 'projects', 'clients', 'wallets'));
+        return view('admin.invoices.create', compact('invoice', 'projects', 'developmentsOptions', 'clients', 'wallets'));
     }
 
     private function calculateProjectSummary($invoice)
@@ -79,35 +87,54 @@ class InvoicesController extends Controller
     {
         $data = $request->validated();
 
-        // تعيين is_paid تلقائياً كـ false (غير مدفوعة)
         $data['is_paid'] = false;
 
-        // تعيين wallet_id و project_id كما هو من الريكوست
-        // $data['wallet_id'] = $request->wallet_id;
-        $data['project_id'] = $request->project_id;
+        $data['project_id'] = $request->project_id ?? null;
+        $data['development_id'] = $request->development_id ?? null;
 
-        $project = Project::with('client')->findOrFail($request->project_id);
+        // إذا تم اختيار تطوير، نتعامل مع التطوير فقط
+        if ($data['development_id']) {
+            $development = Development::with('project.client')->findOrFail($data['development_id']);
 
-        if (!$project->client) {
-            return back()->withErrors(['project_id' => 'This project does not have an associated client.']);
+            if (!$development->project || !$development->project->client) {
+                return back()->withErrors(['development_id' => 'This development does not have an associated client.']);
+            }
+
+            $data['client_id'] = $development->project->client->id;
+            $data['project_id'] = $development->project->id; // نحفظ المشروع المرتبط بالتطوير
+
+            // توليد رقم الفاتورة
+            $data['invoice_number'] = $this->generateInvoiceNumber();
+
+            $paidAmount = Invoice::where('development_id', $data['development_id'])
+                ->where('is_paid', true)
+                ->sum('amount');
+
+            $remaining = $development->amount - $paidAmount;
+        }
+        // إذا لم يتم اختيار تطوير وتم اختيار مشروع فقط
+        elseif ($data['project_id']) {
+            $project = Project::with('client')->findOrFail($data['project_id']);
+
+            if (!$project->client) {
+                return back()->withErrors(['project_id' => 'This project does not have an associated client.']);
+            }
+
+            $data['client_id'] = $project->client->id;
+
+            $data['invoice_number'] = $this->generateInvoiceNumber();
+
+            $paidAmount = $project->invoices()
+                ->where('is_paid', true)
+                ->sum('amount');
+
+            $remaining = $project->total_amount - $paidAmount;
+        } else {
+            return back()->withErrors(['project_id' => 'Please select either a project or a development.']);
         }
 
-        $data['client_id'] = $project->client->id;
-
-        // توليد رقم الفاتورة
-        $data['invoice_number'] = $this->generateInvoiceNumber();
-
-        // حساب المبلغ المدفوع مسبقاً للمشروع (الفواتير المدفوعة فقط)
-        $paidAmount = $project->invoices()
-            ->where('is_paid', true)
-            ->sum('amount');
-
-        // حساب المبلغ المتبقي
-        $remaining = $project->total_amount - $paidAmount;
-
-        // منع إدخال مبلغ أكبر من المتبقي
         if ($data['amount'] > $remaining) {
-            return back()->withErrors(['amount' => "The entered amount ({$data['amount']}) exceeds the remaining amount of the project ({$remaining})."]);
+            return back()->withErrors(['amount' => "The entered amount ({$data['amount']}) exceeds the remaining amount ({$remaining})."]);
         }
 
         Invoice::create($data);
@@ -120,22 +147,34 @@ class InvoicesController extends Controller
     {
         $projects = Project::all();
         $clients = Client::all();
-        $wallets = Wallet::all(); // جلب المحافظ
+        $wallets = Wallet::all();
 
-        return view('admin.invoices.edit', compact('invoice', 'projects', 'clients', 'wallets'));
+        // جلب كل التطويرات مع المشاريع (لتمكين عرض كل التطويرات)
+        $developments = Development::with('project')->get();
+
+        // تحضير خيارات التطويرات مع اسم المشروع
+        $developmentsOptions = $developments->mapWithKeys(function ($development) {
+            $projectName = $development->project->name ?? "No Project";
+            $label = $projectName . " - Development #{$development->id}";
+            return [$development->id => $label];
+        })->toArray();
+
+        return view('admin.invoices.edit', compact('invoice', 'projects', 'clients', 'wallets', 'developmentsOptions'));
     }
+
 
     public function update(InvoiceRequest $request, Invoice $invoice)
     {
         $data = $request->validated();
 
-        // $data['wallet_id'] = $request->wallet_id;
+        // تحديث project_id و development_id من الريكوست إذا موجود
         $data['project_id'] = $request->project_id;
+        $data['development_id'] = $request->development_id ?? null;
 
-        // تعيين is_paid تلقائياً (مثلاً دايماً false أو تحافظ على القيمة الحالية)
-        // إذا تريد تبقي القيمة كما هي دون تعديل:
+        // نحافظ على قيمة is_paid كما هي
         $data['is_paid'] = $invoice->is_paid;
 
+        // جلب المشروع مع العميل
         $project = Project::with('client')->findOrFail($request->project_id);
 
         if (!$project->client) {
@@ -144,23 +183,38 @@ class InvoicesController extends Controller
 
         $data['client_id'] = $project->client->id;
 
-        // تحقق من عدم ترك رقم الفاتورة فارغاً (يمكن تعديل هذا حسب رغبتك)
+        // تحقق من عدم ترك رقم الفاتورة فارغاً
         if (empty($data['invoice_number'])) {
             return back()->withErrors(['invoice_number' => 'Invoice number cannot be empty.']);
         }
 
-        // حساب المبلغ المدفوع مع استثناء الفاتورة الحالية
-        $paidAmount = $project->invoices()
-            ->where('is_paid', true)
-            ->where('id', '!=', $invoice->id)
-            ->sum('amount');
+        // حساب المبلغ المدفوع مسبقاً مع استثناء الفاتورة الحالية
+        if ($data['development_id']) {
+            // إذا هناك تطوير مختار، نحسب المدفوع لفواتير هذا التطوير مع استثناء الفاتورة الحالية
+            $paidAmount = Invoice::where('development_id', $data['development_id'])
+                ->where('is_paid', true)
+                ->where('id', '!=', $invoice->id)
+                ->sum('amount');
 
-        $remaining = $project->total_amount - $paidAmount;
+            // جلب تكلفة التطوير
+            $development = Development::findOrFail($data['development_id']);
+            $remaining = $development->amount - $paidAmount;
+        } else {
+            // حساب المدفوع للمشروع مع استثناء الفاتورة الحالية
+            $paidAmount = $project->invoices()
+                ->where('is_paid', true)
+                ->where('id', '!=', $invoice->id)
+                ->sum('amount');
 
-        if ($data['amount'] > $remaining) {
-            return back()->withErrors(['amount' => "The entered amount ({$data['amount']}) exceeds the remaining amount of the project ({$remaining})."]);
+            $remaining = $project->total_amount - $paidAmount;
         }
 
+        // منع إدخال مبلغ أكبر من المتبقي
+        if ($data['amount'] > $remaining) {
+            return back()->withErrors(['amount' => "The entered amount ({$data['amount']}) exceeds the remaining amount ({$remaining})."]);
+        }
+
+        // تحديث الفاتورة
         $invoice->update($data);
 
         flash()->success('Invoice updated successfully');

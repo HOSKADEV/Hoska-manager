@@ -110,17 +110,18 @@
             <x-form.input label="Password" name="user[password]" type="password"
                 placeholder="Enter Password (leave blank to keep current)" />
         </div>
-        <div class="form-group mb-3">
+        {{-- <div class="form-group mb-3">
             <input type="hidden" name="user[is_marketer]" value="0">
 
             <div class="form-check">
                 <input class="form-check-input @error('user.is_marketer') is-invalid @enderror" type="checkbox"
-                    name="user[is_marketer]" id="is_marketer" value="1" {{ old('user.is_marketer', $user?->is_marketer) ? 'checked' : '' }}>
+                    name="user[is_marketer]" id="is_marketer" value="1" {{ old('user.is_marketer', $user?->is_marketer)
+                ? 'checked' : '' }}>
                 <label class="form-check-label" for="is_marketer">
                     🧑‍💼 Is this employee a marketer?
                 </label>
                 @error('user.is_marketer')
-                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
             </div>
 
@@ -128,6 +129,76 @@
                 Tick this if the employee will manage their assigned clients and earn commissions.
             </small>
         </div>
+        <div class="form-group mb-3">
+            <input type="hidden" name="user[is_accountant]" value="0">
+
+            <div class="form-check">
+                <input class="form-check-input @error('user.is_accountant') is-invalid @enderror" type="checkbox"
+                    name="user[is_accountant]" id="is_accountant" value="1" {{ old('user.is_accountant',
+                    $user?->is_accountant) ? 'checked' : '' }}>
+                <label class="form-check-label" for="is_accountant">
+                    👨‍💼 Is this employee an accountant?
+                </label>
+                @error('user.is_accountant')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <small class="form-text text-muted">
+                Tick this if the employee will manage financial transactions and accounts.
+            </small>
+        </div> --}}
+
+        <!-- بطاقة المسوق -->
+        <div class="card mb-3 border-success">
+            <div class="card-header bg-success text-white">
+                🧑‍💼 Marketer Role
+            </div>
+            <div class="card-body">
+                <input type="hidden" name="user[is_marketer]" value="0">
+
+                <div class="form-check">
+                    <input class="form-check-input @error('user.is_marketer') is-invalid @enderror" type="checkbox"
+                        name="user[is_marketer]" id="is_marketer" value="1" {{ old('user.is_marketer', $user?->is_marketer) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="is_marketer">
+                        Is this employee a marketer?
+                    </label>
+                    @error('user.is_marketer')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <small class="form-text text-muted">
+                    Tick this if the employee will manage their assigned clients and earn commissions.
+                </small>
+            </div>
+        </div>
+
+        <!-- بطاقة المحاسب -->
+        <div class="card mb-3 border-primary">
+            <div class="card-header bg-primary text-white">
+                👨‍💼 Accountant Role
+            </div>
+            <div class="card-body">
+                <input type="hidden" name="user[is_accountant]" value="0">
+
+                <div class="form-check">
+                    <input class="form-check-input @error('user.is_accountant') is-invalid @enderror" type="checkbox"
+                        name="user[is_accountant]" id="is_accountant" value="1" {{ old('user.is_accountant', $user?->is_accountant) ? 'checked' : '' }}>
+                    <label class="form-check-label" for="is_accountant">
+                        Is this employee an accountant?
+                    </label>
+                    @error('user.is_accountant')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                </div>
+
+                <small class="form-text text-muted">
+                    Tick this if the employee will manage financial transactions and accounts.
+                </small>
+            </div>
+        </div>
+
     </div>
 
 

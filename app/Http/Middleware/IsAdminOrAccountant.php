@@ -18,11 +18,15 @@ class IsAdminOrAccountant
     {
         $user = Auth::user();
 
-        if ($user && ($user->type === 'admin' || ($user->role && $user->role->name === 'accountant'))) {
+        if (!$user || !in_array($user->type, ['admin', 'employee'])) {
+            abort(403, 'Unauthorized');
+        }
+
+        // تحقق إذا كان المستخدم أدمن أو موظف ومسوق
+        if ($user && ( $user->type === 'admin' || ($user->type === 'employee' && (bool) $user->is_accountant))) {
             return $next($request);
         }
 
-
-        abort(403, 'Access denied');
+        abort(403, 'Unauthorized');
     }
 }

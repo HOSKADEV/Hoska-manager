@@ -96,6 +96,7 @@
             @php
                 $user = auth()->user();
             @endphp
+
             @auth
                 @if($user->type === 'admin')
 
@@ -339,7 +340,7 @@
                 @endif
             @endauth
 
-            @auth
+            {{-- @auth
                 @if ($user->role?->name === 'accountant')
                     <!-- Divider -->
                     <hr class="sidebar-divider my-0">
@@ -351,7 +352,8 @@
                         </a>
                     </li>
                 @endif
-            @endauth
+            @endauth --}}
+
             <!-- عرض المهام فقط للموظف -->
             @auth
                 @if($user->type === 'employee' && $user->role?->name != 'accountant')
@@ -385,6 +387,18 @@
                                         href="{{ route('admin.clients.create') }}">Add New Client</a>
                                 </div>
                             </div>
+                        </li>
+                    @endif
+
+                    @if ($user->is_accountant)
+                        <!-- Divider -->
+                        <hr class="sidebar-divider my-0">
+                        <!-- Nav Item - Expenses -->
+                        <li class="nav-item {{ request()->routeIs('admin.wallet-transactions.create') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('admin.wallet-transactions.create') }}">
+                                <i class="fas fa-arrow-circle-up"></i>
+                                <span>Expense Transactions</span>
+                            </a>
                         </li>
                     @endif
 

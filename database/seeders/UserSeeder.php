@@ -19,20 +19,5 @@ class UserSeeder extends Seeder
             'password' => bcrypt('123456789'),
             'type' => 'admin',
         ]);
-
-        // التأكد من وجود دور Accountant
-        $roleAccountant = Role::firstOrCreate([
-            'name' => 'accountant',
-        ]);
-
-        // إنشاء محاسب وربطه بالدور
-        User::firstOrCreate([
-            'email' => 'accountant@gmail.com',
-        ], [
-            'name' => 'Accountant',
-            'password' => Hash::make('password123'),
-            'type' => 'employee',
-            'role_id' => $roleAccountant->id,
-        ]);
     }
 }

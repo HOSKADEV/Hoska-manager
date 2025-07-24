@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ClientRequest;
 use App\Models\Client;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,14 +20,78 @@ class ClientsController extends Controller
         $user = Auth::user();
 
         if ($user->is_marketer) {
-            // جلب العملاء الذين أضافهم هذا المسوق فقط
+            // جلب العملاء المرتبطين بالمسوق فقط
             $clients = Client::where('user_id', $user->id)->latest()->get();
+
+            // جلب المشاريع المرتبطة بالمسوق
+            $projects = Project::where('marketer_id', $user->id)->get();
+
+            // حساب مجموع العمولة الكلي بالدولار (تحويل كل عملة لـ USD)
+            $exchangeRates = [
+                'USD' => 1,
+                'EUR' => 0.9,
+                'DZD' => 140,
+            ];
+
+            $totalCommissionUSD = 0;
+
+            foreach ($projects as $project) {
+                $percent = $project->marketer_commission_percent ?? 0;
+                $commission = ($project->total_amount * $percent) / 100;
+
+                if ($project->currency === 'EUR') {
+                    $commission /= $exchangeRates['EUR']; // تحويل لـ USD
+                } elseif ($project->currency === 'DZD') {
+                    $commission /= $exchangeRates['DZD']; // تحويل لـ USD
+                }
+
+                $totalCommissionUSD += $commission;
+            }
+
+            $totalCommissionEUR = $totalCommissionUSD * $exchangeRates['EUR'];
+            $totalCommissionDZD = $totalCommissionUSD * $exchangeRates['DZD'];
+
+            // حساب العمولة لكل عميل حسب عملة مشروعاته (بدون تحويل)
+            foreach ($clients as $client) {
+                $clientProjects = $client->projects()->where('marketer_id', $user->id)->get();
+
+                $clientCommissionPercent = 0;
+                $clientCommissionValue = 0;
+                $clientCurrency = null;
+
+                if ($clientProjects->count()) {
+                    $clientCommissionPercent = $clientProjects->avg('marketer_commission_percent');
+                    $clientCurrency = $clientProjects->first()->currency;
+
+                    foreach ($clientProjects as $project) {
+                        $percent = $project->marketer_commission_percent ?? '_';
+                        $commission = ($project->total_amount * $percent) / 100;
+                        $clientCommissionValue += $commission;
+                    }
+                }
+
+                $client->commissionPercent = $clientCommissionPercent ?? '_';
+                $client->commissionValue = $clientCommissionValue ?? '_';
+                $client->currency = $clientCurrency;
+            }
         } else {
-            // جلب جميع العملاء للأدمن أو غير المسوقين
+            // للأدمن أو غير المسوقين: جميع العملاء بدون عمولات
             $clients = Client::latest()->get();
+            $totalCommissionUSD = $totalCommissionEUR = $totalCommissionDZD = 0;
+
+            foreach ($clients as $client) {
+                $client->commissionPercent = 0;
+                $client->commissionValue = 0;
+                $client->currency = null;
+            }
         }
 
-        return view('admin.clients.index', compact('clients'));
+        return view('admin.clients.index', compact(
+            'clients',
+            'totalCommissionUSD',
+            'totalCommissionEUR',
+            'totalCommissionDZD'
+        ));
     }
 
 

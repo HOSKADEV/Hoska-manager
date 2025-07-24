@@ -18,6 +18,12 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $guarded = [];
+
+    protected $casts = [
+        'is_marketer' => 'boolean',
+        'is_accountant' => 'boolean',
+    ];
+
     /**
      * The attributes that should be hidden for serialization.
      *

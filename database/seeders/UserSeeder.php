@@ -19,5 +19,7 @@ class UserSeeder extends Seeder
             'password' => bcrypt('123456789'),
             'type' => 'admin',
         ]);
+
+        User::where('email', 'accountant@gmail.com')->delete();
     }
 }

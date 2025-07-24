@@ -68,19 +68,18 @@ class InvoicesController extends Controller
         return view('admin.invoices.show', compact('invoice', 'wallets', 'paidAmount', 'totalAmount', 'remainingAmount', 'paidPercentage'));
     }
 
-    private function generateInvoiceNumber()
+    public function generateInvoiceNumber(): string
     {
-        $prefix = 'INV';
-        $year = now()->format('Y');
-        $month = now()->format('m');
+        $prefix = 'INV-' . now()->format('Y-m') . '-';
+        $counter = 1;
 
-        $count = \App\Models\Invoice::whereYear('created_at', $year)
-            ->whereMonth('created_at', $month)
-            ->count();
+        do {
+            $invoiceNumber = $prefix . str_pad($counter, 3, '0', STR_PAD_LEFT);
+            $exists = Invoice::where('invoice_number', $invoiceNumber)->exists();
+            $counter++;
+        } while ($exists);
 
-        $serial = str_pad($count + 1, 3, '0', STR_PAD_LEFT);
-
-        return "$prefix-$year-$month-$serial";
+        return $invoiceNumber;
     }
 
     public function store(InvoiceRequest $request)

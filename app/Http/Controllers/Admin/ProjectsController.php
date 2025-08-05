@@ -84,7 +84,9 @@ class ProjectsController extends Controller
                 ? Carbon::now()->diffInDays(Carbon::parse($project->delivery_date), false)
                 : null;
 
-            $project->remaining_amount = $project->total_amount - $project->payments->sum('amount');
+            $paidAmount = $project->payments->sum('amount');
+            $remainingAmount = $project->total_amount - $paidAmount;
+            $project->remaining_amount = $remainingAmount;
         }
 
 
@@ -197,8 +199,8 @@ class ProjectsController extends Controller
         if ($data['is_manual']) {
             $project->payments()->create([
                 'amount' => $data['total_amount'],
-                'paid_at' => now(),
-                // أضف حقول أخرى حسب جدول المدفوعات عندك
+                'payment_date' => now(),
+                'invoice_id' => $data['invoice_id'] ?? null,
             ]);
         }
 

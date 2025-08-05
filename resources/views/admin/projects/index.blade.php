@@ -240,9 +240,19 @@
                                     @endif
                                 </td>
                                 @unless(Auth::user()->type === 'employee')
+                                    @php
+                                        if ($project->is_manual) {
+                                            // المشروع يدوي: المبلغ الكلي = المدفوع، والمتبقي صفر
+                                            $paidAmount = $project->total_amount;
+                                            $remainingAmount = 0;
+                                        } else {
+                                            $paidAmount = $project->payments->sum('amount');
+                                            $remainingAmount = $project->total_amount - $paidAmount;
+                                        }
+                                    @endphp
                                     <td>
                                         {{ $currencySymbols[$project->currency] ?? '' }}
-                                        {{ number_format($project->remaining_amount, 2) }}
+                                        {{ number_format($remainingAmount, 2) }}
                                     </td>
                                 @endunless
                                 <td>
@@ -313,9 +323,3 @@
         </script>
     @endpush
 </x-dashboard>
-
-
-
-
-
-

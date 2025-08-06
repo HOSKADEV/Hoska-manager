@@ -111,6 +111,15 @@
 
                     <!-- Divider -->
                     <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Dashboard -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('admin.kpis.index') }}">
+                            <i class="fas fa-fw fa-tachometer-alt"></i>
+                            <span>KPIs</span></a>
+                    </li>
+
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
                     <!-- Nav Item - Pages Collapse Menu Clients -->
                     <li
                         class="nav-item {{ request()->routeIs('admin.clients.index') || request()->routeIs('admin.clients.create') ? 'active' : ''}}">

@@ -91,6 +91,25 @@ $selectedValue = old('status', $task->status ?? '');
     </div>
 @endif
 
+{{-- @if(auth()->user()->type === 'employee' || auth()->user()->type === 'admin')
+    <div class="card mb-4 p-3 border border-primary">
+        <h5 class="mb-3">استيراد المهام من ملف Excel</h5>
+
+        <form action="{{ route('admin.tasks.import') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+
+            <div class="mb-3">
+                <label for="excel_file" class="form-label">اختر ملف Excel</label>
+                <input type="file" name="excel_file" id="excel_file" class="form-control" accept=".xlsx" required>
+            </div>
+
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-file-upload"></i> رفع واستيراد المهام
+            </button>
+        </form>
+    </div>
+@endif --}}
+
 {{-- <div class="mb-3">
     <x-form.input label="Budget Amount" name="budget_amount" placeholder="Enter Task Budget Amount"
         :oldval="$task->budget_amount" />

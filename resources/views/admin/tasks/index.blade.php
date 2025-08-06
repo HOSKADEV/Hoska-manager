@@ -31,8 +31,51 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-gray-800">All Tasks</h1>
-        <a href="{{ route('admin.tasks.create') }}" class="btn btn-info"><i class="fas fa-plus"></i>Add New</a>
+        <div class="">
+                <button type="button" class="btn btn-primary mr-2" data-toggle="modal" data-target="#importExcelModal">
+                    <i class="fas fa-file-upload"></i> Import Tasks from Excel
+                </button>
+
+            <a href="{{ route('admin.tasks.create') }}" class="btn btn-info"><i class="fas fa-plus"></i>Add New</a>
+        </div>
     </div>
+    <!-- Modal -->
+    <div class="modal fade" id="importExcelModal" tabindex="-1" role="dialog" aria-labelledby="importExcelModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+
+                <form action="{{ route('admin.tasks.import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="importExcelModalLabel">Import Tasks from Excel</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="excel_file">Select Excel File</label>
+                            <input type="file" name="excel_file" id="excel_file" class="form-control" accept=".xlsx"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-upload"></i> Upload File
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+
 
     <!-- Team Hours Summary Cards -->
     <div class="row mb-4">

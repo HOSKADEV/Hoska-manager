@@ -5,9 +5,11 @@ use App\Http\Controllers\Admin\ClientsController;
 use App\Http\Controllers\Admin\DevelopmentsController;
 use App\Http\Controllers\Admin\EmployeesController;
 use App\Http\Controllers\Admin\InvoicesController;
+use App\Http\Controllers\Admin\KpiController;
 use App\Http\Controllers\Admin\NotesController;
 use App\Http\Controllers\Admin\PaymentsController;
 use App\Http\Controllers\Admin\ProjectsController;
+use App\Http\Controllers\Admin\TaskImportController;
 use App\Http\Controllers\Admin\TasksController;
 use App\Http\Controllers\Admin\TimesheetsController;
 use App\Http\Controllers\Admin\WalletsController;
@@ -27,6 +29,8 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth'])->group(function (
     Route::resource('projects', ProjectsController::class);
 
     Route::resource('tasks', TasksController::class);
+    Route::post('tasks/import', [TaskImportController::class, 'import'])->name('tasks.import');
+
     Route::resource('notes', NotesController::class);
 });
 
@@ -43,6 +47,8 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdminOrMarketer
 
 
 Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group(function () {
+
+    Route::get('kpis', [KpiController::class, 'index'])->name('kpis.index');
 
     // Route::resource('clients', ClientsController::class);
     Route::get('clients/{client}/has-projects', [ClientsController::class, 'hasProjects'])->name('clients.hasProjects');

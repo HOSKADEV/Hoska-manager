@@ -109,7 +109,9 @@
                                 @endphp
 
                                 <td>
-                                    @if (!is_null($development->remaining_days))
+                                    @if ($development->delivered_at)
+                                        <span class="badge badge-primary">Delivered</span>
+                                    @elseif (!is_null($development->remaining_days))
                                         @if ($development->remaining_days < 0)
                                             <span class="badge badge-danger">Overdue {{ abs($top) }}
                                                 day(s)</span>
@@ -126,6 +128,17 @@
                                 <td>{{ $development->created_at->diffForHumans() }}</td>
                                 <td>{{ $development->updated_at->diffForHumans() }}</td>
                                 <td>
+                                    @if (is_null($development->delivered_at))
+                                        <form action="{{ route('admin.developments.markDelivered', $development->id) }}" method="POST"
+                                            style="display: inline;">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button class="btn btn-sm btn-primary"
+                                                onclick="return confirm('Mark as delivered?')">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                     <a href="{{ route('admin.developments.edit', $development->id) }}"
                                         class="btn btn-sm btn-primary"><i class='fas fa-edit'></i></a>
                                     <form action="{{ route('admin.developments.destroy', $development->id) }}" method="POST"

@@ -15,7 +15,7 @@ class WalletsController extends Controller
     /**
      * Display a listing of the wallets.
      */
-    public function index()
+    public function index(Request $request)
     {
         $wallets = Wallet::latest()->get();
 
@@ -25,25 +25,33 @@ class WalletsController extends Controller
             'DZD' => 'DZ',
         ];
 
-        // أسعار صرف ثابتة للتحويل إلى دينار جزائري (عدلها حسب بياناتك الحقيقية)
+        // نسمح بإدخال السعر من المستخدم، أو نضع قيمة افتراضية
+        $usdRate = $request->input('usd_rate', 140); // قيمة افتراضية
+        $eurRate = $request->input('eur_rate', 150); // قيمة افتراضية
+
         $exchangeRatesToDZD = [
             'DZD' => 1,
-            'USD' => 140, // مثال: 1 دولار = 140 دينار جزائري
-            'EUR' => 150, // مثال: 1 يورو = 150 دينار جزائري
+            'USD' => $usdRate,
+            'EUR' => $eurRate,
         ];
 
-        // حساب مجموع الرصيد لكل عملة
         $totalsByCurrency = $wallets->groupBy('currency')->map(function ($group) {
             return $group->sum('balance');
         });
 
-        // حساب مجموع كل المحافظ بالدينار الجزائري (محول حسب سعر الصرف)
         $totalInDZD = $wallets->reduce(function ($carry, $wallet) use ($exchangeRatesToDZD) {
             $rate = $exchangeRatesToDZD[$wallet->currency] ?? 1;
             return $carry + ($wallet->balance * $rate);
         }, 0);
 
-        return view('admin.wallets.index', compact('wallets', 'totalsByCurrency', 'totalInDZD', 'currencySymbols'));
+        return view('admin.wallets.index', compact(
+            'wallets',
+            'totalsByCurrency',
+            'totalInDZD',
+            'currencySymbols',
+            'usdRate',
+            'eurRate'
+        ));
     }
 
     /**

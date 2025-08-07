@@ -48,17 +48,20 @@ class ProjectsController extends Controller
             $projectsQuery->whereBetween('created_at', [$startDate, $endDate]);
         }
 
-        $projects = $projectsQuery->with('payments')->latest()->get();
+        $projects = $projectsQuery->with('payments')->orderBy('start_date', 'desc')->get();
 
         // التجميع حسب العملة
         $totalsByCurrency = $projects->groupBy('currency')->map(function ($group) {
             return $group->sum('total_amount');
         });
 
+        // نسمح بإدخال السعر من المستخدم، أو نضع قيمة افتراضية
+        $usdRate = $request->input('usd_rate', 140); // قيمة افتراضية
+        $eurRate = $request->input('eur_rate', 150); // قيمة افتراضية
         // أسعار الصرف إلى الدينار الجزائري
         $exchangeRates = [
-            'USD' => 135.00,
-            'EUR' => 145.00,
+            'USD' => $usdRate,
+            'EUR' => $eurRate,
             'DZD' => 1,
         ];
 
@@ -99,7 +102,9 @@ class ProjectsController extends Controller
             'totalInDZD',
             'availableMonths',
             'selectedMonth',
-            'developments'
+            'developments',
+            'usdRate',
+            'eurRate'
         ));
     }
 
@@ -491,5 +496,13 @@ class ProjectsController extends Controller
 
         flash()->success('Project deleted successfully');
         return redirect()->route('admin.projects.index');
+    }
+
+    public function markDelivered(Project $project)
+    {
+        $project->delivered_at = now();
+        $project->save();
+
+        return redirect()->back()->with('success', 'Project marked as delivered.');
     }
 }

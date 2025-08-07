@@ -116,7 +116,47 @@
                         <div class="h5 mb-0 font-weight-bold text-gray-800 text-center">
                             {{ number_format($totalInDZD, 2) }} DZ
                         </div>
+                        <!-- Button to open the modal -->
+                        <button type="button" class="btn btn-sm btn-outline-warning mt-2" data-toggle="modal"
+                            data-target="#exchangeRateModal">
+                            <i class="fas fa-exchange-alt mr-1"></i> Enter Exchange Rate
+                        </button>
                     </div>
+                </div>
+            </div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="exchangeRateModal" tabindex="-1" role="dialog"
+                aria-labelledby="exchangeRateModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <form method="GET" action="{{ route('admin.projects.index') }}">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exchangeRateModalLabel">Enter Exchange Rate</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="إغلاق">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label for="usd_rate">USD to DZD</label>
+                                    <input type="text" step="0.01" class="form-control" name="usd_rate" id="usd_rate"
+                                        value="{{ $usdRate }}">
+                                </div>
+                                <div class="form-group">
+                                    <label for="eur_rate">EUR to DZD</label>
+                                    <input type="text" step="0.01" class="form-control" name="eur_rate" id="eur_rate"
+                                        value="{{ $eurRate }}">
+                                </div>
+                            </div>
+
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-warning">تحويل</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">إلغاء</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -226,7 +266,9 @@
                                 <td>{{ $project->duration_days ? $project->duration_days . ' days' : '-' }}</td>
                                 <td>{{ $project->delivery_date ?? '-' }}</td>
                                 <td>
-                                    @if (!is_null($project->remaining_days))
+                                    @if ($project->delivered_at)
+                                        <span class="badge badge-primary">Delivered</span>
+                                    @elseif (!is_null($project->remaining_days))
                                         @if ($project->remaining_days < 0)
                                             <span class="badge badge-danger">Overdue {{ abs($top) }}
                                                 day(s)</span>
@@ -261,6 +303,18 @@
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     @if(Auth::user()->type !== 'employee')
+                                        @if (is_null($project->delivered_at))
+                                            <form action="{{ route('admin.projects.markDelivered', $project->id) }}" method="POST"
+                                                style="display: inline;">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button class="btn btn-sm btn-primary"
+                                                    onclick="return confirm('Mark as delivered?')">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+
                                         <a href="{{ route('admin.projects.edit', $project->id) }}"
                                             class="btn btn-sm btn-primary">
                                             <i class='fas fa-edit'></i>
@@ -321,5 +375,6 @@
                 });
             });
         </script>
+
     @endpush
 </x-dashboard>

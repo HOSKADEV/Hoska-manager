@@ -150,12 +150,20 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card text-white bg-info h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Remaining Days</h5>
-                        <p class="card-text fs-4"><span class="{{ $remainingClass }}">{{ $remainingText }}</span></p>
+                @if ($project->delivered_at)
+                    <div class="card text-white bg-primary h-100">
+                        <div class="card-body d-flex align-items-center justify-content-center">
+                            <h5 class="card-title mb-0">Delivered</h5>
+                        </div>
                     </div>
-                </div>
+                @else
+                    <div class="card text-white bg-info h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Remaining Days</h5>
+                            <p class="card-text fs-4"><span class="{{ $remainingClass }}">{{ $remainingText }}</span></p>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     @endif
@@ -179,12 +187,18 @@
                     <p><strong>Delivery Date:</strong> {{ $project->delivery_date ?? '-' }}</p>
                     @php $status = $project->status_text; @endphp
                     <p><strong>Status:</strong>
-                        <span class="badge
-                            {{ $status == 'expired' ? 'bg-danger text-white' : '' }}
-                            {{ $status == 'due_today' ? 'bg-warning text-dark' : '' }}
-                            {{ $status == 'active' ? 'bg-success' : '' }} ">
+                    <span class="badge
+                        {{ $status == 'delivered' ? 'bg-primary text-white' : '' }}
+                        {{ $status == 'expired' ? 'bg-danger text-white' : '' }}
+                        {{ $status == 'due_today' ? 'bg-warning text-dark' : '' }}
+                        {{ $status == 'active' ? 'bg-success' : '' }}
+                        ">
+                        @if($status == 'delivered')
+                            Delivered
+                        @else
                             {{ ucfirst(str_replace('_', ' ', $status)) }}
-                        </span>
+                        @endif
+                    </span>
                     </p>
                     <hr>
 
@@ -255,19 +269,21 @@
                                         {{ number_format($project->total_amount, 2) }}
                                     </td>
                                 </tr>
-                                <tr>
-                                    <th>Total Amount Development</th>
-                                    @if($developments->isEmpty())
-                                        <td colspan="7" class="text-center text-muted">No developments available</td>
-                                    @else
-                                        <td colspan="{{ count($developments) }}">
-                                            @foreach ( $developments as $development )
-                                                {{ $currencySymbols[$development->currency] ?? '' }}
-                                                {{ number_format($developmentsTotal, 2) }}
-                                            @endforeach
-                                        </td>
-                                    @endif
-                                </tr>
+                                @if($developments->isNotEmpty())
+                                    <tr>
+                                        <th>Total Amount Development</th>
+                                        @if($developments->isEmpty())
+                                            <td colspan="7" class="text-center text-muted">No developments available</td>
+                                        @else
+                                            <td colspan="{{ count($developments) }}">
+                                                @foreach ( $developments as $development )
+                                                    {{ $currencySymbols[$development->currency] ?? '' }}
+                                                    {{ number_format($developmentsTotal, 2) }}
+                                                @endforeach
+                                            </td>
+                                        @endif
+                                    </tr>
+                                @endif
                                 <tr>
                                     <th>Paid Amount</th>
                                     <td class="text-success">{{ $currencySymbols[$project->currency] ?? '' }}
@@ -473,7 +489,10 @@
                                             <td>{{ $development->duration_days ?? '-' }}</td>
                                             <td>{{ $development->delivery_date ? \Carbon\Carbon::parse($development->delivery_date)->format('Y-m-d') : '-' }}</td>
                                             <td>
-                                                @if(!is_null($remainingDays))
+
+                                                @if ($development->delivered_at)
+                                                    <span class="badge badge-primary">Delivered</span>
+                                                @elseif (!is_null($remainingDays))
                                                     @if($days < 0)
                                                         <span class="badge bg-danger">Overdue {{ abs($days) }} day(s)</span>
                                                     @elseif($days == 0)

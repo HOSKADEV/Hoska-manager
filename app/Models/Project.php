@@ -73,6 +73,10 @@ class Project extends Model
 
     public function getStatusTextAttribute()
     {
+        if ($this->delivered_at) {
+            return 'delivered';
+        }
+
         $remaining = $this->remaining_days;
 
         if (is_null($remaining)) {
@@ -91,9 +95,10 @@ class Project extends Model
     public function getRowClassAttribute()
     {
         return match ($this->status_text) {
-            'expired' => 'table-danger',   // أحمر لمنتهٍ (expired)
-            'due_today' => 'table-warning', // برتقالي لليوم الأخير
-            'active' => 'table-success',   // أخضر للباقي (active)
+            'expired' => 'table-danger',
+            'due_today' => 'table-warning',
+            'active' => 'table-success',
+            'delivered' => 'table-primary', // الأزرق لحالة تم التسليم
             default => '',
         };
     }

@@ -55,7 +55,12 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group
     Route::resource('employees', EmployeesController::class);
     Route::get('employees/{employee}/projects', [EmployeesController::class, 'projects']);
     // Route::resource('projects', ProjectsController::class);
+    Route::patch('projects/{project}/mark-delivered', [ProjectsController::class, 'markDelivered'])->name('projects.markDelivered');
+
     Route::resource('developments', DevelopmentsController::class);
+    Route::patch('developments/{development}/mark-delivered', [DevelopmentsController::class, 'markDelivered'])
+        ->name('developments.markDelivered');
+
     Route::get('developments/{id}/details', [DevelopmentsController::class, 'details']);
 
     Route::resource('invoices', InvoicesController::class);

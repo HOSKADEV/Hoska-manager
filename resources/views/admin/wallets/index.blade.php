@@ -96,14 +96,57 @@
                             </div>
                         </div>
                         <div class="col-auto">
+
+
                             <i class="fas fa-wallet fa-2x text-gray-300"></i>
                         </div>
+                        <!-- Button to open the modal -->
+                        <button type="button" class="btn btn-sm btn-outline-warning mt-2" data-toggle="modal"
+                            data-target="#exchangeRateModal">
+                            <i class="fas fa-exchange-alt mr-1"></i> Enter Exchange Rate
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
 
     </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exchangeRateModal" tabindex="-1" role="dialog" aria-labelledby="exchangeRateModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <form method="GET" action="{{ route('admin.wallets.index') }}">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exchangeRateModalLabel">Enter Exchange Rate</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="إغلاق">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="usd_rate">USD to DZD</label>
+                            <input type="text" step="0.01" class="form-control" name="usd_rate" id="usd_rate"
+                                value="{{ $usdRate }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="eur_rate">EUR to DZD</label>
+                            <input type="text" step="0.01" class="form-control" name="eur_rate" id="eur_rate"
+                                value="{{ $eurRate }}">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-warning">تحويل</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">إلغاء</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
 
     <div class="card">
         <div class="card-body">

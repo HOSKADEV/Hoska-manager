@@ -17,7 +17,7 @@ class DevelopmentsController extends Controller
      */
     public function index()
     {
-        $developments = Development::latest()->get();
+        $developments = Development::orderBy('start_date', 'desc')->get();
 
         return view('admin.developments.index', compact('developments'));
     }
@@ -105,5 +105,12 @@ class DevelopmentsController extends Controller
             'development_remaining' => number_format($total - $paid, 2),
             'currency' => $development->project->currency ?? 'USD',
         ]);
+    }
+    public function markDelivered(Development $development)
+    {
+        $development->delivered_at = now();
+        $development->save();
+
+        return redirect()->back()->with('success', 'Marked as delivered.');
     }
 }

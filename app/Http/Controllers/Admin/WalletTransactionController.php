@@ -104,6 +104,11 @@ class WalletTransactionController extends Controller
 
                     $exchangeRate = $request->exchange_rate;
 
+                    // إذا نفس العملة → نضع 1 تلقائيًا
+                    if ($wallet->currency === $relatedWallet->currency) {
+                        $exchangeRate = 1;
+                    }
+
                     if ($wallet->balance < $request->amount) {
                         return redirect()->back()->withErrors(['amount' => 'Insufficient wallet balance.'])->withInput();
                     }

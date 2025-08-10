@@ -54,8 +54,27 @@ class WalletTransactionController extends Controller
             'amount' => 'required|numeric|min:0.01',
             'description' => 'nullable|string|max:255',
             'transaction_date' => 'required|date',
-            'related_wallet_id' => 'required_if:type,transfer|nullable|exists:wallets,id',
-            'exchange_rate' => 'required_if:type,transfer|nullable|numeric|min:0.0001',
+            'related_wallet_id' => [
+                'required_if:type,transfer',
+                'nullable',
+                'exists:wallets,id',
+            ],
+            'exchange_rate' => [
+                'nullable',
+                'numeric',
+                'min:0.0001',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->type === 'transfer') {
+                        $fromWallet = Wallet::find($request->wallet_id);
+                        $toWallet   = Wallet::find($request->related_wallet_id);
+
+                        // إذا كانت العملتين مختلفة و الحقل فارغ
+                        if ($fromWallet && $toWallet && $fromWallet->currency !== $toWallet->currency && !$value) {
+                            $fail('The exchange rate field is required when transferring between different currencies.');
+                        }
+                    }
+                }
+            ],
         ]);
 
         $wallet = Wallet::findOrFail($request->wallet_id);

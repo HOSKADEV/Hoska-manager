@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Models\Task;
+use App\Models\User;
+use App\Models\Project;
+use App\Models\Employee;
 use App\Models\Timesheet;
 use Illuminate\Http\Request;
-use App\Models\Task;
-use App\Models\Project;
-use App\Models\User;
-use PhpOffice\PhpSpreadsheet\IOFactory;
 use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class TaskImportController extends Controller
 {
@@ -38,7 +39,14 @@ class TaskImportController extends Controller
             // Find project by project_name column
             $project = Project::where('name', $data['project_name'])->first();
             // Find employee by employee_email column
-            $employee = User::where('email', $data['employee_email'])->first();
+            if (isset($data['employee_email'])) {
+                $employee = Employee::whereHas('user', function ($query) use ($data) {
+                    $query->where('email', $data['employee_email']);
+                })->first();
+            } else {
+                $employee = Employee::where('user_id', auth()->id())->first();
+            }
+
 
             // Skip if project or employee not found
             if (!$project || !$employee) {
@@ -61,7 +69,7 @@ class TaskImportController extends Controller
 
                 // تحديث التايم شيت بعد إضافة التاسك
                 Timesheet::updateMonthlyTimesheet($employee->id, $task->start_time);
-                
+
             } catch (\Exception $e) {
                 // Log any errors occurred during import
                 Log::error('Error importing task: ' . $e->getMessage());

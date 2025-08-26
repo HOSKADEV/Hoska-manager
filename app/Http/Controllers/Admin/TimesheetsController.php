@@ -179,7 +179,7 @@ class TimesheetsController extends Controller
                     $label = 'Month';
                     break;
                 case 'iban':
-                    $label = 'RIB';
+                    $label = 'RIP';
                     break;
                 default:
                     $label = ucfirst(str_replace('_', ' ', $col));

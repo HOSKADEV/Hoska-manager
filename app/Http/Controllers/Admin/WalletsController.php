@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Payment;
+use App\Models\Setting;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
 use Illuminate\Http\Request;
@@ -25,9 +26,17 @@ class WalletsController extends Controller
             'DZD' => 'DZ',
         ];
 
-        // نسمح بإدخال السعر من المستخدم، أو نضع قيمة افتراضية
-        $usdRate = $request->input('usd_rate', 140); // قيمة افتراضية
-        $eurRate = $request->input('eur_rate', 150); // قيمة افتراضية
+        // نحصل على أسعار الصرف من الإعدادات، أو من الطلب، أو نضع قيمة افتراضية
+        $usdRate = $request->input('usd_rate', Setting::get('usd_rate', 140)); // قيمة افتراضية
+        $eurRate = $request->input('eur_rate', Setting::get('eur_rate', 150)); // قيمة افتراضية
+
+        // إذا تم إدخال أسعار جديدة، قم بتحديث الإعدادات
+        if ($request->has('usd_rate')) {
+            Setting::set('usd_rate', $usdRate, 'USD to DZD exchange rate');
+        }
+        if ($request->has('eur_rate')) {
+            Setting::set('eur_rate', $eurRate, 'EUR to DZD exchange rate');
+        }
 
         $exchangeRatesToDZD = [
             'DZD' => 1,

@@ -33,6 +33,20 @@
                                 <x-form.input label="Phone" name="phone" placeholder="Enter Employee Phone" :oldval="''" />
                             @endif
                         </div>
+                        @if($employee)
+                            <div class="mb-3">
+                                <label class="form-label">RIP</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="rip" id="ripInput" placeholder="RIP" value="{{ old('rip', $employee->iban ?? '') }}">
+                                    @if (!$employee->is_iban_valid)
+                                        <div class="input-group-append">
+                                            <button type="button" id="validateRip" class="btn btn-primary">Validate RIP</button>
+                                        </div>
+                                    @endif
+                                </div>
+                                <div id="ripValidationMessage" class="mt-2"></div>
+                            </div>
+                        @endif
                         <div class="mb-3">
                             <x-form.input type='password' label="Password" name="password"
                                 placeholder="Enter your Password" />
@@ -76,8 +90,42 @@
                     }
                     reader.readAsDataURL(file);
                 });
+
+                $('#validateRip').click(function() {
+                    // Get the RIP value using the ID we added to the input
+                    const rip = $('#ripInput').val();
+
+                    // Check if RIP has 20 characters
+                    if (rip.length !== 20) {
+                        $('#ripValidationMessage').html('<div class="alert alert-danger">RIP must be exactly 20 characters long.</div>');
+                        return;
+                    }
+
+                    // Send jQuery request to validate RIP
+                    $.ajax({
+                        url: '{{ route("admin.profile.validate-rip") }}',
+                        method: 'POST',
+                        data: {
+                            rip: rip,
+                            _token: '{{ csrf_token() }}' // Include CSRF token for Laravel
+                        },
+                        success: function(response) {
+                            $('#ripValidationMessage').html('<div class="alert alert-success">' + response.message + '</div>');
+                            $('#validateRip').addClass('d-none');
+                        },
+                        error: function(xhr) {
+                            let errorMessage = 'Error validating RIP. Please try again.';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+                            $('#ripValidationMessage').html('<div class="alert alert-danger">' + errorMessage + '</div>');
+                        }
+                    });
+                });
+
             });
         </script>
+
     @endpush
 
 </x-dashboard>

@@ -18,13 +18,39 @@ class TasksController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
         if ($user->type === 'admin') {
-            $tasks = Task::with(['employee', 'project'])->latest()->get();
+            // Filter by project, employee, and date range
+            $project_id = $request->input('project_id', 'all'); // Default to 'all'
+            $employee_id = $request->input('employee_id', 'all'); // Default to 'all'
+            $start_date = $request->input('start_date', now()->startOfMonth()->format('Y-m-d')); // Default to start of current month
+            $end_date = $request->input('end_date', now()->endOfMonth()->format('Y-m-d')); // Default to end of current month
 
+            $query = Task::query();
+
+            if ($project_id !== 'all') {
+                $query->where('project_id', $project_id);
+            }
+
+            if ($employee_id !== 'all') {
+                $query->where('employee_id', $employee_id);
+            }
+
+            // Add date range filtering
+            if ($start_date) {
+                $query->whereDate('created_at', '>=', $start_date);
+            }
+
+            if ($end_date) {
+                $query->whereDate('created_at', '<=', $end_date);
+            }
+
+            $tasks = $query->with(['employee', 'project'])->latest()->get();
+
+            // statistics
             $totalTodayHours = Task::whereDate('start_time', Carbon::today())->get()->sum(function ($task) {
                 return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
             });
@@ -49,7 +75,7 @@ class TasksController extends Controller
 
             $tasks = Task::with(['employee', 'project'])
                 ->where('employee_id', $employee->id)
-                ->latest()
+                ->latest('start_time')
                 ->get();
 
             $totalTodayHours = Task::where('employee_id', $employee->id)
@@ -83,8 +109,13 @@ class TasksController extends Controller
             abort(403, 'نوع المستخدم غير مدعوم.');
         }
 
+        $projects = Project::all();
+        $employees = Employee::all();
+
         return view('admin.tasks.index', compact(
             'tasks',
+            'projects',
+            'employees',
             'totalTodayHours',
             'totalWeekHours',
             'totalMonthHours',

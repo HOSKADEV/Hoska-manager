@@ -258,11 +258,12 @@
                                     <div class="row">
                                         @php
                                             $exportColumns = [
-                                                'employee_name' => '🧑‍💼 Employee Name',
+                                                'employee_name' => '💼 Employee Name',
                                                 'hours_worked' => '⏱ Duration (hours)',
                                                 'month_salary' => '💵 Monthly Salary',
                                                 'is_paid' => '💰 Payment Status',
                                                 'work_date' => '📅 Month',
+                                                'iban' => '🏦 Iban'
                                             ];
                                         @endphp
 

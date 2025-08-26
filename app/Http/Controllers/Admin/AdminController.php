@@ -160,4 +160,34 @@ class AdminController extends Controller
 
         return redirect()->back()->with('success', 'Profile updated successfully.');
     }
+
+    /**
+     * Validate the RIP number.
+     */
+    public function validateRip(Request $request)
+    {
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        $request->validate([
+            'rip' => 'required|string|size:20',
+        ]);
+
+        $rip = $request->input('rip');
+
+        $isValid = strlen($rip) === 20;
+        if ($isValid) {
+            $user->employee()->update([
+                'iban' => $rip,
+                'is_iban_valid' => true,
+            ]);
+        }
+
+        return response()->json([
+            'is_valid' => $isValid,
+            'message' => $isValid ? 'RIP is valid.' : 'RIP is not valid.'
+        ]);
+    }
+
 }

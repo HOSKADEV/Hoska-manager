@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ClientRequest;
 use App\Models\Client;
 use App\Models\Project;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,12 +26,14 @@ class ClientsController extends Controller
 
             // جلب المشاريع المرتبطة بالمسوق
             $projects = Project::where('marketer_id', $user->id)->get();
+            $usdRate = Setting::get('usd_rate', 140); // قيمة افتراضية
+            // $eurRate = Setting::get('eur_rate', 150); // قيمة افتراضية
 
             // حساب مجموع العمولة الكلي بالدولار (تحويل كل عملة لـ USD)
             $exchangeRates = [
                 'USD' => 1,
                 'EUR' => 0.9,
-                'DZD' => 140,
+                'DZD' => $usdRate,
             ];
 
             $totalCommissionUSD = 0;

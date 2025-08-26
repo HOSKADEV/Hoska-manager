@@ -164,8 +164,66 @@
         </div>
     </div>
 
+
     <div class="card">
         <div class="card-body">
+            @if (Auth::user()->type !== 'employee')
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    {{-- فلتر حسب المشروع --}}
+                    <form method="GET" action="{{ route('admin.tasks.index') }}" class="mb-4" id="filterForm">
+                        <div class="row align-items-end">
+                            <div class="col-md-3">
+                                <label for="project_id" class="form-label fw-bold text-secondary">📅 Filter by Project</label>
+                                <select name="project_id" id="project_id" class="form-select select2">
+                                    <option value="all" {{ request('project_id') == 'all' ? 'selected' : '' }}>All Projects</option>
+                                    @foreach ($projects as $project)
+                                        <option value="{{ $project['id'] }}" {{ request('project_id') == $project['id'] ? 'selected' : '' }}>
+                                            {{ $project['name'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- فلتر حالة الدفع --}}
+                            <div class="col-md-3">
+                                <label for="employee_id" class="form-label fw-bold text-secondary">💼 Filter by Employee</label>
+                                <select name="employee_id" id="employee_id" class="form-select select2">
+                                    <option value="all" {{ request('employee_id') == 'all' ? 'selected' : '' }}>All Employees</option>
+                                    @foreach ($employees as $employee)
+                                        <option value="{{ $employee['id'] }}" {{ request('employee_id') == $employee['id'] ? 'selected' : '' }}>
+                                            {{ $employee['name'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- Start Date Filter --}}
+                            <div class="col-md-3">
+                                <label for="start_date" class="form-label fw-bold text-secondary">📅 Start Date</label>
+                                <input type="date"
+                                    name="start_date"
+                                    id="start_date"
+                                    class="form-control"
+                                    value="{{ request('start_date', now()->startOfMonth()->format('Y-m-d')) }}"
+                                    placeholder="Select start date">
+                            </div>
+
+                            {{-- End Date Filter --}}
+                            <div class="col-md-3">
+                                <label for="end_date" class="form-label fw-bold text-secondary">📅 End Date</label>
+                                <input type="date"
+                                    name="end_date"
+                                    id="end_date"
+                                    class="form-control"
+                                    value="{{ request('end_date', now()->endOfMonth()->format('Y-m-d')) }}"
+                                    placeholder="Select end date">
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+            @endif
+
             <div class="table-responsive">
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
@@ -287,11 +345,32 @@
 
     @push('css')
         <link href="{{ asset('assets/vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+
+        <!-- Select2 CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     @endpush
 
     @push('js')
         <script src="{{ asset('assets/vendor/datatables/jquery.dataTables.min.js') }}"></script>
         <script src="{{ asset('assets/vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
         <script src="{{ asset('assets/js/demo/datatables-demo.js') }}"></script>
+        <!-- Select2 JS -->
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <!-- Initialize Select2 -->
+        <script>
+            $(document).ready(function () {
+                $('#employee_id, #project_id').select2({
+                    placeholder: "Select an option",
+                    allowClear: true,
+                    width: '100%'
+                });
+
+                // استمع لأي تغيير في الفلاتر وأرسل الفورم
+                $('#employee_id, #project_id, #start_date, #end_date').on('change', function () {
+                    $(this).closest('form').submit();
+                });
+            });
+        </script>
+
     @endpush
 </x-dashboard>

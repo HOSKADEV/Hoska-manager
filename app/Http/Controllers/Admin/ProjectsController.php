@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\Development;
 use App\Models\Employee;
 use App\Models\Project;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -23,7 +24,8 @@ class ProjectsController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $selectedMonth = $request->input('month', now()->format('Y-m'));
+        $selectedMonth = $request->input('month', 'all');
+        // $selectedMonth = $request->input('month', now()->format('Y-m'));
 
         // تاريخ البداية والنهاية إذا تم اختيار شهر
         if ($selectedMonth !== 'all') {
@@ -45,7 +47,7 @@ class ProjectsController extends Controller
 
         // تطبيق التصفية بالشهر
         if ($selectedMonth !== 'all') {
-            $projectsQuery->whereBetween('created_at', [$startDate, $endDate]);
+            $projectsQuery->whereBetween('start_date', [$startDate, $endDate]);
         }
 
         $projects = $projectsQuery->with('payments')->orderBy('start_date', 'desc')->get();
@@ -55,9 +57,18 @@ class ProjectsController extends Controller
             return $group->sum('total_amount');
         });
 
-        // نسمح بإدخال السعر من المستخدم، أو نضع قيمة افتراضية
-        $usdRate = $request->input('usd_rate', 140); // قيمة افتراضية
-        $eurRate = $request->input('eur_rate', 150); // قيمة افتراضية
+        // نحصل على أسعار الصرف من الإعدادات، أو من الطلب، أو نضع قيمة افتراضية
+        $usdRate = $request->input('usd_rate', Setting::get('usd_rate', 140)); // قيمة افتراضية
+        $eurRate = $request->input('eur_rate', Setting::get('eur_rate', 150)); // قيمة افتراضية
+
+        // إذا تم إدخال أسعار جديدة، قم بتحديث الإعدادات
+        if ($request->has('usd_rate')) {
+            Setting::set('usd_rate', $usdRate, 'USD to DZD exchange rate');
+        }
+        if ($request->has('eur_rate')) {
+            Setting::set('eur_rate', $eurRate, 'EUR to DZD exchange rate');
+        }
+
         // أسعار الصرف إلى الدينار الجزائري
         $exchangeRates = [
             'USD' => $usdRate,
@@ -75,7 +86,7 @@ class ProjectsController extends Controller
         $projectCount = $projects->count();
 
         // الأشهر المتاحة في المشاريع
-        $availableMonths = Project::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as value, DATE_FORMAT(created_at, "%M %Y") as label')
+        $availableMonths = Project::selectRaw('DATE_FORMAT(start_date, "%Y-%m") as value, DATE_FORMAT(start_date, "%M %Y") as label')
             ->groupBy('value', 'label')
             ->orderBy('value', 'desc')
             ->get()
@@ -284,10 +295,14 @@ class ProjectsController extends Controller
             // هنا نفترض المعدل بالدينار، أو اضف التحويل حسب العملة:
             $currency = $employee->currency ?? $project->currency;
             if ($currency !== 'DZD') {
+                // نحصل على أسعار الصرف من الإعدادات، أو من الطلب، أو نضع قيمة افتراضية
+                $usdRate = Setting::get('usd_rate', 140); // قيمة افتراضية
+                $eurRate = Setting::get('eur_rate', 150); // قيمة افتراضية
+
                 // مثال لتحويل (يجب تعديل حسب قاعدة بيانات أسعار الصرف)
                 $exchangeRates = [
-                    'USD' => 140,  // مثلا 1 دولار = 140 دينار
-                    'EUR' => 150,  // 1 يورو = 150 دينار
+                    'USD' => $usdRate,  // مثلا 1 دولار = 140 دينار
+                    'EUR' => $eurRate,  // 1 يورو = 150 دينار
                     // أضف العملات حسب الحاجة
                 ];
                 $rateToDZD = $exchangeRates[$currency] ?? 1;

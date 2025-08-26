@@ -140,6 +140,8 @@ class TimesheetsController extends Controller
         foreach ($columns as $col) {
             if ($col === 'employee_name') {
                 $selects[] = 'employees.name as employee_name';
+            } else if ($col === 'iban') {
+                $selects[] = 'iban';
             } else {
                 $selects[] = 'timesheets.' . $col;
             }
@@ -176,6 +178,9 @@ class TimesheetsController extends Controller
                 case 'work_date':
                     $label = 'Month';
                     break;
+                case 'iban':
+                    $label = 'RIB';
+                    break;
                 default:
                     $label = ucfirst(str_replace('_', ' ', $col));
             }
@@ -197,6 +202,9 @@ class TimesheetsController extends Controller
                         break;
                     case 'employee_name':
                         $cellValue = $row->employee_name;
+                        break;
+                    case 'iban':
+                        $cellValue = $row->iban;
                         break;
                     default:
                         $cellValue = $row->$col;

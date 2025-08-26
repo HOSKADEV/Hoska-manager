@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Invoice;
 use App\Models\Timesheet;
 use App\Models\WalletTransaction;
+use App\Models\Project;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
@@ -73,8 +74,40 @@ class KpiController extends Controller
     // }
     public function index()
     {
-        $year = now()->year;
+        $year = request('year', now()->year);
 
+        // Get available years with data
+        $availableYears = collect();
+
+        // Get years from invoices
+        $invoiceYears = Invoice::selectRaw('YEAR(invoice_date) as year')
+            ->distinct()
+            ->pluck('year');
+
+        // Get years from wallet transactions
+        $transactionYears = WalletTransaction::selectRaw('YEAR(transaction_date) as year')
+            ->distinct()
+            ->pluck('year');
+
+        // Get years from timesheets
+        $timesheetYears = Timesheet::selectRaw('YEAR(work_date) as year')
+            ->distinct()
+            ->pluck('year');
+
+        // Get years from projects
+        $projectYears = Project::selectRaw('YEAR(start_date) as year')
+            ->distinct()
+            ->pluck('year');
+
+        // Merge all years and sort in descending order
+        $availableYears = $invoiceYears->merge($transactionYears)
+            ->merge($timesheetYears)
+            ->merge($projectYears)
+            ->unique()
+            ->sortDesc()
+            ->values();
+
+        // Annual totals
         $annualIncome = Invoice::whereYear('invoice_date', $year)
             ->where('is_paid', 1)
             ->sum('amount');
@@ -88,19 +121,45 @@ class KpiController extends Controller
 
         $annualProfits = $annualIncome - $annualExpenses - $annualSalaries;
 
-        // افتراضياً نضع 85% للرضا، أو يمكن حسابها من استبيانات
+        // Customer satisfaction score
         $csatScore = 85.0;
 
-        // بيانات الرسم البياني الشهري
+        // Monthly data for charts
         $monthsLabels = [];
         $monthlyIncomeData = [];
+        $monthlyExpensesData = [];
+        $monthlyProfitsData = [];
+        $monthlyProjectsData = [];
 
         for ($month = 1; $month <= 12; $month++) {
             $monthsLabels[] = date('F', mktime(0, 0, 0, $month, 1));
-            $monthlyIncomeData[] = Invoice::whereYear('invoice_date', $year)
+
+            // Monthly income
+            $income = Invoice::whereYear('invoice_date', $year)
                 ->whereMonth('invoice_date', $month)
                 ->where('is_paid', 1)
                 ->sum('amount');
+            $monthlyIncomeData[] = $income;
+
+            // Monthly expenses
+            $expenses = WalletTransaction::whereYear('transaction_date', $year)
+                ->whereMonth('transaction_date', $month)
+                ->whereIn('type', ['expense', 'withdraw'])
+                ->sum('amount');
+            $monthlyExpensesData[] = $expenses;
+
+            // Monthly salaries
+            $salaries = Timesheet::whereYear('work_date', $year)
+                ->whereMonth('work_date', $month)
+                ->sum('month_salary');
+
+            // Monthly profits
+            $monthlyProfitsData[] = $income - $expenses - $salaries;
+
+            // Monthly projects count directly from Project model
+            $monthlyProjectsData[] = Project::whereYear('start_date', $year)
+                ->whereMonth('start_date', $month)
+                ->count();
         }
 
         return view('admin.kpis.index', compact(
@@ -110,7 +169,12 @@ class KpiController extends Controller
             'annualProfits',
             'csatScore',
             'monthsLabels',
-            'monthlyIncomeData'
+            'monthlyIncomeData',
+            'monthlyExpensesData',
+            'monthlyProfitsData',
+            'monthlyProjectsData',
+            'year',
+            'availableYears'
         ));
     }
 }

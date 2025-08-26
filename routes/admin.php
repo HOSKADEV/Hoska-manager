@@ -18,6 +18,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Mails\VerficationEmailController;
 use Illuminate\Support\Facades\Route;
 
+
 Route::prefix('admin')->name('admin.')->middleware(['isAuth'])->group(function () {
 
     // متاحة للموظف و الأدمن
@@ -25,6 +26,7 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth'])->group(function (
 
     Route::get('/profile', [AdminController::class, 'profile'])->name('profile');
     Route::put('/profile', [AdminController::class, 'profile_save']);
+    Route::post('/profile/validate-rip', [AdminController::class, 'validateRip'])->name('profile.validate-rip');
 
     Route::resource('projects', ProjectsController::class);
 

@@ -98,7 +98,7 @@
                                     Earnings (Monthly)
                                 </div>
                                 <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                    ${{ number_format($monthlyEarnings, 2) }}
+                                    {{ $monthlyEarnings }}
                                 </div>
                             </div>
                             <div class="col-auto">
@@ -182,7 +182,7 @@
                                     My Monthly Salary
                                 </div>
                                 <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                    ${{ number_format($monthlyEarnings, 2) }}
+                                    {{ $monthlyEarnings }}
                                 </div>
                             </div>
                             <div class="col-auto">

@@ -68,6 +68,7 @@
 
             const invoice = invoices.find(inv => inv.id == selectedInvoiceId);
             const selectedWallet = wallets.find(w => w.id == selectedWalletId);
+            console.log(selectedInvoiceId ,selectedWalletId, selectedWallet);
 
             const label = exchangeRateGroup.querySelector('label');
 

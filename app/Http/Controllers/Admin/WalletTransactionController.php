@@ -31,7 +31,38 @@ class WalletTransactionController extends Controller
 
         $wallets = Wallet::all();
 
-        return view('admin.wallet_transactions.index', compact('transactions', 'wallets'));
+        // حساب الإنفقات حسب الفترات الزمنية
+        $now = now();
+
+        // الإنفقات الساعية (آخر ساعة)
+        $hourlyExpenses = WalletTransaction::where('type', 'expense')
+            ->where('transaction_date', '>=', $now->subHour())
+            ->sum('amount');
+
+        // الإنفقات اليومية (اليوم الحالي)
+        $dailyExpenses = WalletTransaction::where('type', 'expense')
+            ->whereDate('transaction_date', $now->toDateString())
+            ->sum('amount');
+
+        // الإنفقات الأسبوعية (الأسبوع الحالي)
+        $weeklyExpenses = WalletTransaction::where('type', 'expense')
+            ->whereBetween('transaction_date', [$now->startOfWeek(), $now->endOfWeek()])
+            ->sum('amount');
+
+        // الإنفقات الشهرية (الشهر الحالي)
+        $monthlyExpenses = WalletTransaction::where('type', 'expense')
+            ->whereMonth('transaction_date', $now->month)
+            ->whereYear('transaction_date', $now->year)
+            ->sum('amount');
+
+        return view('admin.wallet_transactions.index', compact(
+            'transactions', 
+            'wallets',
+            'hourlyExpenses',
+            'dailyExpenses',
+            'weeklyExpenses',
+            'monthlyExpenses'
+        ));
     }
 
     /**

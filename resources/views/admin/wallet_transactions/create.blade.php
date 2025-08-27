@@ -24,17 +24,25 @@
 
                 <div class="mb-3">
                     <label for="type" class="form-label">Transaction Type</label>
-                    <select name="type" id="type" class="form-control @error('type') is-invalid @enderror" required>
-                        <option value="" selected disabled>Select Type</option>
-                        @foreach(['expense', 'income', 'transfer', 'withdraw', 'funding'] as $type)
-                            <option value="{{ $type }}" {{ old('type') == $type ? 'selected' : '' }}>
-                                {{ ucfirst($type) }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('type')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                    @if(auth()->user()->is_accountant == 1)
+                        <!-- Accountant can only create expense transactions -->
+                        <input type="hidden" name="type" value="expense" id="type">
+                        <div class="form-control">
+                            <span class="badge bg-danger text-white">Expense</span>
+                        </div>
+                    @else
+                        <select name="type" id="type" class="form-control @error('type') is-invalid @enderror" required>
+                            <option value="" selected disabled>Select Type</option>
+                            @foreach(['expense', 'income', 'transfer', 'withdraw', 'funding'] as $type)
+                                <option value="{{ $type }}" {{ old('type') == $type ? 'selected' : '' }}>
+                                    {{ ucfirst($type) }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('type')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    @endif
                 </div>
 
                 @php
@@ -46,22 +54,45 @@
                 @endphp
                 <div class="mb-3">
                     <label for="wallet_id" class="form-label">Wallet</label>
-                    <select name="wallet_id" id="wallet_id"
-                        class="form-control @error('wallet_id') is-invalid @enderror" required>
-                        <option value="" selected disabled>Select Wallet</option>
-                        @foreach ($wallets as $wallet)
-                            <option value="{{ $wallet->id }}" {{ old('wallet_id') == $wallet->id ? 'selected' : '' }}>
-                                {{ $wallet->name }} ({{ $currencySymbols[$wallet->currency] ?? '' }})
-                            </option>
-                        @endforeach
-                    </select>
-                    <div class="mb-2 text-muted" id="wallet-balance"
-                        style="display: none; font-weight: 600 !important; color: #1e7e34 !important; margin-top: 5px !important;">
-                        Balance: <span id="wallet-balance-value"></span>
-                    </div>
-                    @error('wallet_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                    @if(auth()->user()->is_accountant == 1)
+                        <!-- Accountant can only use Cash wallet -->
+                        @php
+                            $cashWallet = $wallets->first(function($wallet) {
+                                return strtolower($wallet->name) === 'cash';
+                            });
+                        @endphp
+                        @if($cashWallet)
+                            <input type="hidden" name="wallet_id" value="{{ $cashWallet->id }}" id="wallet_id">
+                            <div class="form-control">
+                                {{ $cashWallet->name }} ({{ $currencySymbols[$cashWallet->currency] ?? '' }})
+                            </div>
+                            <div class="mb-2 text-muted" id="wallet-balance"
+                                style="display: block; font-weight: 600 !important; color: #1e7e34 !important; margin-top: 5px !important;">
+                                Balance: <span id="wallet-balance-value">{{ $currencySymbols[$cashWallet->currency] ?? '' }} {{ number_format($cashWallet->balance, 2) }}</span>
+                            </div>
+                        @else
+                            <div class="alert alert-warning">
+                                No Cash wallet found. Please contact the administrator.
+                            </div>
+                        @endif
+                    @else
+                        <select name="wallet_id" id="wallet_id"
+                            class="form-control @error('wallet_id') is-invalid @enderror" required>
+                            <option value="" selected disabled>Select Wallet</option>
+                            @foreach ($wallets as $wallet)
+                                <option value="{{ $wallet->id }}" {{ old('wallet_id') == $wallet->id ? 'selected' : '' }}>
+                                    {{ $wallet->name }} ({{ $currencySymbols[$wallet->currency] ?? '' }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="mb-2 text-muted" id="wallet-balance"
+                            style="display: none; font-weight: 600 !important; color: #1e7e34 !important; margin-top: 5px !important;">
+                            Balance: <span id="wallet-balance-value"></span>
+                        </div>
+                        @error('wallet_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    @endif
                 </div>
 
                 <div class="mb-3" id="related-wallet-div" style="display: none;">
@@ -170,7 +201,21 @@
                     const relatedWalletDiv = document.getElementById('related-wallet-div');
                     const exchangeRateDiv = document.getElementById('exchange-rate-div');
 
-                    if (typeSelect.value === 'transfer') {
+                    // Accountant users can't see transfer options
+                    const isAccountant = {{ auth()->user()->is_accountant == 1 ? 'true' : 'false' }};
+
+                    if (isAccountant) {
+                        // Hide transfer-related fields for accountants
+                        relatedWalletDiv.style.display = 'none';
+                        exchangeRateDiv.style.display = 'none';
+                        document.getElementById('related_wallet_id').value = '';
+                        document.getElementById('exchange_rate').value = '';
+                        exchangeRateInput.required = false;
+                        exchangeRateInput.disabled = false;
+                        exchangeRateLabel.textContent = 'Exchange Rate (For Transfer)';
+                        relatedBalanceDiv.style.display = 'none';
+                        convertedAmountDiv.style.display = 'none';
+                    } else if (typeSelect.value === 'transfer') {
                         relatedWalletDiv.style.display = 'block';
                         exchangeRateDiv.style.display = 'block';
                     } else {
@@ -277,11 +322,15 @@
                     });
                 });
 
-                typeSelect.addEventListener('change', function () {
-                    toggleFields();
-                    updateExchangeLabel();
-                    amountInput.dispatchEvent(new Event('input'));
-                });
+                const isAccountant = {{ auth()->user()->is_accountant == 1 ? 'true' : 'false' }};
+
+                if (!isAccountant) {
+                    typeSelect.addEventListener('change', function () {
+                        toggleFields();
+                        updateExchangeLabel();
+                        amountInput.dispatchEvent(new Event('input'));
+                    });
+                }
 
                 walletSelect.addEventListener('change', function () {
                     fetchWalletInfo(walletSelect.value, function (data) {
@@ -289,6 +338,15 @@
                         updateBalanceDisplay(data);
                     });
                 });
+
+                // For accountant users, pre-load the cash wallet balance
+                @if(auth()->user()->is_accountant == 1)
+                    @if(isset($cashWallet))
+                        currentBalance = {{ $cashWallet->balance }};
+                        fromCurrency = '{{ $cashWallet->currency }}';
+                        balanceSpan.textContent = formatBalance(currentBalance, fromCurrency);
+                    @endif
+                @endif
 
                 toggleFields();
 

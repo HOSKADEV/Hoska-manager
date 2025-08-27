@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
+use App\Models\Employee;
 use App\Models\Payment;
 use App\Models\Project;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Employee;
 
 class AdminController extends Controller
 {
@@ -36,9 +36,10 @@ class AdminController extends Controller
             if ($employee) {
                 $salaryType = $employee->payment_type;  // 'monthly', 'hourly', 'per_project'
                 $rate = $employee->rate ?? 0;
+                $currencySymbol = $this->getCurrencySymbol($employee->currency);
 
                 if ($salaryType === 'monthly') {
-                    $monthlyEarnings = $rate;
+                    $monthlyEarnings = number_format($rate, 2) . ' ' . $currencySymbol;
                 } elseif ($salaryType === 'hourly') {
                     // جلب المهام المكتملة للموظف خلال الشهر الحالي
                     $employeeCompletedTasks = Task::where('employee_id', $employee->id)
@@ -53,7 +54,7 @@ class AdminController extends Controller
                     });
 
                     // حساب الأجر الشهري بضرب مجموع الساعات بالسعر للساعة
-                    $monthlyEarnings = $totalHours * $rate;
+                    $monthlyEarnings = number_format(($totalHours * $rate), 2) . ' ' . $currencySymbol;
                 } elseif ($salaryType === 'per_project') {
                     $completedProjects = Project::whereHas('tasks', function ($query) use ($employee) {
                         $query->where('employee_id', $employee->id)
@@ -62,7 +63,7 @@ class AdminController extends Controller
                             ->whereMonth('end_time', now()->month);
                     })->count();
 
-                    $monthlyEarnings = $completedProjects * $rate;
+                    $monthlyEarnings = number_format(($completedProjects * $rate), 2)  . ' ' . $currencySymbol;
                 }
             }
         } elseif ($user->type === 'admin') {
@@ -71,22 +72,16 @@ class AdminController extends Controller
                 ->whereMonth('created_at', now()->month)
                 ->get();
 
-            $exchangeRatesToUSD = [
-                'USD' => 1,
-                'EUR' => 1.10,
-                'DZD' => 0.0074,
-            ];
+                foreach ($payments as $payment) {
+                    $currency = strtoupper($payment->invoice->project->currency ?? 'USD');
+                    $amount = $payment->getAttribute('amount');
 
-            foreach ($payments as $payment) {
-                $currency = strtoupper($payment->invoice->project->currency ?? 'USD');
-                $rate = $exchangeRatesToUSD[$currency] ?? 1;
-
-                $amount = $payment->getAttribute('amount');
-
-                if (is_numeric($amount)) {
-                    $monthlyEarnings += $amount * $rate;
+                    if (is_numeric($amount)) {
+                        $monthlyEarnings += $this->convertCurrency($amount, $currency, 'DZD');
+                    }
                 }
-            }
+
+            $monthlyEarnings = number_format($monthlyEarnings, 2) . ' ' . $this->getCurrencySymbol('DZD');
         }
 
         $completionPercentage = $totalTasks > 0

@@ -25,6 +25,7 @@ class ProjectsController extends Controller
     {
         $user = Auth::user();
         $selectedMonth = $request->input('month', 'all');
+        $statusFilter = $request->input('status', 'all');
         // $selectedMonth = $request->input('month', now()->format('Y-m'));
 
         // تاريخ البداية والنهاية إذا تم اختيار شهر
@@ -50,6 +51,26 @@ class ProjectsController extends Controller
             $projectsQuery->whereBetween('start_date', [$startDate, $endDate]);
         }
 
+        // تطبيق فلتر الحالة
+        if ($statusFilter !== 'all') {
+            switch ($statusFilter) {
+                case 'in_progress':
+                    $projectsQuery->whereNull('delivered_at')->where('delivery_date', '>', now());
+                    break;
+                case 'completed':
+                    $projectsQuery->whereNotNull('delivered_at');
+                    break;
+                case 'in_deadline':
+                    $projectsQuery->whereNull('delivered_at')
+                        ->where('delivery_date', '>=', now())
+                        ->where('delivery_date', '<=', now()->addDays(1));
+                    break;
+                case 'after_deadline':
+                    $projectsQuery->whereNull('delivered_at')->where('delivery_date', '<', now());
+                    break;
+            }
+        }
+
         $projects = $projectsQuery->with('payments')->orderBy('start_date', 'desc')->get();
 
         // التجميع حسب العملة
@@ -58,27 +79,20 @@ class ProjectsController extends Controller
         });
 
         // نحصل على أسعار الصرف من الإعدادات، أو من الطلب، أو نضع قيمة افتراضية
-        $usdRate = $request->input('usd_rate', Setting::get('usd_rate', 140)); // قيمة افتراضية
-        $eurRate = $request->input('eur_rate', Setting::get('eur_rate', 150)); // قيمة افتراضية
+        $usdRate = $request->input('usd_rate', $this->convertCurrency(1, 'USD', 'DZD')); // قيمة افتراضية
+        $eurRate = $request->input('eur_rate', $this->convertCurrency(1, 'EUR', 'DZD')); // قيمة افتراضية
 
         // إذا تم إدخال أسعار جديدة، قم بتحديث الإعدادات
         if ($request->has('usd_rate')) {
-            Setting::set('usd_rate', $usdRate, 'USD to DZD exchange rate');
+            Setting::set('usd_rate', $this->convertCurrency(1, 'USD', 'DZD'), 'USD to DZD exchange rate');
         }
         if ($request->has('eur_rate')) {
-            Setting::set('eur_rate', $eurRate, 'EUR to DZD exchange rate');
+            Setting::set('eur_rate', $this->convertCurrency(1, 'EUR', 'DZD'), 'EUR to DZD exchange rate');
         }
 
-        // أسعار الصرف إلى الدينار الجزائري
-        $exchangeRates = [
-            'USD' => $usdRate,
-            'EUR' => $eurRate,
-            'DZD' => 1,
-        ];
-
         // حساب المجموع الكلي بالدينار الجزائري
-        $totalInDZD = $totalsByCurrency->reduce(function ($carry, $amount, $currency) use ($exchangeRates) {
-            $rate = $exchangeRates[$currency] ?? 1;
+        $totalInDZD = $totalsByCurrency->reduce(function ($carry, $amount, $currency) {
+            $rate = $this->convertCurrency(1, $currency, 'DZD') ?? 1;
             return $carry + ($amount * $rate);
         }, 0);
 
@@ -113,6 +127,7 @@ class ProjectsController extends Controller
             'totalInDZD',
             'availableMonths',
             'selectedMonth',
+            'statusFilter',
             'developments',
             'usdRate',
             'eurRate'
@@ -294,22 +309,8 @@ class ProjectsController extends Controller
             // تحويل التكلفة إلى دينار جزائري (مثلاً إذا الموظف بعملة أخرى تحتاج تحويل)
             // هنا نفترض المعدل بالدينار، أو اضف التحويل حسب العملة:
             $currency = $employee->currency ?? $project->currency;
-            if ($currency !== 'DZD') {
-                // نحصل على أسعار الصرف من الإعدادات، أو من الطلب، أو نضع قيمة افتراضية
-                $usdRate = Setting::get('usd_rate', 140); // قيمة افتراضية
-                $eurRate = Setting::get('eur_rate', 150); // قيمة افتراضية
-
-                // مثال لتحويل (يجب تعديل حسب قاعدة بيانات أسعار الصرف)
-                $exchangeRates = [
-                    'USD' => $usdRate,  // مثلا 1 دولار = 140 دينار
-                    'EUR' => $eurRate,  // 1 يورو = 150 دينار
-                    // أضف العملات حسب الحاجة
-                ];
-                $rateToDZD = $exchangeRates[$currency] ?? 1;
-                $totalCostDZD += $cost * $rateToDZD;
-            } else {
-                $totalCostDZD += $cost;
-            }
+            $rateToDZD = $this->convertCurrency(1, $currency, 'DZD') ?? 1;
+            $totalCostDZD += $cost * $rateToDZD;
         }
 
         // حساب المبالغ المالية للمشروع

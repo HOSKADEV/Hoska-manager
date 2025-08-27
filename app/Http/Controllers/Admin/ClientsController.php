@@ -26,15 +26,15 @@ class ClientsController extends Controller
 
             // جلب المشاريع المرتبطة بالمسوق
             $projects = Project::where('marketer_id', $user->id)->get();
-            $usdRate = Setting::get('usd_rate', 140); // قيمة افتراضية
+            // $usdRate = Setting::get('usd_rate', 140); // قيمة افتراضية
             // $eurRate = Setting::get('eur_rate', 150); // قيمة افتراضية
 
             // حساب مجموع العمولة الكلي بالدولار (تحويل كل عملة لـ USD)
-            $exchangeRates = [
-                'USD' => 1,
-                'EUR' => 0.9,
-                'DZD' => $usdRate,
-            ];
+            // $exchangeRates = [
+            //     'USD' => 1,
+            //     'EUR' => 0.9,
+            //     'DZD' => $usdRate,
+            // ];
 
             $totalCommissionUSD = 0;
 
@@ -42,17 +42,23 @@ class ClientsController extends Controller
                 $percent = $project->marketer_commission_percent ?? 0;
                 $commission = ($project->total_amount * $percent) / 100;
 
-                if ($project->currency === 'EUR') {
-                    $commission /= $exchangeRates['EUR']; // تحويل لـ USD
-                } elseif ($project->currency === 'DZD') {
-                    $commission /= $exchangeRates['DZD']; // تحويل لـ USD
-                }
+                // if ($project->currency === 'EUR') {
+                //     $commission /= $exchangeRates['EUR']; // تحويل لـ USD
+                // } elseif ($project->currency === 'DZD') {
+                //     $commission /= $exchangeRates['DZD']; // تحويل لـ USD
+                // }
 
+                // Convert commission to USD and add to total
+                $commission = $this->convertCurrency($commission, $project->currency, 'USD');
                 $totalCommissionUSD += $commission;
             }
 
-            $totalCommissionEUR = $totalCommissionUSD * $exchangeRates['EUR'];
-            $totalCommissionDZD = $totalCommissionUSD * $exchangeRates['DZD'];
+            // $totalCommissionEUR = $totalCommissionUSD * $exchangeRates['EUR'];
+            // $totalCommissionDZD = $totalCommissionUSD * $exchangeRates['DZD'];
+
+            // Convert the total commission to other currencies
+            $totalCommissionEUR = $this->convertCurrency($totalCommissionUSD, 'USD', 'EUR');
+            $totalCommissionDZD = $this->convertCurrency($totalCommissionUSD, 'USD', 'DZD');
 
             // حساب العمولة لكل عميل حسب عملة مشروعاته (بدون تحويل)
             foreach ($clients as $client) {

@@ -182,6 +182,28 @@
                             @endforeach
                         </select>
                     </div>
+
+                    <div class="col-md-4">
+                        <label for="status" class="form-label fw-bold text-secondary">📊 Filter by Status</label>
+                        <select name="status" id="status" class="form-select select2"
+                            onchange="document.getElementById('filterForm').submit();">
+                            <option value="all" {{ $statusFilter === 'all' ? 'selected' : '' }}>
+                                📋 All Statuses
+                            </option>
+                            <option value="in_progress" {{ $statusFilter === 'in_progress' ? 'selected' : '' }}>
+                                ⏳ In Progress
+                            </option>
+                            <option value="completed" {{ $statusFilter === 'completed' ? 'selected' : '' }}>
+                                ✅ Completed
+                            </option>
+                            <option value="in_deadline" {{ $statusFilter === 'in_deadline' ? 'selected' : '' }}>
+                                ⏰ In Deadline
+                            </option>
+                            <option value="after_deadline" {{ $statusFilter === 'after_deadline' ? 'selected' : '' }}>
+                                ❌ After Deadline
+                            </option>
+                        </select>
+                    </div>
                 </div>
             </form>
             <div class="table-responsive">
@@ -197,6 +219,7 @@
                             <th>Start Date</th>
                             <th>Duration</th>
                             <th>Delivery Date</th>
+                            <th>Status</th>
                             <th>Remaining Days</th>
                             @unless(Auth::user()->type === 'employee')
                                 <th>Remaining Amount</th>
@@ -221,6 +244,7 @@
                             <th>Start Date</th>
                             <th>Duration</th>
                             <th>Delivery Date</th>
+                            <th>Status</th>
                             <th>Remaining Days</th>
                             @unless(Auth::user()->type === 'employee')
                                 <th>Remaining Amount</th>
@@ -265,6 +289,21 @@
                                 <td>{{ $project->start_date ?? '-' }}</td>
                                 <td>{{ $project->duration_days ? $project->duration_days . ' days' : '-' }}</td>
                                 <td>{{ $project->delivery_date ?? '-' }}</td>
+                                <td>
+                                    @if ($project->delivered_at)
+                                        <span class="badge bg-success text-white">✅ Completed</span>
+                                    @elseif (!is_null($project->remaining_days))
+                                        @if ($project->remaining_days < 0)
+                                            <span class="badge bg-danger text-white">❌ After Deadline</span>
+                                        @elseif ($project->remaining_days >= 0 && $project->remaining_days <= 1)
+                                            <span class="badge bg-warning text-dark">⏰ In Deadline</span>
+                                        @else
+                                            <span class="badge bg-info text-white">⏳ In Progress</span>
+                                        @endif
+                                    @else
+                                        <span class="badge bg-secondary text-white">📋 Unknown</span>
+                                    @endif
+                                </td>
                                 <td>
                                     @if ($project->delivered_at)
                                         <span class="badge badge-primary">Delivered</span>

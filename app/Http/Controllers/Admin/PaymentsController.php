@@ -37,7 +37,7 @@ class PaymentsController extends Controller
         $walletsFull = Wallet::all(); // لا تستخدم pluck هنا، بل كامل الكائن
 
         // لجعل الـ select يعمل بترتيب الاسم فقط، يمكنك تحضير قائمة منفصلة:
-        $wallets = $walletsFull->pluck('name', 'id');
+        $wallets = $walletsFull->pluck('name', 'id', 'currency');
 
         return view('admin.payments.create', compact('payment', 'invoices', 'wallets', 'walletsFull'));
     }
@@ -108,9 +108,12 @@ class PaymentsController extends Controller
             ->get();
 
         // جلب جميع المحافظ مع الحقول id, name, currency
-        $wallets = Wallet::select('id', 'name', 'currency')->get();
+        // $wallets = Wallet::select('id', 'name', 'currency')->get();
 
-        return view('admin.payments.edit', compact('payment', 'invoices', 'wallets'));
+        $walletsFull = Wallet::all(); // لا تستخدم pluck هنا، بل كامل الكائن
+        $wallets = $walletsFull->pluck('name', 'id', 'currency');
+
+        return view('admin.payments.edit', compact('payment', 'invoices', 'wallets', 'walletsFull'));
     }
 
     /**

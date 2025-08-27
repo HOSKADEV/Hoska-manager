@@ -50,20 +50,55 @@ class TasksController extends Controller
 
             $tasks = $query->with(['employee', 'project'])->latest()->get();
 
-            // statistics
-            $totalTodayHours = Task::whereDate('start_time', Carbon::today())->get()->sum(function ($task) {
+            // statistics - applying filters to cards statistics
+            $todayQuery = Task::whereDate('start_time', Carbon::today());
+            $weekQuery = Task::whereDate('start_time', '>=', Carbon::now()->startOfWeek());
+            $monthQuery = Task::whereDate('start_time', '>=', Carbon::now()->startOfMonth());
+            $yearQuery = Task::whereDate('start_time', '>=', Carbon::now()->startOfYear());
+
+            // Apply the same filters to statistics queries
+            if ($project_id !== 'all') {
+                $todayQuery->where('project_id', $project_id);
+                $weekQuery->where('project_id', $project_id);
+                $monthQuery->where('project_id', $project_id);
+                $yearQuery->where('project_id', $project_id);
+            }
+
+            if ($employee_id !== 'all') {
+                $todayQuery->where('employee_id', $employee_id);
+                $weekQuery->where('employee_id', $employee_id);
+                $monthQuery->where('employee_id', $employee_id);
+                $yearQuery->where('employee_id', $employee_id);
+            }
+
+            // Apply date range filtering to statistics
+            if ($start_date) {
+                $todayQuery->whereDate('created_at', '>=', $start_date);
+                $weekQuery->whereDate('created_at', '>=', $start_date);
+                $monthQuery->whereDate('created_at', '>=', $start_date);
+                $yearQuery->whereDate('created_at', '>=', $start_date);
+            }
+
+            if ($end_date) {
+                $todayQuery->whereDate('created_at', '<=', $end_date);
+                $weekQuery->whereDate('created_at', '<=', $end_date);
+                $monthQuery->whereDate('created_at', '<=', $end_date);
+                $yearQuery->whereDate('created_at', '<=', $end_date);
+            }
+
+            $totalTodayHours = $todayQuery->get()->sum(function ($task) {
                 return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
             });
 
-            $totalWeekHours = Task::whereDate('start_time', '>=', Carbon::now()->startOfWeek())->get()->sum(function ($task) {
+            $totalWeekHours = $weekQuery->get()->sum(function ($task) {
                 return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
             });
 
-            $totalMonthHours = Task::whereDate('start_time', '>=', Carbon::now()->startOfMonth())->get()->sum(function ($task) {
+            $totalMonthHours = $monthQuery->get()->sum(function ($task) {
                 return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
             });
 
-            $totalYearHours = Task::whereDate('start_time', '>=', Carbon::now()->startOfYear())->get()->sum(function ($task) {
+            $totalYearHours = $yearQuery->get()->sum(function ($task) {
                 return $task->end_time ? Carbon::parse($task->start_time)->floatDiffInHours(Carbon::parse($task->end_time)) : 0;
             });
         } elseif ($user->type === 'employee' && optional($user->role)->name != 'accountant') {

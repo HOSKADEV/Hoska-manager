@@ -60,7 +60,7 @@
                                 <i class="fas fa-coins fa-2x text-gray-300"></i>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row currency-initial">
                             @php
                                 $currencySymbols = ['USD' => '$', 'EUR' => '€', 'DZD' => 'DZ'];
                             @endphp
@@ -86,7 +86,7 @@
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
                                 Total Projects
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="projectCount">
                                 {{ $projectCount }}
                             </div>
                         </div>
@@ -113,7 +113,7 @@
                                 <i class="fas fa-exchange-alt fa-2x text-gray-300"></i>
                             </div>
                         </div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800 text-center">
+                        <div class="h5 mb-0 font-weight-bold text-gray-800 text-center" id="totalInDZD">
                             {{ number_format($totalInDZD, 2) }} DZ
                         </div>
                         <!-- Button to open the modal -->
@@ -210,7 +210,12 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
-                            <th>#</th>
+                            <th>
+                                #
+                                <div class="form-check">
+                                    <input type="checkbox" id="selectAll" class="form-check-input d-none">
+                                </div>
+                            </th>
                             <th>Name</th>
                             {{-- <th>Description</th> --}}
                             @unless(Auth::user()->type === 'employee')
@@ -261,7 +266,11 @@
                     <tbody>
                         @forelse ($projects as $project)
                             <tr class="{{ $project->row_class }}">
-                                <td>{{ $loop->iteration }}</td>
+                                <td>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="project-checkbox form-check-input" data-id="{{ $project->id }}" data-amount="{{ $project->total_amount }}" data-currency="{{ $project->currency }}">
+                                    </div>
+                                </td>
                                 <td>{{ $project->name }}</td>
 
                                 @php
@@ -412,6 +421,133 @@
                 $('#month').on('change', function () {
                     $(this).closest('form').submit();
                 });
+
+                // Store initial statistics values
+                const initialStats = {
+                    totalsByCurrency: {},
+                    projectCount: 0,
+                    totalInDZD: 0
+                };
+
+                // Initialize initial statistics from the rendered page
+                @if(auth()->user()->type !== 'employee')
+                    @foreach($totalsByCurrency as $currency => $amount)
+                        initialStats.totalsByCurrency['{{ $currency }}'] = {{ $amount }};
+                    @endforeach
+                    initialStats.totalInDZD = {{ $totalInDZD }};
+                @endif
+                initialStats.projectCount = {{ $projectCount }};
+
+                // Handle select all checkbox
+                $('#selectAll').change(function() {
+                    $('.project-checkbox').prop('checked', $(this).prop('checked'));
+                    updateStatistics();
+                });
+
+                // Handle individual project checkboxes
+                $('.project-checkbox').change(function() {
+                    updateStatistics();
+
+                    // Update select all checkbox state
+                    const allCheckboxes = $('.project-checkbox');
+                    const checkedCheckboxes = $('.project-checkbox:checked');
+
+                    if (checkedCheckboxes.length === 0) {
+                        $('#selectAll').prop('checked', false);
+                        $('#selectAll').prop('indeterminate', false);
+                    } else if (checkedCheckboxes.length === allCheckboxes.length) {
+                        $('#selectAll').prop('checked', true);
+                        $('#selectAll').prop('indeterminate', false);
+                    } else {
+                        $('#selectAll').prop('checked', false);
+                        $('#selectAll').prop('indeterminate', true);
+                    }
+                });
+
+                // Function to update statistics based on selected projects
+                function updateStatistics() {
+                    const selectedProjects = $('.project-checkbox:checked');
+
+                    if (selectedProjects.length === 0) {
+                        // No projects selected, show initial statistics
+                        $('.currency-initial').show();
+                        $('.currency-container').hide();
+                        @if(auth()->user()->type !== 'employee')
+                            $('#totalInDZD').text(numberFormat(initialStats.totalInDZD, 2) + ' DZ');
+                        @endif
+                        $('#projectCount').text(initialStats.projectCount);
+                        return;
+                    }
+
+                    // Hide initial statistics when projects are selected
+                    $('.currency-initial').hide();
+                    $('.currency-container').show();
+
+                    // Calculate statistics for selected projects
+                    const selectedTotals = {};
+                    let selectedTotalInDZD = 0;
+
+                    selectedProjects.each(function() {
+                        const amount = parseFloat($(this).data('amount'));
+                        const currency = $(this).data('currency');
+
+                        if (!selectedTotals[currency]) {
+                            selectedTotals[currency] = 0;
+                        }
+                        selectedTotals[currency] += amount;
+                    });
+
+                    // Convert to DZD
+                    @if(auth()->user()->type !== 'employee')
+                        const usdRate = {{ $usdRate }};
+                        const eurRate = {{ $eurRate }};
+
+                        Object.keys(selectedTotals).forEach(currency => {
+                            let rate = 1;
+                            if (currency === 'USD') rate = usdRate;
+                            if (currency === 'EUR') rate = eurRate;
+                            selectedTotalInDZD += selectedTotals[currency] * rate;
+                        });
+
+                        // Update UI
+                        updateCurrencyCards(selectedTotals);
+                        $('#totalInDZD').text(numberFormat(selectedTotalInDZD, 2) + ' DZ');
+                    @endif
+
+                    $('#projectCount').text(selectedProjects.length);
+                }
+
+                // Helper function to update currency cards
+                function updateCurrencyCards(totals) {
+                    const currencySymbols = {'USD': '$', 'EUR': '€', 'DZD': 'DZ'};
+
+                    // Clear existing currency displays
+                    $('.currency-display').remove();
+
+                    // Add new currency displays
+                    const currencyContainer = $('.currency-container');
+                    if (currencyContainer.length === 0) {
+                        // Create container if it doesn't exist
+                        const row = $('<div class="row currency-container"></div>');
+                        $('.card.border-left-success .card-body .row').first().after(row);
+                    }
+
+                    Object.keys(totals).forEach(currency => {
+                        const col = $(`
+                            <div class="col-md-4 text-center currency-display">
+                                <div class="h6 font-weight-bold text-gray-800">
+                                    ${currencySymbols[currency] || ''} ${numberFormat(totals[currency], 2)}
+                                </div>
+                            </div>
+                        `);
+                        $('.currency-container').append(col);
+                    });
+                }
+
+                // Helper function to format numbers
+                function numberFormat(number, decimals) {
+                    return number.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                }
             });
         </script>
 

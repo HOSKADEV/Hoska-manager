@@ -78,10 +78,10 @@
                             <th>#</th>
                             <th>Name</th>
                             <th>Phone</th>
-                            <th>Email</th>
-                            <th>Address</th>
+                            {{-- <th>Email</th> --}}
+                            {{-- <th>Address</th> --}}
                             <th>Notes</th>
-                            <th>User Name</th>
+                            {{-- <th>User Name</th> --}}
                             @if (auth()->user()->is_marketer)
                                 <th>Commission %</th>
                                 <th>Commission Value</th>
@@ -89,8 +89,8 @@
                                 <th class="d-none">Commission %</th>
                                 <th class="d-none">Commission Value</th>
                             @endif
-                            <th>Created At</th>
-                            <th>Updated At</th>
+                            {{-- <th>Created At</th>
+                            <th>Updated At</th> --}}
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -99,10 +99,10 @@
                             <th>#</th>
                             <th>Name</th>
                             <th>Phone</th>
-                            <th>Email</th>
-                            <th>Address</th>
+                            {{-- <th>Email</th> --}}
+                            {{-- <th>Address</th> --}}
                             <th>Notes</th>
-                            <th>User Name</th>
+                            {{-- <th>User Name</th> --}}
                             @if (auth()->user()->is_marketer)
                                 <th>Commission %</th>
                                 <th>Commission Value</th>
@@ -110,8 +110,8 @@
                                 <th class="d-none">Commission %</th>
                                 <th class="d-none">Commission Value</th>
                             @endif
-                            <th>Created At</th>
-                            <th>Updated At</th>
+                            {{-- <th>Created At</th>
+                            <th>Updated At</th> --}}
                             <th>Actions</th>
                         </tr>
                     </tfoot>
@@ -121,12 +121,12 @@
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $client->name }}</td>
                                 <td>{{ $client->contacts->first()->phone ?? '-' }}</td>
-                                <td>{{ $client->contacts->first()->email ?? '-' }}</td>
-                                <td>{{ $client->contacts->first()->address ?? '-' }}</td>
+                                {{-- <td>{{ $client->contacts->first()->email ?? '-' }}</td> --}}
+                                {{-- <td>{{ $client->contacts->first()->address ?? '-' }}</td> --}}
                                 <td>{{ $client->notes ?? '_' }}</td>
-                                <td>
+                                {{-- <td>
                                     <span class="badge-custom badge-user">{{ $client->user->name ?? 'Unknown' }}</span>
-                                </td>
+                                </td> --}}
                                 @if (auth()->user()->is_marketer)
                                     <td>{{ number_format($client->commissionPercent, 2) }}%</td>
                                     @php
@@ -140,8 +140,8 @@
                                         {{ $currencySymbols[$client->currency] ?? '' }}
                                     </td>
                                 @endif
-                                <td>{{ $client->created_at->diffForHumans() }}</td>
-                                <td>{{ $client->updated_at->diffForHumans() }}</td>
+                                {{-- <td>{{ $client->created_at->diffForHumans() }}</td>
+                                <td>{{ $client->updated_at->diffForHumans() }}</td> --}}
                                 <td>
                                     <a href="{{ route('admin.clients.edit', $client->id) }}"
                                         class="btn btn-sm btn-primary"><i class='fas fa-edit'></i></a>

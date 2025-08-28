@@ -44,9 +44,9 @@
                             <th>Address</th> --}}
                             <th>Rate</th>
                             <th>Payment Type</th>
-                            <th>User Name</th>
+                            {{-- <th>User Name</th>
                             <th>Created At</th>
-                            <th>Updated At</th>
+                            <th>Updated At</th> --}}
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -59,9 +59,9 @@
                             <th>Address</th> --}}
                             <th>Rate</th>
                             <th>Payment Type</th>
-                            <th>User Name</th>
+                            {{-- <th>User Name</th>
                             <th>Created At</th>
-                            <th>Updated At</th>
+                            <th>Updated At</th> --}}
                             <th>Actions</th>
                         </tr>
                     </tfoot>
@@ -85,11 +85,11 @@
                                     {{ $currencySymbols[$employee->currency] ?? '' }} {{ number_format($employee->rate, 2) }}
                                 </td>
                                 <td>{{ $employee->payment_type }}</td>
-                                <td>
+                                {{-- <td>
                                     <span class="badge-custom badge-user">{{ auth()->user()->name }}</span>
                                 </td>
                                 <td>{{ $employee->created_at->diffForHumans() }}</td>
-                                <td>{{ $employee->updated_at->diffForHumans() }}</td>
+                                <td>{{ $employee->updated_at->diffForHumans() }}</td> --}}
                                 <td>
                                     <!-- زر عرض التفاصيل التواصل -->
                                     <button type="button" class="btn btn-sm btn-warning" data-toggle="modal"

@@ -111,7 +111,7 @@
 
     <!-- Tab 4: معلومات تسجيل الدخول -->
     <div class="tab-pane fade" id="login" role="tabpanel" aria-labelledby="login-tab">
-        @if(!(Auth::user()->type === 'admin' && $employee->exists))
+        @if(Auth::user()->type === 'admin' && $employee->exists)
             <x-form.input label="Username" name="user[name]" placeholder="Enter Username" :oldval="old('user.name', $user?->name ?? '')" readonly />
             <x-form.input label="Email" name="user[email]" placeholder="Enter Login Email" :oldval="old('user.email', $user?->email ?? '')" readonly />
         @else

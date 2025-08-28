@@ -107,19 +107,70 @@ class KpiController extends Controller
             ->sortDesc()
             ->values();
 
-        // Annual totals
-        $annualIncome = Invoice::whereYear('invoice_date', $year)
+        // Get exchange rates
+        $usdRate = \App\Models\Setting::get('usd_rate', 140); // 1 USD = 140 DZD
+        $eurRate = \App\Models\Setting::get('eur_rate', 150); // 1 EUR = 150 DZD
+
+        // Annual totals by currency
+        $annualIncomeByCurrency = [];
+        $annualExpensesByCurrency = [];
+
+        // Get income by currency from invoices (through wallets)
+        $invoices = Invoice::whereYear('invoice_date', $year)
             ->where('is_paid', 1)
-            ->sum('amount');
+            ->with('wallet')
+            ->get();
 
-        $annualExpenses = WalletTransaction::whereYear('transaction_date', $year)
+        foreach ($invoices as $invoice) {
+            $currency = $invoice->wallet ? $invoice->wallet->currency : 'USD';
+            if (!isset($annualIncomeByCurrency[$currency])) {
+                $annualIncomeByCurrency[$currency] = 0;
+            }
+            $annualIncomeByCurrency[$currency] += $invoice->amount;
+        }
+
+        // Get expenses by currency from wallet transactions
+        $transactions = WalletTransaction::whereYear('transaction_date', $year)
             ->whereIn('type', ['expense', 'withdraw'])
-            ->sum('amount');
+            ->with('wallet')
+            ->get();
 
+        foreach ($transactions as $transaction) {
+            $currency = $transaction->wallet ? $transaction->wallet->currency : 'USD';
+            if (!isset($annualExpensesByCurrency[$currency])) {
+                $annualExpensesByCurrency[$currency] = 0;
+            }
+            $annualExpensesByCurrency[$currency] += $transaction->amount;
+        }
+
+        // Get salaries (assuming they're in DZD)
         $annualSalaries = Timesheet::whereYear('work_date', $year)
             ->sum('month_salary');
 
-        $annualProfits = $annualIncome - $annualExpenses - $annualSalaries;
+        // Convert all amounts to DZD
+        $annualIncomeInDZD = 0;
+        foreach ($annualIncomeByCurrency as $currency => $amount) {
+            if ($currency === 'USD') {
+                $annualIncomeInDZD += $amount * $usdRate;
+            } elseif ($currency === 'EUR') {
+                $annualIncomeInDZD += $amount * $eurRate;
+            } else { // DZD
+                $annualIncomeInDZD += $amount;
+            }
+        }
+
+        $annualExpensesInDZD = 0;
+        foreach ($annualExpensesByCurrency as $currency => $amount) {
+            if ($currency === 'USD') {
+                $annualExpensesInDZD += $amount * $usdRate;
+            } elseif ($currency === 'EUR') {
+                $annualExpensesInDZD += $amount * $eurRate;
+            } else { // DZD
+                $annualExpensesInDZD += $amount;
+            }
+        }
+
+        $annualProfitsInDZD = $annualIncomeInDZD - $annualExpensesInDZD - $annualSalaries;
 
         // Customer satisfaction score
         $csatScore = 85.0;
@@ -130,31 +181,78 @@ class KpiController extends Controller
         $monthlyExpensesData = [];
         $monthlyProfitsData = [];
         $monthlyProjectsData = [];
+        $monthlyIncomeByCurrency = [];
+        $monthlyExpensesByCurrency = [];
 
         for ($month = 1; $month <= 12; $month++) {
             $monthsLabels[] = date('F', mktime(0, 0, 0, $month, 1));
 
-            // Monthly income
-            $income = Invoice::whereYear('invoice_date', $year)
+            // Initialize monthly currency arrays
+            $monthlyIncomeByCurrency[$month] = [];
+            $monthlyExpensesByCurrency[$month] = [];
+
+            // Monthly income by currency
+            $monthlyInvoices = Invoice::whereYear('invoice_date', $year)
                 ->whereMonth('invoice_date', $month)
                 ->where('is_paid', 1)
-                ->sum('amount');
-            $monthlyIncomeData[] = $income;
+                ->with('wallet')
+                ->get();
 
-            // Monthly expenses
-            $expenses = WalletTransaction::whereYear('transaction_date', $year)
+            foreach ($monthlyInvoices as $invoice) {
+                $currency = $invoice->wallet ? $invoice->wallet->currency : 'USD';
+                if (!isset($monthlyIncomeByCurrency[$month][$currency])) {
+                    $monthlyIncomeByCurrency[$month][$currency] = 0;
+                }
+                $monthlyIncomeByCurrency[$month][$currency] += $invoice->amount;
+            }
+
+            // Monthly expenses by currency
+            $monthlyTransactions = WalletTransaction::whereYear('transaction_date', $year)
                 ->whereMonth('transaction_date', $month)
                 ->whereIn('type', ['expense', 'withdraw'])
-                ->sum('amount');
-            $monthlyExpensesData[] = $expenses;
+                ->with('wallet')
+                ->get();
 
-            // Monthly salaries
+            foreach ($monthlyTransactions as $transaction) {
+                $currency = $transaction->wallet ? $transaction->wallet->currency : 'USD';
+                if (!isset($monthlyExpensesByCurrency[$month][$currency])) {
+                    $monthlyExpensesByCurrency[$month][$currency] = 0;
+                }
+                $monthlyExpensesByCurrency[$month][$currency] += $transaction->amount;
+            }
+
+            // Convert to DZD and add to monthly data
+            $monthlyIncomeInDZD = 0;
+            foreach ($monthlyIncomeByCurrency[$month] as $currency => $amount) {
+                if ($currency === 'USD') {
+                    $monthlyIncomeInDZD += $amount * $usdRate;
+                } elseif ($currency === 'EUR') {
+                    $monthlyIncomeInDZD += $amount * $eurRate;
+                } else { // DZD
+                    $monthlyIncomeInDZD += $amount;
+                }
+            }
+            $monthlyIncomeData[] = $monthlyIncomeInDZD;
+
+            $monthlyExpensesInDZD = 0;
+            foreach ($monthlyExpensesByCurrency[$month] as $currency => $amount) {
+                if ($currency === 'USD') {
+                    $monthlyExpensesInDZD += $amount * $usdRate;
+                } elseif ($currency === 'EUR') {
+                    $monthlyExpensesInDZD += $amount * $eurRate;
+                } else { // DZD
+                    $monthlyExpensesInDZD += $amount;
+                }
+            }
+            $monthlyExpensesData[] = $monthlyExpensesInDZD;
+
+            // Monthly salaries (assuming they're in DZD)
             $salaries = Timesheet::whereYear('work_date', $year)
                 ->whereMonth('work_date', $month)
                 ->sum('month_salary');
 
             // Monthly profits
-            $monthlyProfitsData[] = $income - $expenses - $salaries;
+            $monthlyProfitsData[] = $monthlyIncomeInDZD - $monthlyExpensesInDZD - $salaries;
 
             // Monthly projects count directly from Project model
             $monthlyProjectsData[] = Project::whereYear('start_date', $year)
@@ -163,10 +261,12 @@ class KpiController extends Controller
         }
 
         return view('admin.kpis.index', compact(
-            'annualIncome',
-            'annualExpenses',
+            'annualIncomeByCurrency',
+            'annualExpensesByCurrency',
+            'annualIncomeInDZD',
+            'annualExpensesInDZD',
             'annualSalaries',
-            'annualProfits',
+            'annualProfitsInDZD',
             'csatScore',
             'monthsLabels',
             'monthlyIncomeData',
@@ -174,7 +274,9 @@ class KpiController extends Controller
             'monthlyProfitsData',
             'monthlyProjectsData',
             'year',
-            'availableYears'
+            'availableYears',
+            'usdRate',
+            'eurRate'
         ));
     }
 }

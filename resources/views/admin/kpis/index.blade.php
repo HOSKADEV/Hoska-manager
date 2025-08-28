@@ -44,6 +44,18 @@
                 align-items: center;
                 margin-bottom: 1.5rem;
             }
+            .original-currencies {
+                font-size: 0.85rem;
+                margin-bottom: 0.25rem;
+            }
+            .original-currencies div {
+                margin-bottom: 0.15rem;
+            }
+            .dzd-total {
+                font-size: 0.9rem;
+                border-top: 1px solid #eee;
+                padding-top: 0.25rem;
+            }
         </style>
     @endpush
 
@@ -68,7 +80,14 @@
                                 Annual Income
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                ${{ number_format($annualIncome, 2) }}
+                                <div class="original-currencies">
+                                    @foreach($annualIncomeByCurrency as $currency => $amount)
+                                        <div>{{ $currency }}: {{ number_format($amount, 2) }}</div>
+                                    @endforeach
+                                </div>
+                                <div class="dzd-total mt-1">
+                                    <strong>DZD: {{ number_format($annualIncomeInDZD, 2) }}</strong>
+                                </div>
                             </div>
                         </div>
                         <div class="col-auto">
@@ -88,7 +107,14 @@
                                 Annual Expenses
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                ${{ number_format($annualExpenses, 2) }}
+                                <div class="original-currencies">
+                                    @foreach($annualExpensesByCurrency as $currency => $amount)
+                                        <div>{{ $currency }}: {{ number_format($amount, 2) }}</div>
+                                    @endforeach
+                                </div>
+                                <div class="dzd-total mt-1">
+                                    <strong>DZD: {{ number_format($annualExpensesInDZD, 2) }}</strong>
+                                </div>
                             </div>
                         </div>
                         <div class="col-auto">
@@ -108,7 +134,7 @@
                                 Annual Salaries
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                ${{ number_format($annualSalaries, 2) }}
+                                <div>DZD: {{ number_format($annualSalaries, 2) }}</div>
                             </div>
                         </div>
                         <div class="col-auto">
@@ -128,7 +154,7 @@
                                 Annual Profits
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                ${{ number_format($annualProfits, 2) }}
+                                <div>DZD: {{ number_format($annualProfitsInDZD, 2) }}</div>
                             </div>
                         </div>
                         <div class="col-auto">
@@ -249,6 +275,20 @@
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += 'DZ ' + context.parsed.y.toLocaleString();
+                                    }
+                                    return label;
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -256,7 +296,7 @@
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    return '$' + value.toLocaleString();
+                                    return 'DZ ' + value.toLocaleString();
                                 }
                             }
                         }
@@ -314,6 +354,20 @@
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += 'DZ ' + context.parsed.y.toLocaleString();
+                                    }
+                                    return label;
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -321,7 +375,7 @@
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    return '$' + value.toLocaleString();
+                                    return 'DZ ' + value.toLocaleString();
                                 }
                             }
                         }
@@ -384,6 +438,20 @@
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += 'DZ ' + context.parsed.y.toLocaleString();
+                                    }
+                                    return label;
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -391,7 +459,7 @@
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
-                                    return '$' + value.toLocaleString();
+                                    return 'DZ ' + value.toLocaleString();
                                 }
                             }
                         }
@@ -546,7 +614,30 @@
                 options: {
                     responsive: true,
                     scales: {
-                        y: { beginAtZero: true }
+                        y: { 
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'DZ ' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += 'DZ ' + context.parsed.y.toLocaleString();
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
                     }
                 }
             });

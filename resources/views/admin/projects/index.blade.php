@@ -211,9 +211,9 @@
                     <thead>
                         <tr>
                             <th>
-                                #
+                                {{-- # --}}
                                 <div class="form-check">
-                                    <input type="checkbox" id="selectAll" class="form-check-input d-none">
+                                    <input type="checkbox" id="selectAll" class="form-check-input">
                                 </div>
                             </th>
                             <th>Name</th>

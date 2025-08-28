@@ -155,9 +155,6 @@
                             </div>
                             <small class="text-muted">Based on recent surveys</small>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-smile fa-3x text-gray-300"></i>
-                        </div>
                     </div>
                 </div>
             </div>

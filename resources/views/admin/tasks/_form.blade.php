@@ -65,13 +65,17 @@ $selectedValue = old('status', $task->status ?? '');
 {{-- @if(isset($task) && $task->exists) --}}
 <div class="mb-3">
     <x-form.input type="datetime-local" label="Start Time" name="start_time" placeholder="Enter Task Start Time"
-        :oldval="$task->start_time ? $task->start_time->format('Y-m-d\TH:i') : '' " required />
+        :oldval="$task->start_time ? $task->start_time->format('Y-m-d\TH:i') : (new DateTime())->format('Y-m-d\TH:i')"
+        min="{{ (new DateTime('yesterday'))->format('Y-m-d\T00:i') }}"
+        max="{{ (new DateTime())->format('Y-m-d\T23:i') }}" required />
 </div>
 {{-- @endif --}}
 
 <div class="mb-3">
     <x-form.input type="datetime-local" label="End Time" name="end_time" placeholder="Enter Task End Time"
-        :oldval="$task->end_time ? $task->end_time->format('Y-m-d\TH:i') : ''" required />
+        :oldval="$task->end_time ? $task->end_time->format('Y-m-d\TH:i') : (new DateTime())->format('Y-m-d\TH:i')"
+        min="{{ (new DateTime('yesterday'))->format('Y-m-d\T00:i') }}"
+        max="{{ (new DateTime())->format('Y-m-d\T23:i') }}" required />
 </div>
 
 @if(isset($task) && $task->exists)

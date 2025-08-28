@@ -332,4 +332,45 @@ class TimesheetsController extends Controller
     //     flash()->success('Timesheet deleted successfully');
     //     return redirect()->route('admin.timesheets.index');
     // }
+
+    /**
+     * Ensure all employees with monthly salaries have timesheet entries for each month.
+     */
+    public function generateMonthlyTimesheets()
+    {
+        // Get all employees with monthly payment type
+        $monthlyEmployees = Employee::where('payment_type', 'monthly')->get();
+
+        $currentMonth = now()->startOfMonth();
+        $createdCount = 0;
+        $existingCount = 0;
+
+        foreach ($monthlyEmployees as $employee) {
+            // Check if timesheet already exists for this employee for the current month
+            $existingTimesheet = Timesheet::where('employee_id', $employee->id)
+                ->whereYear('work_date', $currentMonth->year)
+                ->whereMonth('work_date', $currentMonth->month)
+                ->first();
+
+            if ($existingTimesheet) {
+                $existingCount++;
+                continue;
+            }
+
+            // Create a new timesheet for this employee for the current month
+            Timesheet::create([
+                'employee_id' => $employee->id,
+                'work_date' => $currentMonth->toDateString(),
+                'hours_worked' => 0,
+                'project_id' => null,
+                'month_salary' => $employee->rate,
+                'is_paid' => false,
+            ]);
+
+            $createdCount++;
+        }
+
+        flash()->success("Generated timesheets for {$createdCount} employees. {$existingCount} employees already had timesheets for this month.");
+        return redirect()->route('admin.timesheets.index');
+    }
 }

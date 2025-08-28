@@ -164,8 +164,8 @@
                             <th>Name</th>
                             <th>Balance</th>
                             <th>Currency</th>
-                            <th>Created At</th>
-                            <th>Updated At</th>
+                            {{-- <th>Created At</th>
+                            <th>Updated At</th> --}}
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -180,8 +180,8 @@
                             <th>Name</th>
                             <th>Balance</th>
                             <th>Currency</th>
-                            <th>Created At</th>
-                            <th>Updated At</th>
+                            {{-- <th>Created At</th>
+                            <th>Updated At</th> --}}
                             <th>Actions</th>
                         </tr>
                     </tfoot>
@@ -212,8 +212,8 @@
                                 <td>
                                     <span class="badge badge-currency">{{ $wallet->currency }}</span>
                                 </td>
-                                <td>{{ $wallet->created_at->diffForHumans() }}</td>
-                                <td>{{ $wallet->updated_at->diffForHumans() }}</td>
+                                {{-- <td>{{ $wallet->created_at->diffForHumans() }}</td>
+                                <td>{{ $wallet->updated_at->diffForHumans() }}</td> --}}
                                 <td>
                                     <a href="{{ route('admin.wallets.show', $wallet->id) }}" class="btn btn-sm btn-success">
                                         <i class="fas fa-eye"></i>

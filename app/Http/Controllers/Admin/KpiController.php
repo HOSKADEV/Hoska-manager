@@ -127,7 +127,8 @@ class KpiController extends Controller
 
         // Get expenses by currency from wallet transactions
         $transactions = WalletTransaction::whereYear('transaction_date', $year)
-            ->whereIn('type', ['expense', 'withdraw'])
+            ->whereIn('type', ['expense'])
+            // ->whereIn('type', ['expense', 'withdraw'])
             ->with('wallet')
             ->get();
 

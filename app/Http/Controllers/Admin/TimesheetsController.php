@@ -29,6 +29,9 @@ class TimesheetsController extends Controller
 
     public function index(Request $request)
     {
+
+        $this->generateMonthlyTimesheets();
+        
         $availableMonths = Timesheet::selectRaw('DATE_FORMAT(work_date, "%Y-%m") as value, DATE_FORMAT(work_date, "%M %Y") as label')
             ->groupBy('value', 'label')
             ->orderBy('value', 'desc')
@@ -370,7 +373,7 @@ class TimesheetsController extends Controller
             $createdCount++;
         }
 
-        flash()->success("Generated timesheets for {$createdCount} employees. {$existingCount} employees already had timesheets for this month.");
-        return redirect()->route('admin.timesheets.index');
+        // flash()->success("Generated timesheets for {$createdCount} employees. {$existingCount} employees already had timesheets for this month.");
+        // return redirect()->route('admin.timesheets.index');
     }
 }

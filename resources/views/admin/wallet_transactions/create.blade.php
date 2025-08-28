@@ -33,7 +33,7 @@
                     @else
                         <select name="type" id="type" class="form-control @error('type') is-invalid @enderror" required>
                             <option value="" selected disabled>Select Type</option>
-                            @foreach(['expense', 'income', 'transfer', 'withdraw', 'funding'] as $type)
+                            @foreach(['expense', 'income', 'transfer', 'withdraw', 'funding','sallary'] as $type)
                                 <option value="{{ $type }}" {{ old('type') == $type ? 'selected' : '' }}>
                                     {{ ucfirst($type) }}
                                 </option>

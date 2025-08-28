@@ -56,7 +56,7 @@ class WalletTransactionController extends Controller
             ->sum('amount');
 
         return view('admin.wallet_transactions.index', compact(
-            'transactions', 
+            'transactions',
             'wallets',
             'hourlyExpenses',
             'dailyExpenses',
@@ -80,7 +80,7 @@ class WalletTransactionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'type' => 'required|in:expense,income,transfer,withdraw,funding',
+            'type' => 'required|in:expense,income,transfer,withdraw,funding,sallary',
             'wallet_id' => 'required|exists:wallets,id',
             'amount' => 'required|numeric|min:0.01',
             'description' => 'nullable|string|max:255',

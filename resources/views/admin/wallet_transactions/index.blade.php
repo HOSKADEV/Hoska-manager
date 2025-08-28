@@ -36,6 +36,11 @@
                 background-color: #6f42c1;
                 /* بنفسجي */
             }
+
+            .badge-sallary {
+                background-color: #007bff;
+                /* أزرق */
+            }
         </style>
     @endpush
 
@@ -139,6 +144,7 @@
             'transfer_out' => 'Transfer Out',
             'withdraw' => 'Withdraw',
             'funding' => 'Funding',
+            'sallary' => 'Sallary',
         ];
         $typeClasses = [
             'expense' => 'expense',
@@ -147,6 +153,7 @@
             'transfer_out' => 'transfer',
             'withdraw' => 'withdraw',
             'funding' => 'funding',
+            'sallary' => 'sallary',
         ];
     @endphp
 

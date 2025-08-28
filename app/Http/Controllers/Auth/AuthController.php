@@ -33,6 +33,12 @@ class AuthController extends Controller
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = Auth::user();
 
+            // Check if user is banned
+            if ($user->banned) {
+                Auth::logout();
+                return redirect()->route('login')->with('errorlogin', 'Your account has been banned. Please contact the administrator.');
+            }
+
             // if ($user->email_verified_at === null) {
             //     Auth::logout();
             //     return redirect()->back()->withErrors(['errorlogin' => 'يرجى التحقق من بريدك الإلكتروني لتفعيل الحساب.']);

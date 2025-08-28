@@ -56,6 +56,7 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group
     Route::get('clients/{client}/has-projects', [ClientsController::class, 'hasProjects'])->name('clients.hasProjects');
     Route::resource('employees', EmployeesController::class);
     Route::get('employees/{employee}/projects', [EmployeesController::class, 'projects']);
+    Route::post('employees/{employee}/toggle-ban', [EmployeesController::class, 'toggleBan'])->name('employees.toggleBan');
     // Route::resource('projects', ProjectsController::class);
     Route::patch('projects/{project}/mark-delivered', [ProjectsController::class, 'markDelivered'])->name('projects.markDelivered');
 

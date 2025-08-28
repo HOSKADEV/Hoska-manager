@@ -90,6 +90,13 @@
         <h1 class="title">Project Management</h1>
         <p class="subtitle">Hoska Dev Company</p>
 
+        @if(session('errorlogin'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('errorlogin') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         <form action="{{ route('signin') }}" method="post" novalidate>
             @csrf
             <div class="mb-3 text-start">

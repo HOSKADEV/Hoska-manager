@@ -110,14 +110,28 @@
                                     <a href="{{ route('admin.employees.edit', $employee->id) }}"
                                         class="btn btn-sm btn-primary"><i class='fas fa-edit'></i>
                                     </a>
+
+
                                     {{-- زر حذف الموظف --}}
                                     <form action="{{ route('admin.employees.destroy', $employee->id) }}" method="POST"
                                         style="display: inline-block">
                                         @csrf
                                         @method('DELETE')
                                         <button onclick="return confirm('Are you sure?!')" type="submit"
-                                            class="btn btn-sm btn-danger"><i class='fas fa-trash'></i></button>
+                                        class="btn btn-sm btn-danger"><i class='fas fa-trash'></i></button>
                                     </form>
+
+                                    {{-- زر حظر/إلغاء حظر الموظف --}}
+                                    @if($employee->user)
+                                        <form action="{{ route('admin.employees.toggleBan', $employee->id) }}" method="POST"
+                                            style="display: inline-block">
+                                            @csrf
+                                            <button onclick="return confirm('Are you sure you want to {{ $employee->user->banned ? 'unban' : 'ban' }} this employee?')" type="submit"
+                                                class="btn btn-sm {{ $employee->user->banned ? 'btn-success' : 'btn-danger' }}" title="{{ $employee->user->banned ? 'Unban Employee' : 'Ban Employee' }}">
+                                                <i class='fas {{ $employee->user->banned ? 'fa-lock-open' : 'fa-lock' }}'></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                             <!-- Payment Modal -->

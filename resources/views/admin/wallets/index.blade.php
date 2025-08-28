@@ -154,7 +154,12 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
-                            <th>#</th>
+                            <th>
+                                #
+                                <div class="form-check">
+                                    <input type="checkbox" id="selectAll" class="form-check-input d-none">
+                                </div>
+                            </th>
                             <th>Name</th>
                             <th>Balance</th>
                             <th>Currency</th>

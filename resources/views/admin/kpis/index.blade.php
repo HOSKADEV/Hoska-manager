@@ -80,14 +80,7 @@
                                 Annual Income
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                <div class="original-currencies">
-                                    @foreach($annualIncomeByCurrency as $currency => $amount)
-                                        <div>{{ $currency }}: {{ number_format($amount, 2) }}</div>
-                                    @endforeach
-                                </div>
-                                <div class="dzd-total mt-1">
-                                    <strong>DZD: {{ number_format($annualIncomeInDZD, 2) }}</strong>
-                                </div>
+                                DZ {{ number_format($annualIncomeInDZD, 2) }}
                             </div>
                         </div>
                         <div class="col-auto">
@@ -107,14 +100,7 @@
                                 Annual Expenses
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                <div class="original-currencies">
-                                    @foreach($annualExpensesByCurrency as $currency => $amount)
-                                        <div>{{ $currency }}: {{ number_format($amount, 2) }}</div>
-                                    @endforeach
-                                </div>
-                                <div class="dzd-total mt-1">
-                                    <strong>DZD: {{ number_format($annualExpensesInDZD, 2) }}</strong>
-                                </div>
+                                DZ {{ number_format($annualExpensesInDZD, 2) }}
                             </div>
                         </div>
                         <div class="col-auto">
@@ -134,7 +120,7 @@
                                 Annual Salaries
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                <div>DZD: {{ number_format($annualSalaries, 2) }}</div>
+                                <div>DZ {{ number_format($annualSalaries, 2) }}</div>
                             </div>
                         </div>
                         <div class="col-auto">
@@ -154,7 +140,7 @@
                                 Annual Profits
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                <div>DZD: {{ number_format($annualProfitsInDZD, 2) }}</div>
+                                <div>DZ {{ number_format($annualProfitsInDZD, 2) }}</div>
                             </div>
                         </div>
                         <div class="col-auto">
@@ -614,7 +600,7 @@
                 options: {
                     responsive: true,
                     scales: {
-                        y: { 
+                        y: {
                             beginAtZero: true,
                             ticks: {
                                 callback: function(value) {

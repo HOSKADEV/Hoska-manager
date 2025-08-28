@@ -107,10 +107,6 @@ class KpiController extends Controller
             ->sortDesc()
             ->values();
 
-        // Get exchange rates
-        $usdRate = \App\Models\Setting::get('usd_rate', 140); // 1 USD = 140 DZD
-        $eurRate = \App\Models\Setting::get('eur_rate', 150); // 1 EUR = 150 DZD
-
         // Annual totals by currency
         $annualIncomeByCurrency = [];
         $annualExpensesByCurrency = [];
@@ -147,27 +143,15 @@ class KpiController extends Controller
         $annualSalaries = Timesheet::whereYear('work_date', $year)
             ->sum('month_salary');
 
-        // Convert all amounts to DZD
+        // Convert all amounts to DZD using convertCurrency function
         $annualIncomeInDZD = 0;
         foreach ($annualIncomeByCurrency as $currency => $amount) {
-            if ($currency === 'USD') {
-                $annualIncomeInDZD += $amount * $usdRate;
-            } elseif ($currency === 'EUR') {
-                $annualIncomeInDZD += $amount * $eurRate;
-            } else { // DZD
-                $annualIncomeInDZD += $amount;
-            }
+            $annualIncomeInDZD += $this->convertCurrency($amount, $currency, 'DZD');
         }
 
         $annualExpensesInDZD = 0;
         foreach ($annualExpensesByCurrency as $currency => $amount) {
-            if ($currency === 'USD') {
-                $annualExpensesInDZD += $amount * $usdRate;
-            } elseif ($currency === 'EUR') {
-                $annualExpensesInDZD += $amount * $eurRate;
-            } else { // DZD
-                $annualExpensesInDZD += $amount;
-            }
+            $annualExpensesInDZD += $this->convertCurrency($amount, $currency, 'DZD');
         }
 
         $annualProfitsInDZD = $annualIncomeInDZD - $annualExpensesInDZD - $annualSalaries;
@@ -221,28 +205,16 @@ class KpiController extends Controller
                 $monthlyExpensesByCurrency[$month][$currency] += $transaction->amount;
             }
 
-            // Convert to DZD and add to monthly data
+            // Convert to DZD and add to monthly data using convertCurrency function
             $monthlyIncomeInDZD = 0;
             foreach ($monthlyIncomeByCurrency[$month] as $currency => $amount) {
-                if ($currency === 'USD') {
-                    $monthlyIncomeInDZD += $amount * $usdRate;
-                } elseif ($currency === 'EUR') {
-                    $monthlyIncomeInDZD += $amount * $eurRate;
-                } else { // DZD
-                    $monthlyIncomeInDZD += $amount;
-                }
+                $monthlyIncomeInDZD += $this->convertCurrency($amount, $currency, 'DZD');
             }
             $monthlyIncomeData[] = $monthlyIncomeInDZD;
 
             $monthlyExpensesInDZD = 0;
             foreach ($monthlyExpensesByCurrency[$month] as $currency => $amount) {
-                if ($currency === 'USD') {
-                    $monthlyExpensesInDZD += $amount * $usdRate;
-                } elseif ($currency === 'EUR') {
-                    $monthlyExpensesInDZD += $amount * $eurRate;
-                } else { // DZD
-                    $monthlyExpensesInDZD += $amount;
-                }
+                $monthlyExpensesInDZD += $this->convertCurrency($amount, $currency, 'DZD');
             }
             $monthlyExpensesData[] = $monthlyExpensesInDZD;
 
@@ -261,8 +233,6 @@ class KpiController extends Controller
         }
 
         return view('admin.kpis.index', compact(
-            'annualIncomeByCurrency',
-            'annualExpensesByCurrency',
             'annualIncomeInDZD',
             'annualExpensesInDZD',
             'annualSalaries',
@@ -274,9 +244,7 @@ class KpiController extends Controller
             'monthlyProfitsData',
             'monthlyProjectsData',
             'year',
-            'availableYears',
-            'usdRate',
-            'eurRate'
+            'availableYears'
         ));
     }
 }

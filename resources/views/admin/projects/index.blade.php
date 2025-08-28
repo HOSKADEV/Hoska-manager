@@ -212,7 +212,7 @@
                         <tr>
                             <th>
                                 {{-- # --}}
-                                <div class="form-check">
+                                <div class="form-check" style="margin-bottom: 25px;">
                                     <input type="checkbox" id="selectAll" class="form-check-input">
                                 </div>
                             </th>

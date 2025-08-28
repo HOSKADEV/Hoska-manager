@@ -88,6 +88,13 @@
 
             <div class="mb-3 col-md-6">
                 <x-form.input label="IBAN / RIB" name="iban" placeholder="Enter IBAN / RIB" :oldval="old('iban', $employee->iban ?? '')" />
+                @if(Auth::user()->type === 'admin' && isset($employee->iban))
+                    <div class="mt-2">
+                        <span class="badge {{ $employee->is_iban_valid ? 'bg-success' : 'bg-danger' }} text-white">
+                            IBAN Status: {{ $employee->is_iban_valid ? 'Yes' : 'No' }}
+                        </span>
+                    </div>
+                @endif
             </div>
 
             <div class="mb-3 col-md-6">
@@ -104,8 +111,13 @@
 
     <!-- Tab 4: معلومات تسجيل الدخول -->
     <div class="tab-pane fade" id="login" role="tabpanel" aria-labelledby="login-tab">
-        <x-form.input label="Username" name="user[name]" placeholder="Enter Username" :oldval="old('user.name', $user?->name ?? '')" />
-        <x-form.input label="Email" name="user[email]" placeholder="Enter Login Email" :oldval="old('user.email', $user?->email ?? '')" />
+        @if(Auth::user()->type === 'admin')
+            <x-form.input label="Username" name="user[name]" placeholder="Enter Username" :oldval="old('user.name', $user?->name ?? '')" readonly />
+            <x-form.input label="Email" name="user[email]" placeholder="Enter Login Email" :oldval="old('user.email', $user?->email ?? '')" readonly />
+        @else
+            <x-form.input label="Username" name="user[name]" placeholder="Enter Username" :oldval="old('user.name', $user?->name ?? '')" />
+            <x-form.input label="Email" name="user[email]" placeholder="Enter Login Email" :oldval="old('user.email', $user?->email ?? '')" />
+        @endif
         <div class="mb-3">
             <x-form.input label="Password" name="user[password]" type="password"
                 placeholder="Enter Password (leave blank to keep current)" />

@@ -62,11 +62,18 @@
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card card-kpi border-income shadow h-100 py-2">
                 <div class="card-body">
-                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                        Annual Income
-                    </div>
-                    <div class="h5 mb-0 font-weight-bold text-gray-800">
-                        ${{ number_format($annualIncome, 2) }}
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Annual Income
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                ${{ number_format($annualIncome, 2) }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -75,11 +82,18 @@
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card card-kpi border-expenses shadow h-100 py-2">
                 <div class="card-body">
-                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                        Annual Expenses
-                    </div>
-                    <div class="h5 mb-0 font-weight-bold text-gray-800">
-                        ${{ number_format($annualExpenses, 2) }}
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Annual Expenses
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                ${{ number_format($annualExpenses, 2) }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-receipt fa-2x text-gray-300"></i>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -88,11 +102,18 @@
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card card-kpi border-salaries shadow h-100 py-2">
                 <div class="card-body">
-                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                        Annual Salaries
-                    </div>
-                    <div class="h5 mb-0 font-weight-bold text-gray-800">
-                        ${{ number_format($annualSalaries, 2) }}
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Annual Salaries
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                ${{ number_format($annualSalaries, 2) }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -101,11 +122,18 @@
         <div class="col-xl-3 col-md-6 mb-4">
             <div class="card card-kpi border-profits shadow h-100 py-2">
                 <div class="card-body">
-                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                        Annual Profits
-                    </div>
-                    <div class="h5 mb-0 font-weight-bold text-gray-800">
-                        ${{ number_format($annualProfits, 2) }}
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Annual Profits
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                ${{ number_format($annualProfits, 2) }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -113,22 +141,32 @@
     </div>
     <!-- Customer Satisfaction (CSAT) Example -->
     <div class="row mb-4">
-        <div class="col-md-6">
+        <div class="col-12">
             <div class="card card-kpi border-csat shadow h-100 py-2">
-                <div class="card-body text-center">
-                    <div class="text-xs font-weight-bold text-purple text-uppercase mb-1">
-                        Customer Satisfaction (CSAT)
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2 text-center">
+                            <div class="text-xs font-weight-bold text-purple text-uppercase mb-1">
+                                Customer Satisfaction (CSAT)
+                            </div>
+                            <canvas id="csatChart" style="max-width: 150px; margin: auto; height: 150px;"></canvas>
+                            <div class="h3 font-weight-bold text-gray-800 mt-2">
+                                {{ number_format($csatScore, 1) }}%
+                            </div>
+                            <small class="text-muted">Based on recent surveys</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-smile fa-3x text-gray-300"></i>
+                        </div>
                     </div>
-                    <canvas id="csatChart" style="max-width: 150px; margin: auto; height: 150px;"></canvas>
-                    <div class="h3 font-weight-bold text-gray-800 mt-2">
-                        {{ number_format($csatScore, 1) }}%
-                    </div>
-                    <small class="text-muted">Based on recent surveys</small>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <!-- الرسم البياني للدخل الشهري -->
+    </div>
+
+    <!-- Monthly Income Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
             <div class="card shadow h-100">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Monthly Income</h6>
@@ -143,9 +181,9 @@
     </div>
 
     <!-- المخططات الجديدة مع خيار اختيار العام -->
+    <!-- Profits Chart -->
     <div class="row mb-4">
-        <!-- Profits Chart -->
-        <div class="col-md-6 mb-4">
+        <div class="col-12">
             <div class="card shadow h-100">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Annual Profits</h6>
@@ -157,9 +195,11 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Projects Chart -->
-        <div class="col-md-6 mb-4">
+    <!-- Projects Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
             <div class="card shadow h-100">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Projects</h6>
@@ -171,9 +211,11 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Expenses Chart -->
-        <div class="col-md-6 mb-4">
+    <!-- Expenses Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
             <div class="card shadow h-100">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Annual Expenses</h6>
@@ -193,16 +235,15 @@
             // رسم بياني الدخل الشهري
             const incomeCtx = document.getElementById('incomeChart').getContext('2d');
             new Chart(incomeCtx, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: @json($monthsLabels),
                     datasets: [{
                         label: 'Monthly Income',
                         data: @json($monthlyIncomeData),
-                        borderColor: 'rgba(40, 167, 69, 1)', // أخضر
-                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                        fill: true,
-                        tension: 0.4
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        borderWidth: 1
                     }]
                 },
                 options: {

@@ -22,6 +22,7 @@ class User extends Authenticatable
     protected $casts = [
         'is_marketer' => 'boolean',
         'is_accountant' => 'boolean',
+        'banned' => 'boolean',
     ];
 
     /**

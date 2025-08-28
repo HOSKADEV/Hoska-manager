@@ -341,8 +341,10 @@
                                         }
                                     @endphp
                                     <td>
-                                        {{ $currencySymbols[$project->currency] ?? '' }}
-                                        {{ number_format($remainingAmount, 2) }}
+                                        <span class="{{ $remainingAmount == 0 ? 'text-success' : 'text-danger' }}">
+                                            {{ $currencySymbols[$project->currency] ?? '' }}
+                                            {{ number_format($remainingAmount, 2) }}
+                                        </span>
                                     </td>
                                 @endunless
                                 <td>

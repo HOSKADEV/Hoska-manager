@@ -181,4 +181,22 @@ class EmployeesController extends Controller
 
         return response()->json($projects);
     }
+
+    /**
+     * Toggle banned status for the employee user.
+     */
+    public function toggleBan(Employee $employee)
+    {
+        if (!$employee->user) {
+            flash()->error('This employee does not have an associated user account.');
+            return redirect()->route('admin.employees.index');
+        }
+
+        $employee->user->banned = !$employee->user->banned;
+        $employee->user->save();
+
+        $status = $employee->user->banned ? 'banned' : 'unbanned';
+        flash()->success("Employee has been {$status} successfully.");
+        return redirect()->route('admin.employees.index');
+    }
 }

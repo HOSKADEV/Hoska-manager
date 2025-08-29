@@ -20,7 +20,13 @@ class PaymentsController extends Controller
     {
         $payments = Payment::latest()->get();
 
-        return view('admin.payments.index', compact('payments'));
+         // Calculate payment statistics for different time periods
+        $dailyPayments = Payment::whereDate('payment_date', today())->sum('amount');
+        $weeklyPayments = Payment::whereBetween('payment_date', [now()->startOfWeek(), now()->endOfWeek()])->sum('amount');
+        $monthlyPayments = Payment::whereMonth('payment_date', now()->month)->whereYear('payment_date', now()->year)->sum('amount');
+        $yearlyPayments = Payment::whereYear('payment_date', now()->year)->sum('amount');
+
+        return view('admin.payments.index', compact('payments', 'dailyPayments', 'weeklyPayments', 'monthlyPayments', 'yearlyPayments'));
     }
 
     /**

@@ -177,10 +177,12 @@ class KpiController extends Controller
             $monthlyExpensesByCurrency[$month] = [];
 
             // Monthly income by currency
-            $monthlyInvoices = Invoice::whereYear('invoice_date', $year)
-                ->whereMonth('invoice_date', $month)
+            $monthlyInvoices = Invoice::whereHas('payments', function($query) use ($year, $month) {
+                    $query->whereYear('payment_date', $year)
+                        ->whereMonth('payment_date', $month);
+                })
                 ->where('is_paid', 1)
-                ->with('wallet')
+                ->with(['wallet', 'payments'])
                 ->get();
 
             foreach ($monthlyInvoices as $invoice) {

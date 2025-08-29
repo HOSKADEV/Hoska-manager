@@ -411,15 +411,17 @@
                         </li>
                     @endif
 
-                    <!-- Divider -->
-                    <hr class="sidebar-divider my-0">
-                    <!-- Nav Item - Projects Menu -->
-                    <li class="nav-item {{ request()->routeIs('admin.projects.index') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.projects.index') }}">
-                            <i class="fas fa-project-diagram"></i>
-                            <span>All Projects</span>
-                        </a>
-                    </li>
+                    @if (($user->type == 'employee' && $user->is_accountant) || ($user->type == 'employee' && $user->is_marketer))
+                        <!-- Divider -->
+                        <hr class="sidebar-divider my-0">
+                        <!-- Nav Item - Projects Menu -->
+                        <li class="nav-item {{ request()->routeIs('admin.projects.index') ? 'active' : '' }}">
+                            <a class="nav-link" href="{{ route('admin.projects.index') }}">
+                                <i class="fas fa-project-diagram"></i>
+                                <span>All Projects</span>
+                            </a>
+                        </li>
+                    @endif
 
                     <!-- Divider -->
                     <hr class="sidebar-divider my-0">

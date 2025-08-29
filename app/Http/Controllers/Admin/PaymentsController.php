@@ -40,7 +40,14 @@ class PaymentsController extends Controller
         // Calculate payment statistics for different time periods
         $dailyPayments = Payment::whereDate('payment_date', today())->sum('amount');
         $weeklyPayments = Payment::whereBetween('payment_date', [now()->startOfWeek(), now()->endOfWeek()])->sum('amount');
-        $monthlyPayments = Payment::whereMonth('payment_date', now()->month)->whereYear('payment_date', now()->year)->sum('amount');
+
+        if ($monthFilter && $monthFilter !== 'all') {
+            $month = \Carbon\Carbon::parse($monthFilter);
+            $monthlyPayments = Payment::whereMonth('payment_date', $month->month)->whereYear('payment_date', $month->year)->sum('amount');
+        } else {
+            $monthlyPayments = Payment::whereMonth('payment_date', now()->month)->sum('amount');
+        }
+
         $yearlyPayments = Payment::whereYear('payment_date', now()->year)->sum('amount');
 
         return view('admin.payments.index', compact('payments', 'dailyPayments', 'weeklyPayments', 'monthlyPayments', 'yearlyPayments', 'availableMonths', 'monthFilter'));

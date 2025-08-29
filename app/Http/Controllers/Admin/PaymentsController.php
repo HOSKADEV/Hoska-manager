@@ -16,9 +16,26 @@ class PaymentsController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $payments = Payment::latest()->get();
+        // Get available months for the filter dropdown
+        $availableMonths = Payment::selectRaw('DATE_FORMAT(payment_date, "%Y-%m") as value, DATE_FORMAT(payment_date, "%M %Y") as label')
+            ->groupBy('value', 'label')
+            ->orderBy('value', 'desc')
+            ->get()
+            ->toArray();
+
+        $monthFilter = $request->input('month', now()->format('Y-m'));
+
+        $query = Payment::with('invoice', 'wallet');
+
+        if ($monthFilter && $monthFilter !== 'all') {
+            $month = \Carbon\Carbon::parse($monthFilter);
+            $query->whereMonth('payment_date', $month->month)
+                ->whereYear('payment_date', $month->year);
+        }
+
+        $payments = $query->latest()->get();
 
         // Calculate payment statistics for different time periods
         $dailyPayments = Payment::whereDate('payment_date', today())->sum('amount');
@@ -26,7 +43,7 @@ class PaymentsController extends Controller
         $monthlyPayments = Payment::whereMonth('payment_date', now()->month)->whereYear('payment_date', now()->year)->sum('amount');
         $yearlyPayments = Payment::whereYear('payment_date', now()->year)->sum('amount');
 
-        return view('admin.payments.index', compact('payments', 'dailyPayments', 'weeklyPayments', 'monthlyPayments', 'yearlyPayments'));
+        return view('admin.payments.index', compact('payments', 'dailyPayments', 'weeklyPayments', 'monthlyPayments', 'yearlyPayments', 'availableMonths', 'monthFilter'));
     }
 
     /**

@@ -117,6 +117,28 @@
         </div>
     </div>
 
+    <!-- Filter Form -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ route('admin.payments.index') }}" class="w-100" id="filterForm">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label for="month" class="form-label fw-bold text-secondary">📅 Filter by Month</label>
+                        <select name="month" id="month" class="form-select select2">
+                            <option value="all" {{ request('month', now()->format('Y-m')) === 'all' ? 'selected' : '' }}>
+                                📆 All Months</option>
+                            @foreach ($availableMonths as $month)
+                                <option value="{{ $month['value'] }}" {{ request('month', now()->format('Y-m')) === $month['value'] ? 'selected' : '' }}>
+                                    {{ $month['label'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
@@ -212,6 +234,9 @@
     @push('css')
         <!-- Custom styles for this page -->
         <link href="{{ asset('assets/vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+
+        <!-- Select2 CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     @endpush
 
     @push('js')
@@ -221,5 +246,23 @@
 
         <!-- Page level custom scripts -->
         <script src="{{ asset('assets/js/demo/datatables-demo.js') }}"></script>
+
+        <!-- Select2 JS -->
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <!-- Initialize Select2 -->
+        <script>
+            $(document).ready(function () {
+                $('#month').select2({
+                    placeholder: "📆 Select a month",
+                    allowClear: true,
+                    width: '100%'
+                });
+
+                // Auto-submit form when month selection changes
+                $('#month').on('change', function () {
+                    $(this).closest('form').submit();
+                });
+            });
+        </script>
     @endpush
 </x-dashboard>

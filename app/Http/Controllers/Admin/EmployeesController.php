@@ -93,6 +93,22 @@ class EmployeesController extends Controller
         // 🚫 لا نضع user_id هنا لأنه ليس من المفترض أن يتغير إلا في حالة إنشاء مستخدم جديد
         // $data['user_id'] = Auth::id(); // احذف هذا السطر
 
+        // 检查是否更改了账户信息字段
+        $accountFieldsChanged = false;
+        $accountFields = ['account_name', 'account_number', 'iban', 'bank_code'];
+
+        foreach ($accountFields as $field) {
+            if ($request->has($field) && $request->input($field) !== $employee->$field) {
+                $accountFieldsChanged = true;
+                break;
+            }
+        }
+
+        // 如果账户信息有更改，将 is_iban_valid 设置为 0
+        if ($accountFieldsChanged) {
+            $data['is_iban_valid'] = 0;
+        }
+
         // تحديث بيانات الموظف
         $employee->update($data);
 

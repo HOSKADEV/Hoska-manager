@@ -34,18 +34,27 @@
                             @endif
                         </div>
                         @if($employee)
+                            <hr>
+                            <h5>Payment Information</h5>
                             <div class="mb-3">
-                                <label class="form-label">RIP</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" name="rip" id="ripInput" placeholder="RIP" value="{{ old('rip', $employee->iban ?? '') }}">
-                                    @if (!$employee->is_iban_valid)
-                                        <div class="input-group-append">
-                                            <button type="button" id="validateRip" class="btn btn-primary">Validate RIP</button>
-                                        </div>
-                                    @endif
-                                </div>
-                                <div id="ripValidationMessage" class="mt-2"></div>
+                                <x-form.input label="Account Name" name="account_name" placeholder="Enter Account Name" :oldval="$employee->account_name ?? ''" />
                             </div>
+                            <div class="mb-3">
+                                <x-form.input label="Account Number" name="account_number" placeholder="Enter Account Number" :oldval="$employee->account_number ?? ''" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">IBAN / RIB</label>
+                                <input type="text" class="form-control" name="iban" id="ibanInput" placeholder="IBAN / RIB" value="{{ old('iban', $employee->iban ?? '') }}">
+                                <div id="ibanValidationMessage" class="mt-2"></div>
+                            </div>
+                            <div class="mb-3">
+                                <x-form.input label="Bank Code" name="bank_code" placeholder="Enter Bank Code" :oldval="$employee->bank_code ?? ''" />
+                            </div>
+                            @if (!$employee->is_iban_valid)
+                                <div class="mb-3">
+                                    <button type="button" id="validateIban" class="btn btn-primary">Validate</button>
+                                </div>
+                            @endif
                         @endif
                         <div class="mb-3">
                             <x-form.input type='password' label="Password" name="password"
@@ -91,34 +100,34 @@
                     reader.readAsDataURL(file);
                 });
 
-                $('#validateRip').click(function() {
-                    // Get the RIP value using the ID we added to the input
-                    const rip = $('#ripInput').val();
+                $('#validateIban').click(function() {
+                    // Get the IBAN value using the ID we added to the input
+                    const iban = $('#ibanInput').val();
 
-                    // Check if RIP has 20 characters
-                    if (rip.length !== 20) {
-                        $('#ripValidationMessage').html('<div class="alert alert-danger">RIP must be exactly 20 characters long.</div>');
+                    // Check if IBAN has 20 characters
+                    if (iban.length !== 20) {
+                        $('#ibanValidationMessage').html('<div class="alert alert-danger">IBAN must be exactly 20 characters long.</div>');
                         return;
                     }
 
-                    // Send jQuery request to validate RIP
+                    // Send jQuery request to validate IBAN
                     $.ajax({
                         url: '{{ route("admin.profile.validate-rip") }}',
                         method: 'POST',
                         data: {
-                            rip: rip,
+                            rip: iban,
                             _token: '{{ csrf_token() }}' // Include CSRF token for Laravel
                         },
                         success: function(response) {
-                            $('#ripValidationMessage').html('<div class="alert alert-success">' + response.message + '</div>');
-                            $('#validateRip').addClass('d-none');
+                            $('#ibanValidationMessage').html('<div class="alert alert-success">' + response.message + '</div>');
+                            $('#validateIban').addClass('d-none');
                         },
                         error: function(xhr) {
-                            let errorMessage = 'Error validating RIP. Please try again.';
+                            let errorMessage = 'Error validating IBAN. Please try again.';
                             if (xhr.responseJSON && xhr.responseJSON.message) {
                                 errorMessage = xhr.responseJSON.message;
                             }
-                            $('#ripValidationMessage').html('<div class="alert alert-danger">' + errorMessage + '</div>');
+                            $('#ibanValidationMessage').html('<div class="alert alert-danger">' + errorMessage + '</div>');
                         }
                     });
                 });

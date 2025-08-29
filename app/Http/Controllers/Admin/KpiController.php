@@ -118,7 +118,7 @@ class KpiController extends Controller
             ->get();
 
         foreach ($invoices as $invoice) {
-            $currency = $invoice->wallet ? $invoice->wallet->currency : 'USD';
+            $currency = $invoice->wallet ? $invoice->wallet->currency : 'DZD';
             if (!isset($annualIncomeByCurrency[$currency])) {
                 $annualIncomeByCurrency[$currency] = 0;
             }
@@ -133,7 +133,7 @@ class KpiController extends Controller
             ->get();
 
         foreach ($transactions as $transaction) {
-            $currency = $transaction->wallet ? $transaction->wallet->currency : 'USD';
+            $currency = $transaction->wallet ? $transaction->wallet->currency : 'DZD';
             if (!isset($annualExpensesByCurrency[$currency])) {
                 $annualExpensesByCurrency[$currency] = 0;
             }
@@ -186,7 +186,7 @@ class KpiController extends Controller
                 ->get();
 
             foreach ($monthlyInvoices as $invoice) {
-                $currency = $invoice->wallet ? $invoice->wallet->currency : 'USD';
+                $currency = $invoice->wallet ? $invoice->wallet->currency : 'DZD';
                 if (!isset($monthlyIncomeByCurrency[$month][$currency])) {
                     $monthlyIncomeByCurrency[$month][$currency] = 0;
                 }
@@ -202,7 +202,7 @@ class KpiController extends Controller
                 ->get();
 
             foreach ($monthlyTransactions as $transaction) {
-                $currency = $transaction->wallet ? $transaction->wallet->currency : 'USD';
+                $currency = $transaction->wallet ? $transaction->wallet->currency : 'DZD';
                 if (!isset($monthlyExpensesByCurrency[$month][$currency])) {
                     $monthlyExpensesByCurrency[$month][$currency] = 0;
                 }

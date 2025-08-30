@@ -8,6 +8,7 @@ use App\Models\Employee;
 use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\Wallet;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,7 +31,7 @@ class PaymentsController extends Controller
         $query = Payment::with('invoice', 'wallet');
 
         if ($monthFilter && $monthFilter !== 'all') {
-            $month = \Carbon\Carbon::parse($monthFilter);
+            $month = Carbon::parse($monthFilter);
             $query->whereMonth('payment_date', $month->month)
                 ->whereYear('payment_date', $month->year);
         }
@@ -42,10 +43,10 @@ class PaymentsController extends Controller
         $weeklyPayments = Payment::whereBetween('payment_date', [now()->startOfWeek(), now()->endOfWeek()])->sum('amount');
 
         if ($monthFilter && $monthFilter !== 'all') {
-            $month = \Carbon\Carbon::parse($monthFilter);
-            $monthlyPayments = Payment::whereMonth('payment_date', $month->month)->whereYear('payment_date', $month->year)->sum('amount');
+            $month = Carbon::parse($monthFilter);
+            $monthlyPayments = Payment::with('wallet')->whereMonth('payment_date', $month->month)->whereYear('payment_date', $month->year)->sum('amount');
         } else {
-            $monthlyPayments = Payment::whereMonth('payment_date', now()->month)->sum('amount');
+            $monthlyPayments = Payment::with('wallet')->whereMonth('payment_date', now()->month)->sum('amount');
         }
 
         $yearlyPayments = Payment::whereYear('payment_date', now()->year)->sum('amount');

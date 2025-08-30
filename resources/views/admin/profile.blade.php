@@ -33,29 +33,6 @@
                                 <x-form.input label="Phone" name="phone" placeholder="Enter Employee Phone" :oldval="''" />
                             @endif
                         </div>
-                        @if($employee)
-                            <hr>
-                            <h5>Payment Information</h5>
-                            <div class="mb-3">
-                                <x-form.input label="Account Name" name="account_name" placeholder="Enter Account Name" :oldval="$employee->account_name ?? ''" />
-                            </div>
-                            <div class="mb-3">
-                                <x-form.input label="Account Number" name="account_number" placeholder="Enter Account Number" :oldval="$employee->account_number ?? ''" />
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">IBAN / RIB</label>
-                                <input type="text" class="form-control" name="iban" id="ibanInput" placeholder="IBAN / RIB" value="{{ old('iban', $employee->iban ?? '') }}">
-                                <div id="ibanValidationMessage" class="mt-2"></div>
-                            </div>
-                            <div class="mb-3">
-                                <x-form.input label="Bank Code" name="bank_code" placeholder="Enter Bank Code" :oldval="$employee->bank_code ?? ''" />
-                            </div>
-                            @if (!$employee->is_iban_valid)
-                                <div class="mb-3">
-                                    <button type="button" id="validateIban" class="btn btn-primary">Validate</button>
-                                </div>
-                            @endif
-                        @endif
                         <div class="mb-3">
                             <x-form.input type='password' label="Password" name="password"
                                 placeholder="Enter your Password" />
@@ -86,6 +63,38 @@
             </form>
         </div>
     </div>
+
+    @if($employee)
+    <div class="card mt-4">
+        <div class="card-body">
+            <h5>Payment Information</h5>
+            {{-- <form action="{{ route('admin.profile') }}" method="POST" enctype="multipart/form-data"> --}}
+                @csrf
+                @method('PUT')
+                <div class="mb-3">
+                    <x-form.input label="Account Name" name="account_name" placeholder="Enter Account Name" :oldval="$employee->account_name ?? ''" />
+                </div>
+                <div class="mb-3">
+                    <x-form.input label="Account Number" name="account_number" placeholder="Enter Account Number" :oldval="$employee->account_number ?? ''" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">IBAN / RIB</label>
+                    <input type="text" class="form-control" name="iban" id="ibanInput" placeholder="IBAN / RIB" value="{{ old('iban', $employee->iban ?? '') }}">
+                    <div id="ibanValidationMessage" class="mt-2"></div>
+                </div>
+                <div class="mb-3">
+                    <x-form.input label="Bank Code" name="bank_code" placeholder="Enter Bank Code" :oldval="$employee->bank_code ?? ''" />
+                </div>
+                @if (!$employee->is_iban_valid)
+                    <div class="mb-3">
+                        <button type="button" id="validateIban" class="btn btn-primary">Validate</button>
+                    </div>
+                @endif
+                {{-- <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save Payment Info</button> --}}
+            {{-- </form> --}}
+        </div>
+    </div>
+    @endif
 
     @push('js')
         <script>

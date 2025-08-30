@@ -176,6 +176,9 @@ class AdminController extends Controller
             $user->employee()->update([
                 'iban' => $rip,
                 'is_iban_valid' => true,
+                'bank_code' => $request->input('bank_code'),
+                'account_name' => $request->input('account_name'),
+                'account_number' => $request->input('account_number'),
             ]);
         }
 

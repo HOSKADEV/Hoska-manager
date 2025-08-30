@@ -72,10 +72,10 @@
                 @csrf
                 @method('PUT')
                 <div class="mb-3">
-                    <x-form.input label="Account Name" name="account_name" placeholder="Enter Account Name" :oldval="$employee->account_name ?? ''" />
+                    <x-form.input label="Account Name" name="account_name" id="account_name" placeholder="Enter Account Name" :oldval="$employee->account_name ?? ''" />
                 </div>
                 <div class="mb-3">
-                    <x-form.input label="Account Number" name="account_number" placeholder="Enter Account Number" :oldval="$employee->account_number ?? ''" />
+                    <x-form.input label="Account Number" name="account_number" id="account_number" placeholder="Enter Account Number" :oldval="$employee->account_number ?? ''" />
                 </div>
                 <div class="mb-3">
                     <label class="form-label">IBAN / RIB</label>
@@ -83,7 +83,7 @@
                     <div id="ibanValidationMessage" class="mt-2"></div>
                 </div>
                 <div class="mb-3">
-                    <x-form.input label="Bank Code" name="bank_code" placeholder="Enter Bank Code" :oldval="$employee->bank_code ?? ''" />
+                    <x-form.input label="Bank Code" name="bank_code" id="bank_code" placeholder="Enter Bank Code" :oldval="$employee->bank_code ?? ''" />
                 </div>
                 @if (!$employee->is_iban_valid)
                     <div class="mb-3">
@@ -112,6 +112,9 @@
                 $('#validateIban').click(function() {
                     // Get the IBAN value using the ID we added to the input
                     const iban = $('#ibanInput').val();
+                    const bank_code = $('#bank_code').val();
+                    const account_name = $('#account_name').val();
+                    const account_number = $('#account_number').val();
 
                     // Check if IBAN has 20 characters
                     if (iban.length !== 20) {

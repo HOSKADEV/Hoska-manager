@@ -143,7 +143,7 @@ class KpiController extends Controller
         // Get salaries (assuming they're in DZD)
         // $annualSalaries = Timesheet::whereYear('work_date', $year)
         //     ->sum('month_salary');
-        $annualSalaries = WalletTransaction::where('type','sallar')->with('wallet')->sum('amount');
+        $annualSalaries = WalletTransaction::where('type','sallary')->with('wallet')->sum('amount');
         // Convert all amounts to DZD using convertCurrency function
         $annualIncomeInDZD = 0;
         foreach ($annualIncomeByCurrency as $currency => $amount) {

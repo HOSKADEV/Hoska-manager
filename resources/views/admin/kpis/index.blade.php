@@ -558,9 +558,7 @@
 
             // Extract project names and profits for the chart
             const projectNames = projectProfitsData.map(project => project.name);
-            const projectProfits = projectProfitsData.map(project => project.profit);
             const projectIncomes = projectProfitsData.map(project => project.income);
-            const projectExpenses = projectProfitsData.map(project => project.expenses);
 
             const projectProfitsChart = new Chart(projectProfitsCtx, {
                 type: 'bar',
@@ -574,20 +572,6 @@
                             borderColor: 'rgba(40, 167, 69, 1)',
                             borderWidth: 1
                         },
-                        {
-                            label: 'Expenses',
-                            data: projectExpenses,
-                            backgroundColor: 'rgba(220, 53, 69, 0.7)',
-                            borderColor: 'rgba(220, 53, 69, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Profit',
-                            data: projectProfits,
-                            backgroundColor: 'rgba(255, 193, 7, 0.7)',
-                            borderColor: 'rgba(255, 193, 7, 1)',
-                            borderWidth: 1
-                        }
                     ]
                 },
                 options: {

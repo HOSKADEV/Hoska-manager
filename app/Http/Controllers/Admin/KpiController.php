@@ -270,26 +270,23 @@ class KpiController extends Controller
         $projectProfits = [];
         $projectsWithProfits = Project::whereYear('start_date', $year)
             ->whereMonth('start_date', $selectedMonth)
-            ->where('status', 'completed')
+            // ->where('status', 'completed')
             ->with(['invoices' => function($query) {
                 $query->where('is_paid', 1);
             }])
             ->get()
             ->map(function ($project) {
                 $totalIncome = $project->invoices->sum('amount');
-                $totalExpenses = $project->expenses ?? 0; // Assuming there's an expenses field or relation
-                $profit = $totalIncome - $totalExpenses;
+                // $totalExpenses = $project->expenses ?? 0; // Assuming there's an expenses field or relation
+                // $profit = $totalIncome - $totalExpenses;
 
                 return [
                     'id' => $project->id,
                     'name' => $project->name,
                     'income' => $totalIncome,
-                    'expenses' => $totalExpenses,
-                    'profit' => $profit
+                    // 'expenses' => $totalExpenses,
+                    // 'profit' => $profit
                 ];
-            })
-            ->filter(function ($project) {
-                return $project['profit'] > 0;
             })
             ->values();
 

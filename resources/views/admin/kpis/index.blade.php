@@ -195,7 +195,7 @@
         <div class="col-12">
             <div class="card shadow h-100">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Annual Profits</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Annual Net</h6>
                 </div>
                 <div class="card-body">
                     <div class="chart-container">

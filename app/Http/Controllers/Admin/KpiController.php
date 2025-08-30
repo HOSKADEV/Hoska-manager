@@ -124,10 +124,10 @@ class KpiController extends Controller
                     $annualIncomeByCurrency[$currency] = 0;
                 }
                 $annualIncomeByCurrency[$currency] += $invoice->amount;
-                Log::info($invoice->payments()->first()->wallet->currency);
+                // Log::info($invoice->payments()->first()->wallet->currency);
             }
 
-        // Get expenses by currency from wallet transactions
+            // Get expenses by currency from wallet transactions
         $transactions = WalletTransaction::whereYear('transaction_date', $year)
             ->whereIn('type', ['expense'])
             // ->whereIn('type', ['expense', 'withdraw'])
@@ -151,6 +151,7 @@ class KpiController extends Controller
         foreach ($annualIncomeByCurrency as $currency => $amount) {
             $annualIncomeInDZD += $this->convertCurrency($amount, $currency, 'DZD');
         }
+
 
         $annualExpensesInDZD = 0;
         foreach ($annualExpensesByCurrency as $currency => $amount) {
@@ -191,7 +192,7 @@ class KpiController extends Controller
                 ->get();
 
             foreach ($monthlyInvoices as $invoice) {
-                $currency = $invoice->wallet ? $invoice->wallet->currency : 'DZD';
+                $currency = $invoice->payments()->first()->wallet ? $invoice->payments()->first()->wallet->currency : 'DZD';
                 if (!isset($monthlyIncomeByCurrency[$month][$currency])) {
                     $monthlyIncomeByCurrency[$month][$currency] = 0;
                 }

@@ -90,9 +90,10 @@
                 <x-form.input label="IBAN / RIB" name="iban" placeholder="Enter IBAN / RIB" :oldval="old('iban', $employee->iban ?? '')" />
                 @if(Auth::user()->type === 'admin' && isset($employee->iban))
                     <div class="mt-2">
-                        <span class="badge {{ $employee->is_iban_valid ? 'bg-success' : 'bg-danger' }} text-white">
+                        <a href="javascript:void(0)" class="badge {{ $employee->is_iban_valid ? 'bg-success' : 'bg-danger' }} text-white iban-status-toggle" 
+                           data-employee-id="{{ $employee->id }}" data-field="is_iban_valid">
                             IBAN Status: {{ $employee->is_iban_valid ? 'Yes' : 'No' }}
-                        </span>
+                        </a>
                     </div>
                 @endif
             </div>
@@ -215,3 +216,91 @@
 
 
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle IBAN status toggle
+        const ibanStatusToggles = document.querySelectorAll('.iban-status-toggle');
+
+        ibanStatusToggles.forEach(toggle => {
+            toggle.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const employeeId = this.getAttribute('data-employee-id');
+                const field = this.getAttribute('data-field');
+
+                // Send AJAX request to toggle the boolean field
+                fetch('/admin/toggle-boolean', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        employee_id: employeeId,
+                        field: field
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update the UI based on the new value
+                        if (data.new_value) {
+                            this.classList.remove('bg-danger');
+                            this.classList.add('bg-success');
+                            this.innerHTML = 'IBAN Status: Yes';
+                        } else {
+                            this.classList.remove('bg-success');
+                            this.classList.add('bg-danger');
+                            this.innerHTML = 'IBAN Status: No';
+                        }
+
+                        // Show success message
+                        const toast = document.createElement('div');
+                        toast.className = 'toast align-items-center text-white bg-success border-0';
+                        toast.setAttribute('role', 'alert');
+                        toast.setAttribute('aria-live', 'assertive');
+                        toast.setAttribute('aria-atomic', 'true');
+
+                        toast.innerHTML = `
+                            <div class="d-flex">
+                                <div class="toast-body">
+                                    ${data.message}
+                                </div>
+                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                        `;
+
+                        // Add toast to container
+                        let toastContainer = document.querySelector('.toast-container');
+                        if (!toastContainer) {
+                            toastContainer = document.createElement('div');
+                            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+                            document.body.appendChild(toastContainer);
+                        }
+
+                        toastContainer.appendChild(toast);
+
+                        // Show the toast
+                        const bsToast = new bootstrap.Toast(toast);
+                        bsToast.show();
+
+                        // Remove toast after it's hidden
+                        toast.addEventListener('hidden.bs.toast', function() {
+                            toast.remove();
+                        });
+                    } else {
+                        // Show error message
+                        alert(data.message || 'An error occurred');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while updating the status');
+                });
+            });
+        });
+    });
+</script>
+@endpush

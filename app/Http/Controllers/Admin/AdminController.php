@@ -188,4 +188,36 @@ class AdminController extends Controller
         ]);
     }
 
+    /**
+     * Toggle boolean field for employee
+     */
+    public function toggleBoolean(Request $request)
+    {
+        $request->validate([
+            'employee_id' => 'required|exists:employees,id',
+            'field' => 'required|string',
+        ]);
+
+        $employee = Employee::findOrFail($request->employee_id);
+
+        // Check if field exists and is boolean
+        if (!in_array($request->field, ['is_iban_valid'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid field name'
+            ], 400);
+        }
+
+        // Toggle the field value
+        $newValue = !$employee->{$request->field};
+        $employee->{$request->field} = $newValue;
+        $employee->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Field updated successfully',
+            'new_value' => $newValue
+        ]);
+    }
+
 }

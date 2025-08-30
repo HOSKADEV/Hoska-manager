@@ -244,7 +244,7 @@ class WalletTransactionController extends Controller
 
         // dd($transaction);
         $request->validate([
-            'type' => 'required|in:expense,income,transfer,withdraw,funding',
+            'type' => 'required|in:expense,income,transfer,withdraw,funding,sallary,assets',
             'wallet_id' => 'required|exists:wallets,id',
             'amount' => 'required|numeric|min:0.01',
             'description' => 'nullable|string|max:255',

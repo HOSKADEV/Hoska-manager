@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Employee;
 use App\Models\Invoice;
 use App\Models\Project;
 use App\Models\Timesheet;
@@ -276,16 +277,50 @@ class KpiController extends Controller
             }])
             ->get()
             ->map(function ($project) {
+                // المهام المكتملة
+                $tasks = $project->tasks()->where('status', 'completed')->get();
+
+                $hoursByEmployee = [];
+                foreach ($tasks as $task) {
+                    $hours = $task->duration_in_hours;
+                    if (!isset($hoursByEmployee[$task->employee_id])) {
+                        $hoursByEmployee[$task->employee_id] = 0;
+                    }
+                    $hoursByEmployee[$task->employee_id] += $hours;
+                }
+
+                // جلب بيانات الموظفين (بما فيها المعدل والعملة)
+                $employees = Employee::whereIn('id', array_keys($hoursByEmployee))->get()->keyBy('id');
+
+                $totalCostDZD = 0;
+                foreach ($hoursByEmployee as $employeeId => $hours) {
+                    $employee = $employees[$employeeId];
+                    $rate = $employee->rate; // الأجر حسب موظف (افتراض)
+                    $cost = $hours * $rate;
+                    $costsByEmployee[$employeeId] = $cost;
+
+                    // تحويل التكلفة إلى دينار جزائري (مثلاً إذا الموظف بعملة أخرى تحتاج تحويل)
+                    // هنا نفترض المعدل بالدينار، أو اضف التحويل حسب العملة:
+                    $currency = $employee->currency ?? $project->currency;
+                    $rateToDZD = $this->convertCurrency(1, $currency, 'DZD') ?? 1;
+                    $totalCostDZD += $cost * $rateToDZD;
+                }
+
+                if($project->is_manual){
+                    $totalExpenses = $project->manual_cost ?? 0;
+                } else{
+                    $totalExpenses = $totalCostDZD ?? 0;
+                }
+
                 $totalIncome = $project->invoices->sum('amount');
-                // $totalExpenses = $project->expenses ?? 0; // Assuming there's an expenses field or relation
-                // $profit = $totalIncome - $totalExpenses;
+                $profit = $totalIncome - $totalExpenses;
 
                 return [
                     'id' => $project->id,
                     'name' => $project->name,
                     'income' => $totalIncome,
-                    // 'expenses' => $totalExpenses,
-                    // 'profit' => $profit
+                    'expenses' => $totalExpenses,
+                    'profit' => $profit
                 ];
             })
             ->values();

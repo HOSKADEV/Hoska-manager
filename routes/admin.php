@@ -33,6 +33,7 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth'])->group(function (
 
     Route::resource('tasks', TasksController::class);
     Route::post('tasks/import', [TaskImportController::class, 'import'])->name('tasks.import');
+    Route::post('tasks/export-selected', [TasksController::class, 'exportSelected'])->name('tasks.export-selected');
 
     Route::resource('notes', NotesController::class);
 });

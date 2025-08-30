@@ -32,10 +32,12 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-gray-800">All Tasks</h1>
         <div class="">
-                <button type="button" class="btn btn-primary mr-2" data-toggle="modal" data-target="#importExcelModal">
-                    <i class="fas fa-file-upload"></i> Import Tasks from Excel
-                </button>
-
+            <button id="exportSelectedBtn" type="button" class="btn btn-success mr-2" style="display: none;" onclick="exportSelected()">
+                <i class="fas fa-file-excel"></i> Export Selected
+            </button>
+            <button type="button" class="btn btn-primary mr-2" data-toggle="modal" data-target="#importExcelModal">
+                <i class="fas fa-file-upload"></i> Import Tasks from Excel
+            </button>
             <a href="{{ route('admin.tasks.create') }}" class="btn btn-info"><i class="fas fa-plus"></i>Add New</a>
         </div>
     </div>
@@ -228,6 +230,7 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
+                            <th><input type="checkbox" id="selectAll" class="form-check-input"></th>
                             <th>#</th>
                             <th>Title</th>
                             <th>Start Date</th>
@@ -245,6 +248,7 @@
                     </thead>
                     <tfoot>
                         <tr>
+                            <th><input type="checkbox" id="selectAllFooter" class="form-check-input"></th>
                             <th>#</th>
                             <th>Title</th>
                             <th>Start Date</th>
@@ -263,6 +267,7 @@
                     <tbody>
                         @forelse ($tasks as $task)
                             <tr>
+                                <td><input type="checkbox" class="task-checkbox form-check-input" data-id="{{ $task->id }}"></td>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $task->title }}</td>
                                 <td>{{ $task->start_time->format('D, Y/m/d H:i A') }}</td>
@@ -333,7 +338,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ Auth::user()->type !== 'employee' ? 11 : 10 }}" class="text-center">No Data
+                                <td colspan="{{ Auth::user()->type !== 'employee' ? 12 : 11 }}" class="text-center">No Data
                                     Found</td>
                             </tr>
                         @endforelse
@@ -369,7 +374,68 @@
                 $('#employee_id, #project_id, #start_date, #end_date').on('change', function () {
                     $(this).closest('form').submit();
                 });
+
+                // Handle select all checkboxes
+                $('#selectAll, #selectAllFooter').on('change', function() {
+                    $('.task-checkbox').prop('checked', $(this).prop('checked'));
+                    toggleExportButton();
+                });
+
+                // Handle individual checkbox changes
+                $('.task-checkbox').on('change', function() {
+                    toggleExportButton();
+
+                    // Update select all checkboxes if all individual checkboxes are checked
+                    var allChecked = $('.task-checkbox').length === $('.task-checkbox:checked').length;
+                    $('#selectAll, #selectAllFooter').prop('checked', allChecked);
+                });
             });
+
+            // Function to toggle export button visibility
+            function toggleExportButton() {
+                if ($('.task-checkbox:checked').length > 0) {
+                    $('#exportSelectedBtn').show();
+                } else {
+                    $('#exportSelectedBtn').hide();
+                }
+            }
+
+            // Function to export selected tasks
+            function exportSelected() {
+                var selectedIds = [];
+                $('.task-checkbox:checked').each(function() {
+                    selectedIds.push($(this).data('id'));
+                });
+
+                if (selectedIds.length === 0) {
+                    alert('Please select at least one task to export');
+                    return;
+                }
+
+                // Create a form and submit it to export the selected tasks
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ route("admin.tasks.export-selected") }}';
+
+                // Add CSRF token
+                var csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+
+                // Add selected IDs
+                var idsInput = document.createElement('input');
+                idsInput.type = 'hidden';
+                idsInput.name = 'selected_ids';
+                idsInput.value = JSON.stringify(selectedIds);
+                form.appendChild(idsInput);
+
+                // Submit the form
+                document.body.appendChild(form);
+                form.submit();
+                document.body.removeChild(form);
+            }
         </script>
 
     @endpush

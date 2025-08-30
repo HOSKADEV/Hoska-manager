@@ -317,4 +317,76 @@ class TasksController extends Controller
         flash()->success('Task deleted successfully');
         return redirect()->route('admin.tasks.index');
     }
+
+    /**
+     * Export selected tasks to Excel
+     */
+    public function exportSelected(Request $request)
+    {
+        $selectedIds = json_decode($request->input('selected_ids', '[]'));
+
+        if (empty($selectedIds)) {
+            return redirect()->back()->with('error', 'No tasks selected for export');
+        }
+
+        $tasks = Task::with(['employee', 'project'])
+            ->whereIn('id', $selectedIds)
+            ->get();
+
+        $headers = [
+            'Content-Type' => 'application/vnd.ms-excel; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename=tasks_' . date('Y-m-d') . '.xls',
+        ];
+
+        $callback = function() use ($tasks) {
+            $file = fopen('php://output', 'w');
+
+            // Add UTF-8 BOM to fix Excel encoding issues
+            fputs($file, "ï»¿");
+
+            // Add headers
+            fputcsv($file, [
+                'ID',
+                'Title',
+                'Start Date',
+                'End Date',
+                'Duration (hours)',
+                'Budget Amount',
+                'Project Name',
+                'Employee Name',
+                // 'Created At',
+                // 'Updated At'
+            ], "	");
+
+            // Add data rows
+            foreach ($tasks as $task) {
+                $totalMinutes = (int) round($task->duration_in_hours * 60);
+                $hours = intdiv($totalMinutes, 60);
+                $minutes = $totalMinutes % 60;
+
+                $currencySymbols = [
+                    'USD' => '$',
+                    'EUR' => '€',
+                    'DZD' => 'DZ',
+                ];
+
+                fputcsv($file, [
+                    $task->id,
+                    $task->title,
+                    $task->start_time->format('D, Y/m/d H:i A'),
+                    $task->end_time ? $task->end_time->format('D, Y/m/d H:i A') : '-',
+                    $hours . 'h ' . $minutes . 'm (' . number_format($task->duration_in_hours, 2) . ' hours)',
+                    ($currencySymbols[$task->employee?->currency] ?? '') . number_format($task->cost, 2),
+                    $task->project ? $task->project->name : 'N/A',
+                    $task->employee ? $task->employee->name : '-',
+                    // $task->created_at->format('Y/m/d H:i A'),
+                    // $task->updated_at->format('Y/m/d H:i A')
+                ], "	");
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

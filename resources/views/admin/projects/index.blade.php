@@ -228,6 +228,8 @@
                             <th>Remaining Days</th>
                             @unless(Auth::user()->type === 'employee')
                                 <th>Remaining Amount</th>
+                                <th>Expenses</th>
+                                <th>Profits</th>
                             @endunless
                             {{-- <th>Attachments</th>
                             <th>Client Name</th>
@@ -253,6 +255,8 @@
                             <th>Remaining Days</th>
                             @unless(Auth::user()->type === 'employee')
                                 <th>Remaining Amount</th>
+                                <th>Expenses</th>
+                                <th>Profits</th>
                             @endunless
                             {{-- <th>Attachments</th>
                             <th>Client Name</th>
@@ -335,15 +339,44 @@
                                             // المشروع يدوي: المبلغ الكلي = المدفوع، والمتبقي صفر
                                             $paidAmount = $project->total_amount;
                                             $remainingAmount = 0;
+                                            // For manual projects, use the manual cost as expenses
+                                            $expenses = $project->manual_cost ?? 0;
                                         } else {
                                             $paidAmount = $project->payments->sum('amount');
                                             $remainingAmount = $project->total_amount - $paidAmount;
+                                            // Calculate expenses based on employee hours and rates
+                                            $expenses = 0;
+                                            // Get all completed tasks for this project
+                                            $tasks = $project->tasks()->where('status', 'completed')->get();
+
+                                            // Calculate total cost based on employee hours and rates
+                                            foreach ($tasks as $task) {
+                                                $hours = $task->duration_in_hours;
+                                                $employee = $task->employee;
+                                                if ($employee) {
+                                                    $rate = $employee->rate ?? 0;
+                                                    $expenses += $hours * $rate;
+                                                }
+                                            }
                                         }
+
+                                        // Calculate profits
+                                        $profits = $project->total_amount - $expenses;
                                     @endphp
                                     <td>
                                         <span class="{{ $remainingAmount == 0 ? 'text-success' : 'text-danger' }}">
                                             {{ $currencySymbols[$project->currency] ?? '' }}
                                             {{ number_format($remainingAmount, 2) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {{ $currencySymbols[$project->currency] ?? '' }}
+                                        {{ number_format($expenses, 2) }}
+                                    </td>
+                                    <td>
+                                        <span class="{{ $profits >= 0 ? 'text-success' : 'text-danger' }}">
+                                            {{ $currencySymbols[$project->currency] ?? '' }}
+                                            {{ number_format($profits, 2) }}
                                         </span>
                                     </td>
                                 @endunless

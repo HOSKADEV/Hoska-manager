@@ -39,19 +39,66 @@ class PaymentsController extends Controller
         $payments = $query->latest()->get();
 
         // Calculate payment statistics for different time periods
-        $dailyPayments = Payment::whereDate('payment_date', today())->sum('amount');
-        $weeklyPayments = Payment::whereBetween('payment_date', [now()->startOfWeek(), now()->endOfWeek()])->sum('amount');
+        $dailyPayments = Payment::with('wallet')->whereDate('payment_date', today())->get();
+        $weeklyPayments = Payment::with('wallet')->whereBetween('payment_date', [now()->startOfWeek(), now()->endOfWeek()])->get();
 
         if ($monthFilter && $monthFilter !== 'all') {
             $month = Carbon::parse($monthFilter);
-            $monthlyPayments = Payment::with('wallet')->whereMonth('payment_date', $month->month)->whereYear('payment_date', $month->year)->sum('amount');
+            $monthlyPayments = Payment::with('wallet')->whereMonth('payment_date', $month->month)->whereYear('payment_date', $month->year)->get();
         } else {
-            $monthlyPayments = Payment::with('wallet')->whereMonth('payment_date', now()->month)->sum('amount');
+            $monthlyPayments = Payment::with('wallet')->whereMonth('payment_date', now()->month)->get();
         }
 
-        $yearlyPayments = Payment::whereYear('payment_date', now()->year)->sum('amount');
+        $yearlyPayments = Payment::with('wallet')->whereYear('payment_date', now()->year)->get();
 
-        return view('admin.payments.index', compact('payments', 'dailyPayments', 'weeklyPayments', 'monthlyPayments', 'yearlyPayments', 'availableMonths', 'monthFilter'));
+        $dailyEarnings = 0;
+        $weeklyEarnings = 0;
+        $monthlyEarnings = 0;
+        $yearlyEarnings = 0;
+        foreach ($dailyPayments as $payment) {
+            $currency = strtoupper($payment->invoice->project->currency ?? 'DZD');
+            $amount = $payment->getAttribute('amount');
+
+            if (is_numeric($amount)) {
+                $dailyEarnings += $this->convertCurrency($amount, $currency, 'DZD');
+            }
+        }
+
+        foreach ($weeklyPayments as $payment) {
+            $currency = strtoupper($payment->invoice->project->currency ?? 'DZD');
+            $amount = $payment->getAttribute('amount');
+
+            if (is_numeric($amount)) {
+                $weeklyEarnings += $this->convertCurrency($amount, $currency, 'DZD');
+            }
+        }
+
+        foreach ($monthlyPayments as $payment) {
+            $currency = strtoupper($payment->invoice->project->currency ?? 'DZD');
+            $amount = $payment->getAttribute('amount');
+
+            if (is_numeric($amount)) {
+                $monthlyEarnings += $this->convertCurrency($amount, $currency, 'DZD');
+            }
+        }
+
+        foreach ($yearlyPayments as $payment) {
+            $currency = strtoupper($payment->invoice->project->currency ?? 'DZD');
+            $amount = $payment->getAttribute('amount');
+
+            if (is_numeric($amount)) {
+                $yearlyEarnings += $this->convertCurrency($amount, $currency, 'DZD');
+            }
+        }
+
+        return view('admin.payments.index')
+            ->with('payments', $payments)
+            ->with('dailyPayments', $dailyEarnings)
+            ->with('weeklyPayments', $weeklyEarnings)
+            ->with('monthlyPayments', $monthlyEarnings)
+            ->with('yearlyPayments', $yearlyEarnings)
+            ->with('availableMonths', $availableMonths)
+            ->with('monthFilter', $monthFilter);
     }
 
     /**

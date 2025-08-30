@@ -73,7 +73,7 @@ class AdminController extends Controller
                 ->get();
 
                 foreach ($payments as $payment) {
-                    $currency = strtoupper($payment->invoice->project->currency ?? 'USD');
+                    $currency = strtoupper($payment->invoice->project->currency ?? 'DZD');
                     $amount = $payment->getAttribute('amount');
 
                     if (is_numeric($amount)) {

@@ -41,6 +41,10 @@
                 background-color: #007bff;
                 /* أزرق */
             }
+            .badge-assets {
+                background-color: #343a40;
+                /* أسود */
+            }
         </style>
     @endpush
 
@@ -145,6 +149,7 @@
             'withdraw' => 'Withdraw',
             'funding' => 'Funding',
             'sallary' => 'Sallary',
+            'assets' => 'Assets',
         ];
         $typeClasses = [
             'expense' => 'expense',
@@ -154,6 +159,7 @@
             'withdraw' => 'withdraw',
             'funding' => 'funding',
             'sallary' => 'sallary',
+            'assets' => 'assets',
         ];
     @endphp
 

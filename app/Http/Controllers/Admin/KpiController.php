@@ -141,9 +141,9 @@ class KpiController extends Controller
         }
 
         // Get salaries (assuming they're in DZD)
-        $annualSalaries = Timesheet::whereYear('work_date', $year)
-            ->sum('month_salary');
-
+        // $annualSalaries = Timesheet::whereYear('work_date', $year)
+        //     ->sum('month_salary');
+        $annualSalaries = WalletTransaction::where('type','sallar')->with('wallet')->sum('amount');
         // Convert all amounts to DZD using convertCurrency function
         $annualIncomeInDZD = 0;
         foreach ($annualIncomeByCurrency as $currency => $amount) {
@@ -155,7 +155,7 @@ class KpiController extends Controller
             $annualExpensesInDZD += $this->convertCurrency($amount, $currency, 'DZD');
         }
 
-        $annualProfitsInDZD = $annualIncomeInDZD - $annualExpensesInDZD - $annualSalaries;
+        $annualProfitsInDZD = $annualIncomeInDZD - ($annualExpensesInDZD + $annualSalaries);
 
         // Customer satisfaction score
         $csatScore = 85.0;
@@ -168,6 +168,8 @@ class KpiController extends Controller
         $monthlyProjectsData = [];
         $monthlyIncomeByCurrency = [];
         $monthlyExpensesByCurrency = [];
+        $monthlySalaryData = [];
+        $monthlySalaryByCurrency = [];
 
         for ($month = 1; $month <= 12; $month++) {
             $monthsLabels[] = date('F', mktime(0, 0, 0, $month, 1));
@@ -175,6 +177,7 @@ class KpiController extends Controller
             // Initialize monthly currency arrays
             $monthlyIncomeByCurrency[$month] = [];
             $monthlyExpensesByCurrency[$month] = [];
+            $monthlySalaryByCurrency[$month] = [];
 
             // Monthly income by currency
             $monthlyInvoices = Invoice::whereHas('payments', function($query) use ($year, $month) {
@@ -208,6 +211,27 @@ class KpiController extends Controller
                 }
                 $monthlyExpensesByCurrency[$month][$currency] += $transaction->amount;
             }
+
+            // Monthly salary transactions by currency
+            $monthlySalaryTransactions = WalletTransaction::whereYear('transaction_date', $year)
+                ->whereMonth('transaction_date', $month)
+                ->where('type', 'sallary') // Note: there's a typo in the migration
+                ->with('wallet')
+                ->get();
+
+            foreach ($monthlySalaryTransactions as $transaction) {
+                $currency = $transaction->wallet ? $transaction->wallet->currency : 'DZD';
+                if (!isset($monthlySalaryByCurrency[$month][$currency])) {
+                    $monthlySalaryByCurrency[$month][$currency] = 0;
+                }
+                $monthlySalaryByCurrency[$month][$currency] += $transaction->amount;
+            }
+
+            $monthlySalaryInDZD = 0;
+            foreach ($monthlySalaryByCurrency[$month] as $currency => $amount) {
+                $monthlySalaryInDZD += $this->convertCurrency($amount, $currency, 'DZD');
+            }
+            $monthlySalaryData[] = $monthlySalaryInDZD;
 
             // Convert to DZD and add to monthly data using convertCurrency function
             $monthlyIncomeInDZD = 0;
@@ -247,6 +271,7 @@ class KpiController extends Controller
             'monthlyExpensesData',
             'monthlyProfitsData',
             'monthlyProjectsData',
+            'monthlySalaryData',
             'year',
             'availableYears'
         ));

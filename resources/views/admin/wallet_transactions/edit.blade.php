@@ -33,7 +33,7 @@
                     <label for="type" class="form-label">Transaction Type</label>
                     <select name="type" id="type" class="form-control @error('type') is-invalid @enderror" required>
                         <option value="" disabled {{ $formType == '' ? 'selected' : '' }}>Select Type</option>
-                        @foreach(['expense', 'income', 'transfer', 'withdraw', 'funding', 'sallary'] as $type)
+                        @foreach(['expense', 'income', 'transfer', 'withdraw', 'funding', 'sallary','assets'] as $type)
                             <option value="{{ $type }}" {{ $formType == $type ? 'selected' : '' }}>
                                 {{ ucfirst($type) }}
                             </option>

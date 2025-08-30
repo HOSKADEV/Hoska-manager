@@ -238,6 +238,22 @@
         </div>
     </div>
 
+    <!-- Salary Transactions Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Salary Transactions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="salaryTransactionsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @push('js')
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
@@ -319,6 +335,7 @@
             const profitsData = @json($monthlyProfitsData);
             const projectsData = @json($monthlyProjectsData);
             const expensesData = @json($monthlyExpensesData);
+            const salaryTransactionsData = @json($monthlySalaryData);
 
             // رسم بياني الأرباح
             const profitsCtx = document.getElementById('profitsChart').getContext('2d');
@@ -415,6 +432,55 @@
                         data: expensesData,
                         backgroundColor: 'rgba(220, 53, 69, 0.7)',
                         borderColor: 'rgba(220, 53, 69, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += 'DZ ' + context.parsed.y.toLocaleString();
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'DZ ' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // رسم بياني معاملات الرواتب
+            const salaryTransactionsCtx = document.getElementById('salaryTransactionsChart').getContext('2d');
+            const salaryTransactionsChart = new Chart(salaryTransactionsCtx, {
+                type: 'bar',
+                data: {
+                    labels: @json($monthsLabels),
+                    datasets: [{
+                        label: 'Monthly Salary Transactions',
+                        data: salaryTransactionsData,
+                        backgroundColor: 'rgba(23, 162, 184, 0.7)',
+                        borderColor: 'rgba(23, 162, 184, 1)',
                         borderWidth: 1
                     }]
                 },

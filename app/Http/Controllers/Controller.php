@@ -23,7 +23,7 @@ abstract class Controller {
      * @param string $toCurrency The target currency code (USD, EUR, DZD)
      * @return float The converted amount
      */
-    protected function convertCurrency(float $amount, string $fromCurrency, string $toCurrency): float
+    public function convertCurrency(float $amount, string $fromCurrency, string $toCurrency): float
     {
         // Get exchange rates from settings with defaults
         $usdRate = Setting::get('usd_rate', 140); // 1 USD = 140 DZD

@@ -230,7 +230,11 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
-                            <th><input type="checkbox" id="selectAll" class="form-check-input"></th>
+                            <th>
+                                <div class="form-check" style="margin-bottom: 25px;">
+                                    <input type="checkbox" id="selectAll" class="form-check-input">
+                                </div>
+                            </th>
                             <th>#</th>
                             <th>Title</th>
                             <th>Start Date</th>
@@ -248,7 +252,11 @@
                     </thead>
                     <tfoot>
                         <tr>
-                            <th><input type="checkbox" id="selectAllFooter" class="form-check-input"></th>
+                            <th>
+                                <div class="form-check" style="margin-bottom: 25px;">
+                                    <input type="checkbox" id="selectAllFooter" class="form-check-input">
+                                </div>
+                            </th>
                             <th>#</th>
                             <th>Title</th>
                             <th>Start Date</th>
@@ -267,7 +275,11 @@
                     <tbody>
                         @forelse ($tasks as $task)
                             <tr>
-                                <td><input type="checkbox" class="task-checkbox form-check-input" data-id="{{ $task->id }}"></td>
+                                <td>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="task-checkbox form-check-input" data-id="{{ $task->id }}">
+                                </div>
+                                </td>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $task->title }}</td>
                                 <td>{{ $task->start_time->format('D, Y/m/d H:i A') }}</td>

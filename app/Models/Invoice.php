@@ -35,4 +35,8 @@ class Invoice extends Model
         return $this->belongsTo(Development::class, 'development_id');
     }
 
+    public function getCurrencyAttribute() {
+        return $this->project? $this->project->currency : ($this->development? $this->development->currency : 'DZD');
+    }
+
 }

@@ -346,6 +346,7 @@
                                             $remainingAmount = $project->total_amount - $paidAmount;
                                             // Calculate expenses based on employee hours and rates
                                             $expenses = 0;
+                                            $incomes = 0;
                                             // Get all completed tasks for this project
                                             $tasks = $project->tasks()->where('status', 'completed')->get();
 
@@ -355,13 +356,22 @@
                                                 $employee = $task->employee;
                                                 if ($employee) {
                                                     $rate = $employee->rate ?? 0;
-                                                    $expenses += $hours * $rate;
+                                                    $cost = $hours * $rate;
+                                                    $currency = $employee->currency ?? $project->currency;
+                                                    $rateToDZD = \App\Helpers\CurrencyHelper::convert(1, $currency, 'DZD');
+                                                    $expenses += $cost * $rateToDZD;
+                                                    // $expenses += $hours * $rate;
                                                 }
+                                            }
+
+                                            foreach ($project->invoices as $invoice) {
+                                                // $invoiceToDZD = \App\Helpers\CurrencyHelper::convert($invoice->amount, $invoice->currency, 'DZD');
+                                                $incomes += $invoice->amount;
                                             }
                                         }
 
                                         // Calculate profits
-                                        $profits = $project->total_amount - $expenses;
+                                        $profits = $incomes - $expenses;
                                     @endphp
                                     <td>
                                         <span class="{{ $remainingAmount == 0 ? 'text-success' : 'text-danger' }}">

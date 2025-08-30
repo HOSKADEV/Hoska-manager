@@ -120,12 +120,12 @@ class KpiController extends Controller
             ->get();
 
             foreach ($invoices as $invoice) {
-                $currency = $invoice->payments()->first()->wallet->currency ? $invoice->payments()->first()->wallet->currency : 'DZD';
+                $currency = $invoice->currency ? $invoice->currency : 'DZD';
                 if (!isset($annualIncomeByCurrency[$currency])) {
                     $annualIncomeByCurrency[$currency] = 0;
                 }
                 $annualIncomeByCurrency[$currency] += $invoice->amount;
-                // Log::info($invoice->payments()->first()->wallet->currency);
+                // Log::info($invoice->currency);
             }
 
             // Get expenses by currency from wallet transactions
@@ -193,7 +193,7 @@ class KpiController extends Controller
                 ->get();
 
             foreach ($monthlyInvoices as $invoice) {
-                $currency = $invoice->payments()->first()->wallet ? $invoice->payments()->first()->wallet->currency : 'DZD';
+                $currency = $invoice->project ? $invoice->currency : 'DZD';
                 if (!isset($monthlyIncomeByCurrency[$month][$currency])) {
                     $monthlyIncomeByCurrency[$month][$currency] = 0;
                 }
@@ -307,17 +307,25 @@ class KpiController extends Controller
                 }
 
                 if($project->is_manual){
-                    $totalExpenses = $project->manual_cost ?? 0;
+                    $totalExpenses = $project->manual_cost ? $this->convertCurrency($project->manual_cost, $project->currency, 'DZD') : 0;
                 } else{
                     $totalExpenses = $totalCostDZD ?? 0;
                 }
 
-                $totalIncome = $project->invoices->sum('amount');
+                $totalIncome = 0;
+                foreach ($project->invoices as $invoice) {
+                    $walletCurrency = $invoice->currency;
+                    $totalIncome += $this->convertCurrency($invoice->amount, $walletCurrency, 'DZD');
+                }
+
+                $totalAmount = $project->total_amount ? $this->convertCurrency($project->total_amount, $project->currency, 'DZD') : 0;
+
                 $profit = $totalIncome - $totalExpenses;
 
                 return [
                     'id' => $project->id,
                     'name' => $project->name,
+                    'totalAmount' => $totalAmount,
                     'income' => $totalIncome,
                     'expenses' => $totalExpenses,
                     'profit' => $profit

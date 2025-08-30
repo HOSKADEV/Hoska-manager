@@ -56,7 +56,7 @@ class PaymentsController extends Controller
         $monthlyEarnings = 0;
         $yearlyEarnings = 0;
         foreach ($dailyPayments as $payment) {
-            $currency = strtoupper($payment->wallet->currency ?? 'DZD');
+            $currency = strtoupper($payment->invoice->currency ?? 'DZD');
             $amount = $payment->getAttribute('amount');
 
             if (is_numeric($amount)) {
@@ -65,7 +65,7 @@ class PaymentsController extends Controller
         }
 
         foreach ($weeklyPayments as $payment) {
-            $currency = strtoupper($payment->wallet->currency ?? 'DZD');
+            $currency = strtoupper($payment->invoice->currency ?? 'DZD');
             $amount = $payment->getAttribute('amount');
 
             if (is_numeric($amount)) {
@@ -74,7 +74,7 @@ class PaymentsController extends Controller
         }
 
         foreach ($monthlyPayments as $payment) {
-            $currency = strtoupper($payment->wallet->currency ?? 'DZD');
+            $currency = strtoupper($payment->invoice->currency ?? 'DZD');
             $amount = $payment->getAttribute('amount');
 
             if (is_numeric($amount)) {
@@ -83,7 +83,7 @@ class PaymentsController extends Controller
         }
 
         foreach ($yearlyPayments as $payment) {
-            $currency = strtoupper($payment->wallet->currency ?? 'DZD');
+            $currency = strtoupper($payment->invoice->currency ?? 'DZD');
             $amount = $payment->getAttribute('amount');
 
             if (is_numeric($amount)) {

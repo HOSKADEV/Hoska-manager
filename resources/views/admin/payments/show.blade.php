@@ -26,7 +26,7 @@
                         <th>Amount</th>
                         <td>
                             @if($payment->invoice)
-                                {{ $currencySymbols[$payment->invoice->project?->currency] ?? $payment->invoice->project?->currency ?? '' }}
+                                {{ $payment->invoice->currency }}
                             @endif
                             {{ number_format($payment->amount, 2) }}
                         </td>
@@ -48,7 +48,7 @@
                         <td>
                             {{ $payment->invoice->wallet->name ?? '-' }}
                             @if(isset($payment->invoice->wallet->currency))
-                                ({{ $currencySymbols[$payment->invoice->wallet->currency] ?? $payment->invoice->wallet->currency }})
+                                ({{ $payment->invoice->wallet->currency }})
                             @endif
                         </td>
                     </tr>
@@ -61,7 +61,7 @@
                         <td>
                             @if($payment->exchange_rate && $payment->amount)
                                 {{ number_format($payment->amount * $payment->exchange_rate, 2) }}
-                                ({{ $currencySymbols[$payment->invoice->wallet->currency] ?? $payment->invoice->wallet->currency ?? '' }})
+                                ({{ $payment->wallet->currency }})
                             @else
                                 -
                             @endif

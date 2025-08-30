@@ -561,6 +561,7 @@
             const projectProfits = projectProfitsData.map(project => project.profit);
             const projectIncomes = projectProfitsData.map(project => project.income);
             const projectExpenses = projectProfitsData.map(project => project.expenses);
+            const projectTotalAmount = projectProfitsData.map(project => project.totalAmount);
 
             const projectProfitsChart = new Chart(projectProfitsCtx, {
                 type: 'bar',
@@ -568,10 +569,17 @@
                     labels: projectNames,
                     datasets: [
                         {
+                            label: 'Total Amount',
+                            data: projectTotalAmount,
+                            backgroundColor: 'rgba(0, 123, 255, 0.7)',
+                            borderColor: 'rgba(0, 123, 255, 1)',
+                            borderWidth: 1
+                        },
+                        {
                             label: 'Income',
                             data: projectIncomes,
-                            backgroundColor: 'rgba(40, 167, 69, 0.7)',
-                            borderColor: 'rgba(40, 167, 69, 1)',
+                            backgroundColor: 'rgba(255, 193, 7, 0.7)',
+                            borderColor: 'rgba(255, 193, 7, 1)',
                             borderWidth: 1
                         },
                         {
@@ -584,10 +592,10 @@
                         {
                             label: 'Profit',
                             data: projectProfits,
-                            backgroundColor: 'rgba(255, 193, 7, 0.7)',
-                            borderColor: 'rgba(255, 193, 7, 1)',
+                            backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                            borderColor: 'rgba(40, 167, 69, 1)',
                             borderWidth: 1
-                        }
+                        },
                     ]
                 },
                 options: {

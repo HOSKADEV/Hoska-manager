@@ -27,6 +27,7 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth'])->group(function (
     Route::get('/profile', [AdminController::class, 'profile'])->name('profile');
     Route::put('/profile', [AdminController::class, 'profile_save']);
     Route::post('/profile/validate-rip', [AdminController::class, 'validateRip'])->name('profile.validate-rip');
+    Route::post('/toggle-boolean', [AdminController::class, 'toggleBoolean'])->name('admin.toggle-boolean');
 
     Route::resource('projects', ProjectsController::class);
 

@@ -4,11 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Invoice;
+use App\Models\Project;
 use App\Models\Timesheet;
 use App\Models\WalletTransaction;
-use App\Models\Project;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class KpiController extends Controller
 {
@@ -117,13 +118,14 @@ class KpiController extends Controller
             ->with('wallet')
             ->get();
 
-        foreach ($invoices as $invoice) {
-            $currency = $invoice->wallet ? $invoice->wallet->currency : 'DZD';
-            if (!isset($annualIncomeByCurrency[$currency])) {
-                $annualIncomeByCurrency[$currency] = 0;
+            foreach ($invoices as $invoice) {
+                $currency = $invoice->payments()->first()->wallet->currency ? $invoice->payments()->first()->wallet->currency : 'DZD';
+                if (!isset($annualIncomeByCurrency[$currency])) {
+                    $annualIncomeByCurrency[$currency] = 0;
+                }
+                $annualIncomeByCurrency[$currency] += $invoice->amount;
+                Log::info($invoice->payments()->first()->wallet->currency);
             }
-            $annualIncomeByCurrency[$currency] += $invoice->amount;
-        }
 
         // Get expenses by currency from wallet transactions
         $transactions = WalletTransaction::whereYear('transaction_date', $year)

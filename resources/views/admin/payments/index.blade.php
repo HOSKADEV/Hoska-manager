@@ -182,7 +182,7 @@
                                     ];
                                 @endphp
                                 <td>
-                                    {{ $currencySymbols[$payment->invoice->project?->currency] ?? '' }}
+                                    {{ $currencySymbols[$payment->wallet->currency] ?? '' }}
                                     {{ number_format($payment->amount, 2) }}
                                 </td>
                                 <td>{{ $payment->payment_date->diffForHumans() }}</td>

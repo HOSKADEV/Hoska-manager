@@ -125,6 +125,9 @@
                         method: 'POST',
                         data: {
                             rip: iban,
+                            bank_code: bank_code,
+                            account_name: account_name,
+                            account_number: account_number,
                             _token: '{{ csrf_token() }}' // Include CSRF token for Laravel
                         },
                         success: function(response) {

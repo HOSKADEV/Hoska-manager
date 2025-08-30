@@ -254,6 +254,31 @@
         </div>
     </div>
 
+    <!-- Projects Profit Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Projects Profit</h6>
+                    <div class="month-selector-container">
+                        <select class="form-control month-selector" id="projectProfitMonthSelector" aria-label="Select Month" style="width: auto;">
+                            @for($month = 1; $month <= 12; $month++)
+                                <option value="{{ $month }}" {{ $selectedMonth == $month ? 'selected' : '' }}>
+                                    {{ date('F', mktime(0, 0, 0, $month, 1)) }}
+                                </option>
+                            @endfor
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="projectProfitsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @push('js')
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
@@ -524,6 +549,87 @@
                 // تحديث الصفحة مع العام المحدد
                 const url = new URL(window.location.href);
                 url.searchParams.set('year', this.value);
+                window.location.href = url.toString();
+            });
+
+            // رسم بياني أرباح المشاريع
+            const projectProfitsData = @json($projectsWithProfits);
+            const projectProfitsCtx = document.getElementById('projectProfitsChart').getContext('2d');
+
+            // Extract project names and profits for the chart
+            const projectNames = projectProfitsData.map(project => project.name);
+            const projectProfits = projectProfitsData.map(project => project.profit);
+            const projectIncomes = projectProfitsData.map(project => project.income);
+            const projectExpenses = projectProfitsData.map(project => project.expenses);
+
+            const projectProfitsChart = new Chart(projectProfitsCtx, {
+                type: 'bar',
+                data: {
+                    labels: projectNames,
+                    datasets: [
+                        {
+                            label: 'Income',
+                            data: projectIncomes,
+                            backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                            borderColor: 'rgba(40, 167, 69, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Expenses',
+                            data: projectExpenses,
+                            backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                            borderColor: 'rgba(220, 53, 69, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Profit',
+                            data: projectProfits,
+                            backgroundColor: 'rgba(255, 193, 7, 0.7)',
+                            borderColor: 'rgba(255, 193, 7, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += 'DZ ' + context.parsed.y.toLocaleString();
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'DZ ' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // معالجة تغيير الشهر في مخطط أرباح المشاريع
+            document.getElementById('projectProfitMonthSelector').addEventListener('change', function() {
+                // تحديث الصفحة مع الشهر المحدد
+                const url = new URL(window.location.href);
+                url.searchParams.set('month', this.value);
                 window.location.href = url.toString();
             });
         </script>

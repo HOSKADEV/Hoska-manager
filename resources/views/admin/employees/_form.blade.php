@@ -90,7 +90,7 @@
                 <x-form.input label="IBAN / RIB" name="iban" placeholder="Enter IBAN / RIB" :oldval="old('iban', $employee->iban ?? '')" />
                 @if(Auth::user()->type === 'admin' && isset($employee->iban))
                     <div class="mt-2">
-                        <a href="javascript:void(0)" class="badge {{ $employee->is_iban_valid ? 'bg-success' : 'bg-danger' }} text-white iban-status-toggle" 
+                        <a class="badge {{ $employee->is_iban_valid ? 'bg-success' : 'bg-danger' }} text-white iban-status-toggle" style="cursor: pointer;"
                            data-employee-id="{{ $employee->id }}" data-field="is_iban_valid">
                             IBAN Status: {{ $employee->is_iban_valid ? 'Yes' : 'No' }}
                         </a>
@@ -217,11 +217,11 @@
 
 </div>
 
-@push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Handle IBAN status toggle
         const ibanStatusToggles = document.querySelectorAll('.iban-status-toggle');
+        console.log(ibanStatusToggles);
 
         ibanStatusToggles.forEach(toggle => {
             toggle.addEventListener('click', function(e) {
@@ -235,7 +235,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : document.querySelector('input[name="_token"]').value
                     },
                     body: JSON.stringify({
                         employee_id: employeeId,
@@ -303,4 +303,3 @@
         });
     });
 </script>
-@endpush

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\CurrencyHelper;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
@@ -61,6 +62,13 @@ class Project extends Model
         return $this->hasMany(ProjectLink::class);
     }
 
+    public function getTotalAmountProjectWithDevelopmentsAttribute() {
+        $amount = $this->total_amount;
+        foreach ($this->developments as $development) {
+            $amount += CurrencyHelper::convert($development->amount, $development->currency, $this->currency);
+        }
+        return $amount;
+    }
 
     // حساب الأيام المتبقية تلقائيًا
     public function getRemainingDaysAttribute()

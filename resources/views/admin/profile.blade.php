@@ -78,12 +78,12 @@
                     <x-form.input label="Account Number" name="account_number" id="account_number" placeholder="Enter Account Number" :oldval="$employee->account_number ?? ''" />
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">IBAN / RIB</label>
-                    <input type="text" class="form-control" name="iban" id="ibanInput" placeholder="IBAN / RIB" value="{{ old('iban', $employee->iban ?? '') }}">
-                    <div id="ibanValidationMessage" class="mt-2"></div>
+                    <x-form.input label="Cle" name="bank_code" id="bank_code" placeholder="Enter Bank Code" :oldval="$employee->bank_code ?? ''" />
                 </div>
                 <div class="mb-3">
-                    <x-form.input label="Bank Code" name="bank_code" id="bank_code" placeholder="Enter Bank Code" :oldval="$employee->bank_code ?? ''" />
+                    <label class="form-label">RIP</label>
+                    <input type="text" class="form-control" name="iban" id="ibanInput" placeholder="IBAN / RIB" value="{{ old('iban', $employee->iban ?? '') }}">
+                    <div id="ibanValidationMessage" class="mt-2"></div>
                 </div>
                 @if (!$employee->is_iban_valid)
                     <div class="mb-3">

@@ -69,7 +69,16 @@
                         @forelse ($employees as $employee)
                             <tr>
                                 <td>{{ $loop->iteration }}</td>
-                                <td>{{ $employee->name }}</td>
+                                <td>
+                                    {{ $employee->name }}
+                                    @if(isset($employee->iban))
+                                        @if($employee->is_iban_valid)
+                                            <i class="fas fa-check-circle text-success ml-2" title="IBAN Valid"></i>
+                                        @else
+                                            <i class="fas fa-times-circle text-danger ml-2" title="IBAN Invalid"></i>
+                                        @endif
+                                    @endif
+                                </td>
                                 {{-- <td>{{ $employee->contacts->first()->phone ?? '-' }}</td>
                                 <td>{{ $employee->contacts->first()->email ?? '-' }}</td>
                                 <td>{{ $employee->contacts->first()->address ?? '-' }}</td> --}}

@@ -91,7 +91,11 @@
                                     ];
                                 @endphp
                                 <td>
-                                    {{ $currencySymbols[$employee->currency] ?? '' }} {{ number_format($employee->rate, 2) }}
+                                    @if($employee->rate == 0)
+                                        <span class="badge badge-light">{{ $currencySymbols[$employee->currency] ?? '' }} {{ number_format($employee->rate, 2) }}</span>
+                                    @else
+                                        <span class="badge badge-primary">{{ $currencySymbols[$employee->currency] ?? '' }} {{ number_format($employee->rate, 2) }}</span>
+                                    @endif
                                 </td>
                                 <td>{{ $employee->payment_type }}</td>
                                 {{-- <td>

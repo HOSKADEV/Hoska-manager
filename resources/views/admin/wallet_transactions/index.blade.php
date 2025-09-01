@@ -197,7 +197,7 @@
                             <th>Description</th>
                             <th>Related Wallet</th>
                             <th>Date</th>
-                            @if($user->type === 'admin')
+                            @if(auth()->user()->type === 'admin')
                                 <th>Action</th>
                             @endif
                         </tr>
@@ -212,7 +212,7 @@
                             <th>Description</th>
                             <th>Related Wallet</th>
                             <th>Date</th>
-                            @if($user->type === 'admin')
+                            @if(auth()->user()->type === 'admin')
                                 <th>Action</th>
                             @endif
                         </tr>
@@ -249,7 +249,7 @@
                                 <td>{{ $txn->description ?? '-' }}</td>
                                 <td>{{ $txn->relatedWallet ? $txn->relatedWallet->name : '-' }}</td>
                                 <td>{{ \Carbon\Carbon::parse($txn->transaction_date)->format('Y-m-d H:i') }}</td>
-                                @if($user->type === 'admin')
+                                @if(auth()->user()->type === 'admin')
                                     <td>
                                             <a href="{{ route('admin.wallet-transactions.edit', $txn->id) }}" class="btn btn-sm btn-primary">
                                                 <i class="fas fa-edit"></i>

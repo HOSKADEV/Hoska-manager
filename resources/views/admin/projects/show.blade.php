@@ -87,7 +87,7 @@
             $remainingAmount = 0;
         } else {
             $paidAmount = $project->payments->sum('amount');
-            $remainingAmount = $project->total_amount - $paidAmount;
+            $remainingAmount = ($project->total_amount + $developmentsTotal) - $paidAmount;
         }
 
         $remainingDays = null;
@@ -300,25 +300,25 @@
                                 <tr>
                                     <th>Total Worked Hours</th>
                                     <td>
-                                    @if($project->is_manual)
-                                    @php
-                                    $manualHours = $project->manual_hours_spent ?? 0;
-                                    $wholeHours = floor($manualHours);
-                                    $minutes = round(($manualHours - $wholeHours) * 60);
-                                    @endphp
-                                    {{ $wholeHours }}h {{ $minutes }}m
-                                    @else
-                                    @php
-                                    $wholeHours = floor($totalHours ?? 0);
-                                    $minutes = round((($totalHours ?? 0) - $wholeHours) * 60);
-                                    @endphp
-                                    {{ $wholeHours }}h {{ $minutes }}m
+                                        @if($project->is_manual)
+                                            @php
+                                                $manualHours = $project->manual_hours_spent ?? 0;
+                                                $wholeHours = floor($manualHours);
+                                                $minutes = round(($manualHours - $wholeHours) * 60);
+                                            @endphp
+                                            {{ $wholeHours }}h {{ $minutes }}m
+                                        @else
+                                            @php
+                                                $wholeHours = floor($totalHours ?? 0);
+                                                $minutes = round((($totalHours ?? 0) - $wholeHours) * 60);
+                                            @endphp
+                                            {{ $wholeHours }}h {{ $minutes }}m
 
-                                    <button class="btn btn-sm btn-light border toggle-employee-details ml-3" type="button"
-                                    aria-expanded="false" title="Show details">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    @endif
+                                            <button class="btn btn-sm btn-light border toggle-employee-details ml-3" type="button"
+                                            aria-expanded="false" title="Show details">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                        @endif
                                     </td>
 
                                 </tr>

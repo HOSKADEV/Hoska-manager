@@ -318,8 +318,14 @@ class KpiController extends Controller
                     $totalIncome += $this->convertCurrency($invoice->amount, $walletCurrency, 'DZD');
                 }
 
-                $totalAmount = $project->total_amount ? $this->convertCurrency($project->total_amount, $project->currency, 'DZD') : 0;
-
+                $projectAmount = $project->total_amount ? $this->convertCurrency($project->total_amount, $project->currency, 'DZD') : 0;
+                $devlopmentsTotal = 0;
+                if ($project->developments) {
+                    foreach ($project->developments as $devlopment) {
+                        $devlopmentsTotal += $this->convertCurrency($devlopment->amount, $devlopment->currency, 'DZD');
+                    }
+                }
+                $totalAmount = $projectAmount + $devlopmentsTotal;
                 $profit = $totalIncome - $totalExpenses;
 
                 return [

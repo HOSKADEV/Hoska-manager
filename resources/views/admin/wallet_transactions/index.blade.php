@@ -197,7 +197,9 @@
                             <th>Description</th>
                             <th>Related Wallet</th>
                             <th>Date</th>
-                            <th>Action</th>
+                            @if($user->type === 'admin')
+                                <th>Action</th>
+                            @endif
                         </tr>
                     </thead>
                     <tfoot>
@@ -210,7 +212,9 @@
                             <th>Description</th>
                             <th>Related Wallet</th>
                             <th>Date</th>
-                            <th>Action</th>
+                            @if($user->type === 'admin')
+                                <th>Action</th>
+                            @endif
                         </tr>
                     </tfoot>
                     <tbody>
@@ -245,16 +249,18 @@
                                 <td>{{ $txn->description ?? '-' }}</td>
                                 <td>{{ $txn->relatedWallet ? $txn->relatedWallet->name : '-' }}</td>
                                 <td>{{ \Carbon\Carbon::parse($txn->transaction_date)->format('Y-m-d H:i') }}</td>
-                                <td>
-                                    <a href="{{ route('admin.wallet-transactions.edit', $txn->id) }}" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="{{ route('admin.wallet-transactions.destroy', $txn->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this transaction?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-                                    </form>
-                                </td>
+                                @if($user->type === 'admin')
+                                    <td>
+                                            <a href="{{ route('admin.wallet-transactions.edit', $txn->id) }}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form action="{{ route('admin.wallet-transactions.destroy', $txn->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this transaction?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        </td>
+                                    @endif
                             </tr>
                         @empty
                             <tr>

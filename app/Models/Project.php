@@ -103,24 +103,28 @@ class Project extends Model
         // Only completed tasks
         $tasks = $this->tasks()->where('status', 'completed')->get();
 
-        foreach ($tasks as $task) {
-            $hours = $task->duration_in_hours;
-            $employee = $task->employee;
+        if ($tasks) {
+            foreach ($tasks as $task) {
+                $hours = $task->duration_in_hours;
+                $employee = $task->employee;
 
-            if ($employee) {
-                $rate = $employee->rate ?? 0;
-                $cost = $hours * $rate;
+                if ($employee) {
+                    $rate = $employee->rate ?? 0;
+                    $cost = $hours * $rate;
 
-                // Convert cost into project currency
-                $rateToProjectCurrency = \App\Helpers\CurrencyHelper::convert(1, $employee->currency, $this->currency);
-                $expenses += $cost * $rateToProjectCurrency;
+                    // Convert cost into project currency
+                    $rateToProjectCurrency = CurrencyHelper::convert(1, $employee->currency, $this->currency);
+                    $expenses += $cost * $rateToProjectCurrency;
+                }
             }
         }
 
         // Add costs from our tasks
         $ourTasks = $this->ourTasks;
-        foreach ($ourTasks as $ourTask) {
-            $expenses += $ourTask->cost;
+        if ($ourTasks) {
+            foreach ($ourTasks as $ourTask) {
+                $expenses += $ourTask->cost;
+            }
         }
 
         return $expenses;

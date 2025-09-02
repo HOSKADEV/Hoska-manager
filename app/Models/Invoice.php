@@ -36,7 +36,7 @@ class Invoice extends Model
     }
 
     public function getCurrencyAttribute() {
-        return $this->project? $this->project->currency : ($this->development? $this->development->currency : 'DZD');
+        return $this->project ? $this->project->currency : ($this->development? $this->development->currency : 'DZD');
     }
 
 }

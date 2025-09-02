@@ -115,6 +115,7 @@ class WalletTransactionController extends Controller
         try {
             switch ($request->type) {
                 case 'expense':
+                case 'sallary':
                 case 'withdraw':
                     if ($wallet->balance < $request->amount) {
                         return redirect()->back()->withErrors(['amount' => 'Insufficient wallet balance.'])->withInput();

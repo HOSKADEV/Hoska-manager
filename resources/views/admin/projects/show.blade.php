@@ -596,8 +596,8 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="duration">Duration</label>
-                            <input type="text" class="form-control" id="duration" name="duration" placeholder="e.g. 2 days, 1 week">
+                            <label for="duration">Duration (hours)</label>
+                            <input type="text" class="form-control" id="duration" name="duration" placeholder="e.g. 100">
                         </div>
 
                         <div class="form-group">
@@ -643,8 +643,8 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="edit_duration">Duration</label>
-                            <input type="text" class="form-control" id="edit_duration" name="duration" placeholder="e.g. 2 days, 1 week">
+                            <label for="edit_duration">Duration (hours)</label>
+                            <input type="text" class="form-control" id="edit_duration" name="duration" placeholder="e.g. 100">
                         </div>
 
                         <div class="form-group">

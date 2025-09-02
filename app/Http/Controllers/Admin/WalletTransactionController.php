@@ -388,6 +388,7 @@ class WalletTransactionController extends Controller
 
             switch ($transaction->type) {
                 case 'expense':
+                case 'sallary':
                 case 'withdraw':
                     // استرجاع الرصيد المخصوم
                     $wallet->increment('balance', $transaction->amount);

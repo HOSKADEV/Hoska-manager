@@ -40,6 +40,8 @@ class TimesheetsController extends Controller
 
         $monthFilter = $request->input('month', now()->format('Y-m'));
         $isPaidFilter = $request->input('is_paid', 'all'); // الافتراضي 'all'
+        $hasSalaryFilter = $request->input('has_salary', 'all'); // 'all' or 'has_salary'
+        $selectedIds = $request->input('selected_ids', ''); // معرفات السجلات المحددة
 
         $query = Timesheet::query();
 
@@ -60,6 +62,11 @@ class TimesheetsController extends Controller
             $query->where('is_paid', $isPaidFilter);
         }
 
+        // تطبيق فلتر الرواتب (كل السجلات أو السجلات التي لديها راتب > 0)
+        if ($hasSalaryFilter === 'has_salary') {
+            $query->where('month_salary', '>', 0);
+        }
+
         $timesheets = $query->with('employee', 'project')->latest()->get();
 
         // إحصائيات ضمن فترة الشهر المختار
@@ -68,6 +75,11 @@ class TimesheetsController extends Controller
         // طبّق فلتر الدفع على الإحصائيات أيضاً بنفس المنطق
         if ($isPaidFilter !== 'all') {
             $statsQuery->where('is_paid', $isPaidFilter);
+        }
+
+        // تطبيق فلتر الرواتب على الإحصائيات أيضاً
+        if ($hasSalaryFilter === 'has_salary') {
+            $statsQuery->where('month_salary', '>', 0);
         }
 
         $totalHours = (clone $statsQuery)->sum('hours_worked');
@@ -100,6 +112,16 @@ class TimesheetsController extends Controller
             $salariesByCurrency[$currency] = ($salariesByCurrency[$currency] ?? 0) + $timesheet->month_salary;
         }
 
+        // حساب إحصائيات السجلات المحددة
+        $selectedCount = 0;
+        $selectedTotal = 0;
+        if (!empty($selectedIds)) {
+            $selectedIdsArray = explode(',', $selectedIds);
+            $selectedQuery = Timesheet::whereIn('id', $selectedIdsArray);
+            $selectedCount = $selectedQuery->count();
+            $selectedTotal = $selectedQuery->sum('month_salary');
+        }
+
         return view('admin.timesheets.index', compact(
             'timesheets',
             'availableMonths',
@@ -109,8 +131,11 @@ class TimesheetsController extends Controller
             'unpaidCount',
             'paidTotal',
             'unPaidTotal',
+            'selectedCount',
+            'selectedTotal',
             'monthFilter',
             'isPaidFilter',
+            'hasSalaryFilter',
             'columns',
             'salariesByCurrency' // أضفنا هذا المتغير الجديد
         ));
@@ -134,6 +159,10 @@ class TimesheetsController extends Controller
     {
         $columns = $request->input('columns', []);
         $month = $request->input('month', now()->format('Y-m'));
+        $exportOption = $request->input('export_option', 'all');
+        $selectedIds = $request->input('selected_ids', '');
+        $isPaidFilter = $request->input('is_paid', 'all');
+        $hasSalaryFilter = $request->input('has_salary', 'all');
 
         if (empty($columns)) {
             return redirect()->back()->with('error', 'يرجى تحديد الأعمدة للتصدير');
@@ -162,6 +191,22 @@ class TimesheetsController extends Controller
         // فلترة الشهر إلا إذا كان all (يعني كل الشهور)
         if ($month !== 'all') {
             $query->whereRaw('DATE_FORMAT(timesheets.work_date, "%Y-%m") = ?', [$month]);
+        }
+
+        // تطبيق فلتر الدفع
+        if ($isPaidFilter !== 'all') {
+            $query->where('is_paid', $isPaidFilter);
+        }
+
+        // تطبيق فلتر الرواتب
+        if ($hasSalaryFilter === 'has_salary') {
+            $query->where('month_salary', '>', 0);
+        }
+
+        // إذا تم اختيار "Export Selected Records Only" وتم تمرير معرفات محددة
+        if ($exportOption === 'selected' && !empty($selectedIds)) {
+            $selectedIdsArray = explode(',', $selectedIds);
+            $query->whereIn('timesheets.id', $selectedIdsArray);
         }
 
         $data = $query->get();

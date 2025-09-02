@@ -112,6 +112,30 @@
             </div>
         </div>
 
+        <!-- Selected Records -->
+        <div class="col-xl-4 col-md-6 mb-4" id="selectedRecordsCard" style="display: none;">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Selected Records
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                <span id="selectedCount">0</span>
+                            </div>
+                            <div class="text-xs font-weight-bold text-info mb-0">
+                                Total: <span id="selectedTotal">{{ $currencySymbols['USD'] ?? '$' }} 0.00</span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-square fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
 
@@ -142,6 +166,15 @@
                                 <option value="all" {{ request('is_paid', '') === 'all' ? 'selected' : '' }}>All</option>
                                 <option value="1" {{ request('is_paid') === '1' ? 'selected' : '' }}>Paid</option>
                                 <option value="0" {{ request('is_paid') === '0' ? 'selected' : '' }}>Unpaid</option>
+                            </select>
+                        </div>
+
+                        {{-- فلتر الرواتب --}}
+                        <div class="col-md-4">
+                            <label for="has_salary" class="form-label fw-bold text-secondary">💵 Filter by Salary</label>
+                            <select name="has_salary" id="has_salary" class="form-select select2">
+                                <option value="all" {{ request('has_salary', '') === 'all' ? 'selected' : '' }}>All (>= 0)</option>
+                                <option value="has_salary" {{ request('has_salary') === 'has_salary' ? 'selected' : '' }}>Has Salary Only (> 0)</option>
                             </select>
                         </div>
                     </div>
@@ -198,7 +231,7 @@
                             <tr>
                                 <td>
                                     <div class="form-check" >
-                                        <input type="checkbox" data-id="{{ $timesheet->id }}" class="form-check-input row-checkbox">
+                                        <input type="checkbox" data-id="{{ $timesheet->id }}" data-salary="{{ $timesheet->month_salary }}" class="form-check-input row-checkbox">
                                     </div>
                                 </td>
                                 <td>{{ $loop->iteration }}</td>
@@ -261,6 +294,9 @@
                 <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
                     <form method="POST" action="{{ route('admin.export.timesheet') }}">
                         @csrf
+                        <input type="hidden" name="month" value="{{ $monthFilter }}">
+                        <input type="hidden" name="is_paid" value="{{ $isPaidFilter }}">
+                        <input type="hidden" name="has_salary" value="{{ $hasSalaryFilter }}">
                         <div class="modal-content">
                             <div class="modal-header bg-primary text-white">
                                 <h5 class="modal-title" id="exportModalLabel">
@@ -369,14 +405,14 @@
         <!-- Initialize Select2 -->
         <script>
             $(document).ready(function () {
-                $('#month, #is_paid').select2({
+                $('#month, #is_paid, #has_salary').select2({
                     placeholder: "📆 Select an option",
                     allowClear: true,
                     width: '100%'
                 });
 
                 // استمع لأي تغيير في الفلاتر وأرسل الفورم
-                $('#month, #is_paid').on('change', function () {
+                $('#month, #is_paid, #has_salary').on('change', function () {
                     $(this).closest('form').submit();
                 });
 
@@ -398,6 +434,22 @@
                 function updateSelectedCount() {
                     var count = $('.row-checkbox:checked').length;
                     $('#selected-count').text(count);
+
+                    // Show/hide selected records card
+                    if (count > 0) {
+                        $('#selectedRecordsCard').show();
+                        $('#selectedCount').text(count);
+
+                        // Calculate total of selected records
+                        var total = 0;
+                        $('.row-checkbox:checked').each(function() {
+                            var salary = parseFloat($(this).data('salary')) || 0;
+                            total += salary;
+                        });
+                        $('#selectedTotal').text('{{ $currencySymbols["USD"] ?? "$" }} ' + total.toFixed(2));
+                    } else {
+                        $('#selectedRecordsCard').hide();
+                    }
                 }
 
                 // Handle export form submission

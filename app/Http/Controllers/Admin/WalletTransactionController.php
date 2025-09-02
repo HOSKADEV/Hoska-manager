@@ -269,6 +269,7 @@ class WalletTransactionController extends Controller
             // إلغاء تأثير المعاملة القديمة على الرصيد
             switch ($transaction->type) {
                 case 'expense':
+                case 'sallary':
                 case 'withdraw':
                     $oldWallet->increment('balance', $transaction->amount);
                     break;
@@ -298,6 +299,7 @@ class WalletTransactionController extends Controller
             // تنفيذ التحديث الجديد وتأثيره على الرصيد
             switch ($request->type) {
                 case 'expense':
+                case 'sallary':
                 case 'withdraw':
                     if ($newWallet->balance < $request->amount) {
                         return back()->withErrors(['amount' => 'Insufficient wallet balance.'])->withInput();

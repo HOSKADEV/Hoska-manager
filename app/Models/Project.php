@@ -68,8 +68,10 @@ class Project extends Model
 
     public function getTotalAmountProjectWithDevelopmentsAttribute() {
         $amount = $this->total_amount;
-        foreach ($this->developments as $development) {
-            $amount += CurrencyHelper::convert($development->amount, $development->currency, $this->currency);
+        if ($this->developments) {
+            foreach ($this->developments as $development) {
+                $amount += CurrencyHelper::convert($development->amount, $development->currency, $this->currency);
+            }
         }
         return $amount;
     }
@@ -77,13 +79,14 @@ class Project extends Model
     public function getTotalPaidAmountProjectWithDevelopmentsAttribute()
     {
         $total = 0;
-
-        foreach ($this->payments as $payment) {
-            $total += CurrencyHelper::convert(
-                $payment->amount,
-                $payment->invoice->currency,   // source currency
-                $this->currency       // project currency
-            );
+        if ($this->payments) {
+            foreach ($this->payments as $payment) {
+                $total += CurrencyHelper::convert(
+                    $payment->amount,
+                    $payment->invoice->currency,   // source currency
+                    $this->currency       // project currency
+                );
+            }
         }
 
         if ($this->manual_cost) {

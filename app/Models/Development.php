@@ -46,6 +46,10 @@ class Development extends Model
         return $this->invoices->sum('amount');
     }
 
+    public function getCurrencyAttribute() {
+        return $this->currency ?? $this->project->currency;
+    }
+
     // ✅ الحالة النصية حسب الأيام المتبقية
     public function getStatusTextAttribute()
     {

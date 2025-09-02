@@ -515,8 +515,8 @@
                                     <th>#</th>
                                     <th>Title</th>
                                     <th>Description</th>
-                                    <th>Cost</th>
                                     <th>Duration</th>
+                                    <th>Cost</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>

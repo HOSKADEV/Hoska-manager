@@ -49,6 +49,10 @@ class Project extends Model
     {
         return $this->hasMany(Task::class);
     }
+    public function ourTasks()
+    {
+        return $this->hasMany(OurTask::class);
+    }
     public function attachments()
     {
         return $this->morphMany(Attachment::class, 'attachable');
@@ -104,10 +108,16 @@ class Project extends Model
                 $rate = $employee->rate ?? 0;
                 $cost = $hours * $rate;
 
-                // Convert cost into DZD
+                // Convert cost into project currency
                 $rateToProjectCurrency = \App\Helpers\CurrencyHelper::convert(1, $employee->currency, $this->currency);
                 $expenses += $cost * $rateToProjectCurrency;
             }
+        }
+
+        // Add costs from our tasks
+        $ourTasks = $this->ourTasks;
+        foreach ($ourTasks as $ourTask) {
+            $expenses += $ourTask->cost;
         }
 
         return $expenses;

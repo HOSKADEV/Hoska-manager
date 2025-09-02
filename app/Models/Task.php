@@ -50,8 +50,7 @@ class Task extends Model
         };
     }
 
-    protected static function booted()
-    {
+    protected static function booted() {
         static::saved(function ($task) {
             if ($task->employee_id && $task->start_time) {
                 Timesheet::updateMonthlyTimesheet($task->employee_id, $task->start_time->toDateString());

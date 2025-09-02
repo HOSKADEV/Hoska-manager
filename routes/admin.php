@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\EmployeesController;
 use App\Http\Controllers\Admin\InvoicesController;
 use App\Http\Controllers\Admin\KpiController;
 use App\Http\Controllers\Admin\NotesController;
+use App\Http\Controllers\Admin\OurTasksController;
 use App\Http\Controllers\Admin\PaymentsController;
 use App\Http\Controllers\Admin\ProjectsController;
 use App\Http\Controllers\Admin\TaskImportController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Admin\WalletTransactionController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Mails\VerficationEmailController;
 use Illuminate\Support\Facades\Route;
+
 
 
 Route::prefix('admin')->name('admin.')->middleware(['isAuth'])->group(function () {
@@ -34,6 +36,8 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth'])->group(function (
     Route::resource('tasks', TasksController::class);
     Route::post('tasks/import', [TaskImportController::class, 'import'])->name('tasks.import');
     Route::post('tasks/export-selected', [TasksController::class, 'exportSelected'])->name('tasks.export-selected');
+
+    Route::resource('our-tasks', OurTasksController::class);
 
     Route::resource('notes', NotesController::class);
 });

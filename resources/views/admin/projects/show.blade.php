@@ -176,19 +176,6 @@
                     <p><strong>Duration:</strong>
                         {{ $project->duration_days ? $project->duration_days . ' day(s)' : '-' }}</p>
                     <p><strong>Delivery Date:</strong> {{ $project->delivery_date ?? '-' }}</p>
-                    @php $status = $project->status_text; @endphp
-                    <p><strong>Status:</strong>
-                    <span class="badge
-                        {{ $status == 'delivered' ? 'bg-primary text-white' : '' }}
-                        {{ $status == 'expired' ? 'bg-danger text-white' : '' }}
-                        {{ $status == 'due_today' ? 'bg-warning text-dark' : '' }}
-                        {{ $status == 'active' ? 'bg-success' : '' }}
-                        ">
-                        @if($status == 'delivered')
-                            Delivered
-                        @else
-                            {{ ucfirst(str_replace('_', ' ', $status)) }}
-                        @endif
                     </span>
                     </p>
                     <hr>
@@ -440,7 +427,7 @@
         <div class="row gy-4 align-items-stretch mt-4">
             <div class="col-lg-12">
                 <div class="card mb-5 shadow-sm h-100">
-                    <div class="card-header bg-secondary text-white">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Developments Information</h5>
                     </div>
                     <div class="card-body">
@@ -451,7 +438,8 @@
                                         <th>#</th>
                                         <th>Description</th>
                                         @unless ($isEmployee)
-                                        <th>Amount</th>
+                                        <th>Total Amount</th>
+                                        <th>Paid Amount</th>
                                         @endunless
                                         <th>Project Name</th>
                                         <th>Start Date</th>
@@ -474,6 +462,7 @@
                                             @unless ($isEmployee)
 
                                             <td>{{ $currencySymbols[$currency] ?? '' }}{{ number_format($development->amount, 2) }}</td>
+                                            <td>{{ $currencySymbols[$currency] ?? '' }}{{ number_format($development->paid_amount, 2) }}</td>
                                             @endunless
                                             <td>{{ $development->project->name ?? '-' }}</td>
                                             <td>{{ $development->start_date ? \Carbon\Carbon::parse($development->start_date)->format('Y-m-d') : '-' }}</td>
@@ -507,6 +496,278 @@
             </div>
         </div>
     @endif
+
+    <!-- Tasks Section -->
+    <div class="row gy-4 align-items-stretch mt-4">
+        <div class="col-lg-12">
+            <div class="card mb-5 shadow-sm h-100">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Our Tasks Information</h5>
+                    <button type="button" class="btn btn-sm btn-light" data-toggle="modal" data-target="#addTaskModal">
+                        <i class="fas fa-plus"></i> Add New Task
+                    </button>
+                </div>
+                <div class="card-body">
+                    @if($project->tasks->isNotEmpty())
+                        <table class="table table-bordered table-striped mb-0" style="font-size: 0.9rem;">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                    <th>Cost</th>
+                                    <th>Duration</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($project->ourTasks as $index => $task)
+                                    @php
+                                        $currencySymbols = [
+                                            'USD' => '$',
+                                            'EUR' => '€',
+                                            'DZD' => 'DZ'
+                                        ];
+                                        // Duration is now displayed as text
+                                        $totalMinutes = (int) round($task->duration * 60);
+                                        $hours = intdiv($totalMinutes, 60);
+                                        $minutes = $totalMinutes % 60;
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $task->title }}</td>
+                                        <td>{{ $task->description ?? '-' }}</td>
+                                        <td>{{ $hours }}h {{ $minutes }}m</td>
+                                        <td>{{ $currencySymbols[$project->currency] ?? '' }}{{ number_format($task->cost, 2) }}</td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-info edit-task-btn"
+                                                data-id="{{ $task->id }}"
+                                                data-title="{{ $task->title }}"
+                                                data-description="{{ $task->description }}"
+                                                data-duration="{{ $task->duration ?? '' }}"
+                                                data-cost="{{ $task->cost }}"
+                                                data-toggle="modal" data-target="#editTaskModal">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <form action="{{ route('admin.our-tasks.destroy', $task->id) }}" method="POST" class="delete-task-form" style="display: inline-block">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    @else
+                        <p class="text-muted text-center">No tasks found. Click "Add New Task" to create one.</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Task Modal -->
+    <div class="modal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form action="{{ route('admin.our-tasks.store') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="project_id" value="{{ $project->id }}">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addTaskModalLabel">Add New Task</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="title">Title</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="duration">Duration</label>
+                            <input type="text" class="form-control" id="duration" name="duration" placeholder="e.g. 2 days, 1 week">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cost">Cost</label>
+                            <input type="number" class="form-control" id="cost" name="cost" step="0.01" min="0">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Task</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div class="modal fade" id="editTaskModal" tabindex="-1" role="dialog" aria-labelledby="editTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form action="#" method="POST" id="editTaskForm">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" name="project_id" value="{{ $project->id }}">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editTaskModalLabel">Edit Task</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="edit_title">Title</label>
+                            <input type="text" class="form-control" id="edit_title" name="title" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="edit_description">Description</label>
+                            <textarea class="form-control" id="edit_description" name="description" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="edit_duration">Duration</label>
+                            <input type="text" class="form-control" id="edit_duration" name="duration" placeholder="e.g. 2 days, 1 week">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="edit_cost">Cost</label>
+                            <input type="number" class="form-control" id="edit_cost" name="cost" step="0.01" min="0">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update Task</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @push('js')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Handle edit task button click
+                document.querySelectorAll('.edit-task-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const taskId = this.getAttribute('data-id');
+                        const title = this.getAttribute('data-title');
+                        const description = this.getAttribute('data-description');
+                        const duration = this.getAttribute('data-duration');
+                        const cost = this.getAttribute('data-cost');
+
+                        // Populate form fields
+                        document.getElementById('edit_title').value = title;
+                        document.getElementById('edit_description').value = description;
+                        document.getElementById('edit_duration').value = duration;
+                        document.getElementById('edit_cost').value = cost;
+
+                        // Update form action
+                        const form = document.getElementById('editTaskForm');
+                        const baseUrl = "{{ url('/admin/our-tasks/') }}";
+                        form.action = baseUrl + '/' + taskId;
+                    });
+                });
+
+                // Handle add task form submission with AJAX
+                const addTaskForm = document.querySelector('#addTaskModal form');
+                if (addTaskForm) {
+                    addTaskForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+
+                        const formData = new FormData(this);
+                        const url = this.action;
+
+                        fetch(url, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').length ? $('meta[name="csrf-token"]').attr('content') : $('input[name="_token"]').val()
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Close modal
+                            $('#addTaskModal').modal('hide');
+
+                            // Reset form
+                            this.reset();
+
+                            // Show success message
+                            if (typeof flash !== 'undefined') {
+                                flash().success('Task created successfully');
+                            } else {
+                                alert('Task created successfully');
+                            }
+
+                            // Reload page to show new task
+                            window.location.reload();
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error creating task. Please try again.');
+                        });
+                    });
+                }
+
+                // Handle edit task form submission with AJAX
+                const editTaskForm = document.getElementById('editTaskForm');
+                if (editTaskForm) {
+                    editTaskForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+
+                        const formData = new FormData(this);
+                        const url = this.action;
+
+                        fetch(url, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').length ? $('meta[name="csrf-token"]').attr('content') : $('input[name="_token"]').val()
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Close modal
+                            $('#editTaskModal').modal('hide');
+
+                            // Show success message
+                            if (typeof flash !== 'undefined') {
+                                flash().success('Task updated successfully');
+                            } else {
+                                alert('Task updated successfully');
+                            }
+
+                            // Reload page to show updated task
+                            window.location.reload();
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error updating task. Please try again.');
+                        });
+                    });
+                }
+            });
+        </script>
+    @endpush
     <div class="mt-4 p-3 border rounded bg-white text-dark mb-3 small d-flex justify-content-between align-items-center flex-wrap"
         style="max-width: 100%;">
         <div class="mb-2 d-flex align-items-center">
@@ -518,5 +779,67 @@
             <span><strong>Last Updated:</strong> {{ $project->updated_at->format('d M Y, H:i') }}</span>
         </div>
     </div>
+
+    @push('js')
+        <script>
+            $(document).ready(function() {
+                // Handle edit task button click
+                $('.edit-task-btn').on('click', function() {
+                    const taskId = $(this).data('id');
+                    const title = $(this).data('title');
+                    const description = $(this).data('description');
+                    const duration = $(this).data('duration');
+                    const cost = $(this).data('cost');
+
+                    // Populate the edit form
+                    $('#edit_title').val(title);
+                    $('#edit_description').val(description);
+                    $('#edit_duration').val(duration);
+                    $('#edit_cost').val(cost);
+
+                    // Update form action URL
+                    const baseUrl = "{{ url('/admin/our-tasks/') }}";
+                    $('#editTaskForm').attr('action', baseUrl + '/' + taskId);
+                });
+
+                // Handle delete task with AJAX
+                $(document).on('submit', '.delete-task-form', function(e) {
+                    e.preventDefault();
+
+                    if (confirm('Are you sure you want to delete this task?')) {
+                        const form = $(this);
+                        const url = form.attr('action');
+
+                        $.ajax({
+                            url: url,
+                            type: 'POST',
+                            data: form.serialize(),
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').length ? $('meta[name="csrf-token"]').attr('content') : $('input[name="_token"]').val()
+                            },
+                            success: function(response) {
+                                // Show success message
+                                if (typeof flash !== 'undefined') {
+                                    flash().success('Task deleted successfully');
+                                } else {
+                                    alert('Task deleted successfully');
+                                }
+
+                                // Reload page to reflect deletion
+                                window.location.reload();
+                            },
+                            error: function(xhr) {
+                                let errorMessage = 'Error deleting task. Please try again.';
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                }
+                                alert(errorMessage);
+                            }
+                        });
+                    }
+                });
+            });
+        </script>
+    @endpush
 
 </x-dashboard>

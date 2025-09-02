@@ -31,7 +31,7 @@ class TimesheetsController extends Controller
     {
 
         $this->generateMonthlyTimesheets();
-        
+
         $availableMonths = Timesheet::selectRaw('DATE_FORMAT(work_date, "%Y-%m") as value, DATE_FORMAT(work_date, "%M %Y") as label')
             ->groupBy('value', 'label')
             ->orderBy('value', 'desc')
@@ -76,12 +76,18 @@ class TimesheetsController extends Controller
         if ($isPaidFilter === '1') {
             $paidCount = (clone $statsQuery)->count();
             $unpaidCount = 0;
+            $unPaidTotal = 0;
+            $paidTotal = (clone $statsQuery)->sum('month_salary');
         } elseif ($isPaidFilter === '0') {
             $paidCount = 0;
             $unpaidCount = (clone $statsQuery)->count();
+            $unPaidTotal = (clone $statsQuery)->sum('month_salary');
+            $paidTotal = 0;
         } else {
             $paidCount = (clone $statsQuery)->where('is_paid', true)->count();
             $unpaidCount = (clone $statsQuery)->where('is_paid', false)->count();
+            $paidTotal = (clone $statsQuery)->where('is_paid', true)->sum('month_salary');
+            $unPaidTotal = (clone $statsQuery)->where('is_paid', false)->sum('month_salary');
         }
 
         $columns = Schema::getColumnListing('timesheets');
@@ -101,6 +107,8 @@ class TimesheetsController extends Controller
             'totalSalaries',
             'paidCount',
             'unpaidCount',
+            'paidTotal',
+            'unPaidTotal',
             'monthFilter',
             'isPaidFilter',
             'columns',

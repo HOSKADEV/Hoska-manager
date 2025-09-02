@@ -76,6 +76,9 @@
                             <div class="h5 mb-0 font-weight-bold text-gray-800">
                                 {{ $paidCount }}
                             </div>
+                            <div class="text-xs font-weight-bold text-info mb-0">
+                                Total: {{ $currencySymbols['USD'] ?? '$' }} {{ number_format($paidTotal, 2) }}
+                            </div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-check-circle fa-2x text-gray-300"></i>
@@ -96,6 +99,9 @@
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">
                                 {{ $unpaidCount }}
+                            </div>
+                            <div class="text-xs font-weight-bold text-info mb-0">
+                                Total: {{ $currencySymbols['USD'] ?? '$' }} {{ number_format($unPaidTotal, 2) }}
                             </div>
                         </div>
                         <div class="col-auto">
@@ -151,6 +157,11 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                         <tr>
+                            <th>
+                                <div class="form-check" style="margin-bottom: 25px;">
+                                    <input type="checkbox" id="selectAll" class="form-check-input">
+                                </div>
+                            </th>
                             <th>#</th>
                             <th>Employee Name</th>
                             <th>Duration (hours)</th>
@@ -165,6 +176,11 @@
                     </thead>
                     <tfoot>
                         <tr>
+                            <th>
+                                <div class="form-check" style="margin-bottom: 25px;">
+                                    <input type="checkbox" id="selectAllFooter" class="form-check-input">
+                                </div>
+                            </th>
                             <th>#</th>
                             <th>Employee Name</th>
                             <th>Duration (hours)</th>
@@ -180,6 +196,11 @@
                     <tbody>
                         @forelse ($timesheets as $timesheet)
                             <tr>
+                                <td>
+                                    <div class="form-check" >
+                                        <input type="checkbox" data-id="{{ $timesheet->id }}" class="form-check-input row-checkbox">
+                                    </div>
+                                </td>
                                 <td>{{ $loop->iteration }}</td>
                                 <td>{{ $timesheet->employee->name ?? '_'}}</td>
                                 <td>{{ $timesheet->hours_worked }}</td>
@@ -251,6 +272,25 @@
                             </div>
 
                             <div class="modal-body">
+                                <div class="mb-3">
+                                    <h6 class="font-weight-bold text-secondary">
+                                        <i class="fas fa-file-export mr-1"></i> Export Options:
+                                    </h6>
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="radio" name="export_option" id="export_all" value="all" checked>
+                                        <label class="form-check-label" for="export_all">
+                                            Export All Records
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="export_option" id="export_selected" value="selected">
+                                        <label class="form-check-label" for="export_selected">
+                                            Export Selected Records Only (<span id="selected-count">0</span> selected)
+                                        </label>
+                                    </div>
+                                    <input type="hidden" name="selected_ids" id="selected_ids" value="">
+                                </div>
+
                                 <div class="mb-3">
                                     <h6 class="font-weight-bold text-secondary">
                                         <i class="fas fa-columns mr-1"></i> اختر الأعمدة المطلوب تصديرها:
@@ -338,6 +378,54 @@
                 // استمع لأي تغيير في الفلاتر وأرسل الفورم
                 $('#month, #is_paid').on('change', function () {
                     $(this).closest('form').submit();
+                });
+
+                // Handle select all checkboxes
+                $('#selectAll, #selectAllFooter').on('change', function() {
+                    $('.row-checkbox').prop('checked', $(this).prop('checked'));
+                    updateSelectedCount();
+                });
+
+                // Handle individual row checkboxes
+                $('.row-checkbox').on('change', function() {
+                    updateSelectedCount();
+                    // Update select all checkbox state
+                    var allChecked = $('.row-checkbox').length === $('.row-checkbox:checked').length;
+                    $('#selectAll, #selectAllFooter').prop('checked', allChecked);
+                });
+
+                // Update selected count
+                function updateSelectedCount() {
+                    var count = $('.row-checkbox:checked').length;
+                    $('#selected-count').text(count);
+                }
+
+                // Handle export form submission
+                $('form[action="{{ route('admin.export.timesheet') }}"]').on('submit', function(e) {
+                    if ($('#export_selected').is(':checked')) {
+                        var selectedIds = [];
+                        $('.row-checkbox:checked').each(function() {
+                            selectedIds.push($(this).data('id'));
+                        });
+
+                        if (selectedIds.length === 0) {
+                            e.preventDefault();
+                            Swal.fire({
+                                title: 'No Selection',
+                                text: "Please select at least one record to export.",
+                                icon: 'warning',
+                                confirmButtonText: 'OK'
+                            });
+                            return;
+                        }
+
+                        $('#selected_ids').val(selectedIds.join(','));
+                    }
+                });
+
+                // Update selected count when export modal is shown
+                $('#exportModal').on('show.bs.modal', function() {
+                    updateSelectedCount();
                 });
             });
         </script>

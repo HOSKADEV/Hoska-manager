@@ -70,6 +70,50 @@ class Project extends Model
         return $amount;
     }
 
+    public function getTotalPaidAmountProjectWithDevelopmentsAttribute()
+    {
+        $total = 0;
+
+        foreach ($this->payments as $payment) {
+            $total += CurrencyHelper::convert(
+                $payment->amount,
+                $payment->invoice->currency,   // source currency
+                $this->currency       // project currency
+            );
+        }
+
+        if ($this->manual_cost) {
+            $total += $this->manual_cost;
+        }
+
+        return $total;
+    }
+
+    public function getTotalExpensesAttribute()
+    {
+        $expenses = 0;
+
+        // Only completed tasks
+        $tasks = $this->tasks()->where('status', 'completed')->get();
+
+        foreach ($tasks as $task) {
+            $hours = $task->duration_in_hours;
+            $employee = $task->employee;
+
+            if ($employee) {
+                $rate = $employee->rate ?? 0;
+                $cost = $hours * $rate;
+
+                // Convert cost into DZD
+                $rateToProjectCurrency = \App\Helpers\CurrencyHelper::convert(1, $employee->currency, $this->currency);
+                $expenses += $cost * $rateToProjectCurrency;
+            }
+        }
+
+        return $expenses;
+    }
+
+
     // حساب الأيام المتبقية تلقائيًا
     public function getRemainingDaysAttribute()
     {

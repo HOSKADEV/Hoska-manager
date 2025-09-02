@@ -292,7 +292,7 @@
                                 @unless(Auth::user()->type === 'employee')
                                     <td>
                                         {{ $currencySymbols[$project->currency] ?? '' }}
-                                        {{ number_format($project->total_amount, 2) }}
+                                        {{ number_format($project->total_amount_project_with_developments, 2) }}
                                     </td>
                                 @endunless
                                 {{-- <td>
@@ -334,59 +334,20 @@
                                     @endif
                                 </td>
                                 @unless(Auth::user()->type === 'employee')
-                                    @php
-                                        if ($project->is_manual) {
-                                            // المشروع يدوي: المبلغ الكلي = المدفوع، والمتبقي صفر
-                                            $paidAmount = $project->total_amount;
-                                            $remainingAmount = 0;
-                                            // For manual projects, use the manual cost as expenses
-                                            $expenses = $project->manual_cost ?? 0;
-                                        } else {
-                                            $paidAmount = $project->payments->sum('amount');
-                                            $remainingAmount = $project->total_amount - $paidAmount;
-                                            // Calculate expenses based on employee hours and rates
-                                            $expenses = 0;
-                                            $incomes = 0;
-                                            // Get all completed tasks for this project
-                                            $tasks = $project->tasks()->where('status', 'completed')->get();
-
-                                            // Calculate total cost based on employee hours and rates
-                                            foreach ($tasks as $task) {
-                                                $hours = $task->duration_in_hours;
-                                                $employee = $task->employee;
-                                                if ($employee) {
-                                                    $rate = $employee->rate ?? 0;
-                                                    $cost = $hours * $rate;
-                                                    $currency = $employee->currency ?? $project->currency;
-                                                    $rateToDZD = \App\Helpers\CurrencyHelper::convert(1, $currency, 'DZD');
-                                                    $expenses += $cost * $rateToDZD;
-                                                    // $expenses += $hours * $rate;
-                                                }
-                                            }
-
-                                            foreach ($project->invoices as $invoice) {
-                                                // $invoiceToDZD = \App\Helpers\CurrencyHelper::convert($invoice->amount, $invoice->currency, 'DZD');
-                                                $incomes += $invoice->amount;
-                                            }
-                                        }
-
-                                        // Calculate profits
-                                        $profits = $incomes - $expenses;
-                                    @endphp
                                     <td>
-                                        <span class="{{ $remainingAmount == 0 ? 'text-success' : 'text-danger' }}">
+                                        <span class="{{ ($project->total_amount_project_with_developments - $project->total_paid_amount_project_with_developments) == 0 ? 'text-success' : 'text-danger' }}">
                                             {{ $currencySymbols[$project->currency] ?? '' }}
-                                            {{ number_format($remainingAmount, 2) }}
+                                            {{ number_format($project->total_amount_project_with_developments - $project->total_paid_amount_project_with_developments, 2) }}
                                         </span>
                                     </td>
                                     <td>
                                         {{ $currencySymbols[$project->currency] ?? '' }}
-                                        {{ number_format($expenses, 2) }}
+                                        {{ number_format($project->total_expenses, 2) }}
                                     </td>
                                     <td>
-                                        <span class="{{ $profits >= 0 ? 'text-success' : 'text-danger' }}">
+                                        <span class="{{ ($project->total_paid_amount_project_with_developments - $project->total_expenses) >= 0 ? 'text-success' : 'text-danger' }}">
                                             {{ $currencySymbols[$project->currency] ?? '' }}
-                                            {{ number_format($profits, 2) }}
+                                            {{ number_format($project->total_paid_amount_project_with_developments - $project->total_expenses, 2) }}
                                         </span>
                                     </td>
                                 @endunless

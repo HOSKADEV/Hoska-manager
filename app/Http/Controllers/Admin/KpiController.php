@@ -271,63 +271,12 @@ class KpiController extends Controller
         $projectProfits = [];
         $projectsWithProfits = Project::whereYear('start_date', $year)
             ->whereMonth('start_date', $selectedMonth)
-            // ->where('status', 'completed')
-            ->with(['invoices' => function($query) {
-                $query->where('is_paid', 1);
-            }])
             ->get()
             ->map(function ($project) {
-                // المهام المكتملة
-                $tasks = $project->tasks()->where('status', 'completed')->get();
-
-                $hoursByEmployee = [];
-                foreach ($tasks as $task) {
-                    $hours = $task->duration_in_hours;
-                    if (!isset($hoursByEmployee[$task->employee_id])) {
-                        $hoursByEmployee[$task->employee_id] = 0;
-                    }
-                    $hoursByEmployee[$task->employee_id] += $hours;
-                }
-
-                // جلب بيانات الموظفين (بما فيها المعدل والعملة)
-                $employees = Employee::whereIn('id', array_keys($hoursByEmployee))->get()->keyBy('id');
-
-                $totalCostDZD = 0;
-                foreach ($hoursByEmployee as $employeeId => $hours) {
-                    $employee = $employees[$employeeId];
-                    $rate = $employee->rate; // الأجر حسب موظف (افتراض)
-                    $cost = $hours * $rate;
-                    $costsByEmployee[$employeeId] = $cost;
-
-                    // تحويل التكلفة إلى دينار جزائري (مثلاً إذا الموظف بعملة أخرى تحتاج تحويل)
-                    // هنا نفترض المعدل بالدينار، أو اضف التحويل حسب العملة:
-                    $currency = $employee->currency ?? $project->currency;
-                    $rateToDZD = $this->convertCurrency(1, $currency, 'DZD') ?? 1;
-                    $totalCostDZD += $cost * $rateToDZD;
-                }
-
-                if($project->is_manual){
-                    $totalExpenses = $project->manual_cost ? $this->convertCurrency($project->manual_cost, $project->currency, 'DZD') : 0;
-                } else{
-                    $totalExpenses = $totalCostDZD ?? 0;
-                }
-
-                $totalIncome = 0;
-                foreach ($project->invoices as $invoice) {
-                    $walletCurrency = $invoice->currency;
-                    $totalIncome += $this->convertCurrency($invoice->amount, $walletCurrency, 'DZD');
-                }
-
-                $projectAmount = $project->total_amount ? $this->convertCurrency($project->total_amount, $project->currency, 'DZD') : 0;
-                $devlopmentsTotal = 0;
-                if ($project->developments) {
-                    foreach ($project->developments as $devlopment) {
-                        $devlopmentsTotal += $this->convertCurrency($devlopment->amount, $devlopment->currency, 'DZD');
-                    }
-                }
-                $totalAmount = $projectAmount + $devlopmentsTotal;
+                $totalAmount = $this->convertCurrency($project->total_amount_project_with_developments, $project->currency, 'DZD');
+                $totalIncome = $this->convertCurrency($project->total_paid_amount_project_with_developments, $project->currency, 'DZD');
+                $totalExpenses = $this->convertCurrency($project->total_expenses, $project->currency, 'DZD');
                 $profit = $totalIncome - $totalExpenses;
-
                 return [
                     'id' => $project->id,
                     'name' => $project->name,

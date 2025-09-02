@@ -81,15 +81,6 @@
         $isEmployee = auth()->user()->type === 'employee';
         $currencySymbols = ['USD' => '$', 'EUR' => '€', 'DZD' => 'DZ'];
 
-        if ($project->is_manual) {
-            // المشروع يدوي: المبلغ الكلي = المدفوع، والمتبقي صفر
-            $paidAmount = $project->total_amount;
-            $remainingAmount = 0;
-        } else {
-            $paidAmount = $project->payments->sum('amount');
-            $remainingAmount = ($project->total_amount + $developmentsTotal) - $paidAmount;
-        }
-
         $remainingDays = null;
         $remainingText = "N/A";
         $remainingClass = "badge bg-secondary";
@@ -134,7 +125,7 @@
                     <div class="card-body">
                         <h5 class="card-title">Paid Amount</h5>
                         <p class="card-text fs-4">{{ $currencySymbols[$project->currency] ?? '' }}
-                            {{ number_format($paidAmount, 2) }}
+                            {{ number_format($project->total_paid_amount_project_with_developments, 2) }}
                         </p>
                     </div>
                 </div>
@@ -144,7 +135,7 @@
                     <div class="card-body">
                         <h5 class="card-title">Remaining Amount</h5>
                         <p class="card-text fs-4">{{ $currencySymbols[$project->currency] ?? '' }}
-                            {{ number_format($remainingAmount, 2) }}
+                            {{ number_format($project->total_amount_project_with_developments - $project->total_paid_amount_project_with_developments, 2) }}
                         </p>
                     </div>
                 </div>
@@ -287,13 +278,13 @@
                                 <tr>
                                     <th>Paid Amount</th>
                                     <td class="text-success">{{ $currencySymbols[$project->currency] ?? '' }}
-                                        {{ number_format($paidAmount, 2) }}
+                                        {{ number_format($project->total_paid_amount_project_with_developments, 2) }}
                                     </td>
                                 </tr>
                                 <tr>
                                     <th>Remaining Amount</th>
                                     <td class="text-danger">{{ $currencySymbols[$project->currency] ?? '' }}
-                                        {{ number_format($remainingAmount, 2) }}
+                                        {{ number_format($project->total_amount_project_with_developments - $project->total_paid_amount_project_with_developments, 2) }}
                                     </td>
                                 </tr>
 

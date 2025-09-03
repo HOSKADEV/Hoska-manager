@@ -151,6 +151,30 @@
             </div>
         </div>
     </div>
+    <!-- Projects Profit Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">Projects Profit</h6>
+                    <div class="month-selector-container">
+                        <select class="form-control month-selector" id="projectProfitMonthSelector" aria-label="Select Month" style="width: auto;">
+                            @for($month = 1; $month <= 12; $month++)
+                                <option value="{{ $month }}" {{ $selectedMonth == $month ? 'selected' : '' }}>
+                                    {{ date('F', mktime(0, 0, 0, $month, 1)) }}
+                                </option>
+                            @endfor
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="projectProfitsChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Customer Satisfaction (CSAT) Example -->
     <div class="row mb-4">
         <div class="col-12">
@@ -254,30 +278,7 @@
         </div>
     </div>
 
-    <!-- Projects Profit Chart -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow h-100">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Projects Profit</h6>
-                    <div class="month-selector-container">
-                        <select class="form-control month-selector" id="projectProfitMonthSelector" aria-label="Select Month" style="width: auto;">
-                            @for($month = 1; $month <= 12; $month++)
-                                <option value="{{ $month }}" {{ $selectedMonth == $month ? 'selected' : '' }}>
-                                    {{ date('F', mktime(0, 0, 0, $month, 1)) }}
-                                </option>
-                            @endfor
-                        </select>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="chart-container">
-                        <canvas id="projectProfitsChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     @push('js')
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

@@ -77,7 +77,7 @@
                                 {{ $paidCount }}
                             </div>
                             <div class="text-xs font-weight-bold text-info mb-0">
-                                Total: {{ $currencySymbols['USD'] ?? '$' }} {{ number_format($paidTotal, 2) }}
+                                Total: {{ $currencySymbols['DZD'] ?? 'DZ' }} {{ number_format($paidTotal, 2) }}
                             </div>
                         </div>
                         <div class="col-auto">
@@ -101,7 +101,7 @@
                                 {{ $unpaidCount }}
                             </div>
                             <div class="text-xs font-weight-bold text-info mb-0">
-                                Total: {{ $currencySymbols['USD'] ?? '$' }} {{ number_format($unPaidTotal, 2) }}
+                                Total: {{ $currencySymbols['DZD'] ?? 'DZ' }} {{ number_format($unPaidTotal, 2) }}
                             </div>
                         </div>
                         <div class="col-auto">
@@ -390,6 +390,27 @@
 
         <!-- Select2 CSS -->
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+        <style>
+            /* Increase font size for statistics cards */
+            .card-body .text-xs {
+                font-size: 0.85rem !important;
+            }
+
+            .card-body .h5 {
+                font-size: 1.5rem !important;
+            }
+
+            .card-body .h6 {
+                font-size: 1.2rem !important;
+            }
+
+            /* Make currency values more prominent */
+            .card-body .text-info {
+                font-size: 1rem !important;
+                font-weight: 600 !important;
+            }
+        </style>
     @endpush
 
     @push('js')

@@ -130,7 +130,7 @@
                 table {
                     page-break-inside: avoid;
                 }
-                
+
                 /* Maintain colors when printing */
                 th {
                     background-color: #0d47a1 !important;
@@ -138,32 +138,32 @@
                     -webkit-print-color-adjust: exact;
                     print-color-adjust: exact;
                 }
-                
+
                 .total-row {
                     background-color: #0d47a1 !important;
                     color: white !important;
                     -webkit-print-color-adjust: exact;
                     print-color-adjust: exact;
                 }
-                
+
                 .row-color-1 {
                     background-color: #f5f5dc !important;
                     -webkit-print-color-adjust: exact;
                     print-color-adjust: exact;
                 }
-                
+
                 .summary-box {
                     background-color: #e3f2fd !important;
                     -webkit-print-color-adjust: exact;
                     print-color-adjust: exact;
                 }
-                
+
                 h2, h3 {
                     color: #0d47a1 !important;
                     -webkit-print-color-adjust: exact;
                     print-color-adjust: exact;
                 }
-                
+
                 /* Hide any copyright or footer information */
                 footer, .copyright, .app-footer {
                     display: none !important;
@@ -186,6 +186,7 @@
             <p><strong>Employee Name:</strong> {{ $employee->name }}</p>
             <p><strong>Timesheet Date:</strong> {{ $timesheet->work_date->format('Y-m-d') }}</p>
             <p><strong>Total Hours Worked:</strong> {{ number_format($timesheet->hours_worked, 2) }} hours</p>
+            <p><strong>Monthly Salary:</strong> {{ number_format($timesheet->month_salary, 2) }} {{ $employee->currency }}</p>
             <p><strong>RIP:</strong> {{ $employee->iban }}</p>
             <p><strong>Hour Rate:</strong> {{ number_format($employee->rate, 2) }} {{ $employee->currency }}</p>
         </div>

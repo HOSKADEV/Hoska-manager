@@ -83,6 +83,92 @@
                     padding: 15px;
                 }
             }
+
+            /* Print-specific styles */
+            @media print {
+                /* Hide everything except the print content */
+                body * {
+                    visibility: hidden;
+                }
+
+                /* Show the container and its contents */
+                .container, .container * {
+                    visibility: visible;
+                }
+
+                /* Position the container properly */
+                .container {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    margin: 0;
+                    padding: 15px;
+                }
+
+                /* Hide the print button */
+                .btn {
+                    display: none !important;
+                }
+
+                /* Hide the filter form */
+                #filterForm {
+                    display: none !important;
+                }
+
+                /* Ensure proper table formatting */
+                .table-responsive {
+                    overflow: visible !important;
+                }
+
+                /* Add some spacing for better print layout */
+                .summary-box {
+                    page-break-inside: avoid;
+                    margin-bottom: 20px;
+                }
+
+                table {
+                    page-break-inside: avoid;
+                }
+                
+                /* Maintain colors when printing */
+                th {
+                    background-color: #0d47a1 !important;
+                    color: white !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                
+                .total-row {
+                    background-color: #0d47a1 !important;
+                    color: white !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                
+                .row-color-1 {
+                    background-color: #f5f5dc !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                
+                .summary-box {
+                    background-color: #e3f2fd !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                
+                h2, h3 {
+                    color: #0d47a1 !important;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                
+                /* Hide any copyright or footer information */
+                footer, .copyright, .app-footer {
+                    display: none !important;
+                }
+            }
         </style>
     @endpush
 
@@ -93,18 +179,46 @@
         </a>
     </div>
 
+
+
     <div class="container py-4" style="max-width: 900px; margin: auto;">
         <div class="summary-box">
             <p><strong>Employee Name:</strong> {{ $employee->name }}</p>
             <p><strong>Timesheet Date:</strong> {{ $timesheet->work_date->format('Y-m-d') }}</p>
             <p><strong>Total Hours Worked:</strong> {{ number_format($timesheet->hours_worked, 2) }} hours</p>
+            <p><strong>RIP:</strong> {{ $employee->iban }}</p>
+            <p><strong>Hour Rate:</strong> {{ number_format($employee->rate, 2) }} {{ $employee->currency }}</p>
         </div>
 
-        <h3>Tasks for this Employee</h3>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>Tasks for this Employee</h3>
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="fas fa-print"></i> Print Tasks
+            </button>
+        </div>
 
         @if($tasks->isEmpty())
             <p>No tasks found for this employee on this date.</p>
         @else
+            <div class="d-flex align-items-center mb-3">
+                {{-- فلتر حسب المشروع --}}
+                <form method="GET" action="{{ route('admin.timesheets.show', $timesheet->id) }}" class="mb-4" id="filterForm">
+                    <div class="row align-items-end">
+                        <div class="">
+                            <label for="project_id" class="form-label fw-bold text-secondary">📅 Filter by Project</label>
+                            <select name="project_id" id="project_id" class="form-select select2">
+                                <option value="all" {{ !request('project_id') ? 'selected' : '' }}>All Projects</option>
+                                @foreach ($employee->projects as $project)
+                                    <option value="{{ $project->id }}" {{ request('project_id') == $project->id ? 'selected' : '' }}>
+                                        {{ $project->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -162,5 +276,30 @@
             </div>
         @endif
     </div>
+
+    @push('css')
+        <!-- Select2 CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    @endpush
+
+    @push('js')
+        <!-- Select2 JS -->
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <!-- Initialize Select2 -->
+        <script>
+            $(document).ready(function () {
+                $('#project_id').select2({
+                    placeholder: "Select an option",
+                    allowClear: true,
+                    width: '100%'
+                });
+
+                // استمع لأي تغيير في الفلاتر وأرسل الفورم
+                $('#project_id').on('change', function () {
+                    $(this).closest('form').submit();
+                });
+            });
+        </script>
+    @endpush
 
 </x-dashboard>

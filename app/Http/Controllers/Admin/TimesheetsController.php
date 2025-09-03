@@ -334,11 +334,17 @@ class TimesheetsController extends Controller
         $monthEnd = Carbon::parse($timesheet->work_date)->endOfMonth();
 
         // جلب المهام ضمن نفس الشهر ونفس الموظف
-        $tasks = Task::where('employee_id', $employee->id)
+        $tasksQuery = Task::where('employee_id', $employee->id)
             ->whereDate('start_time', '>=', $monthStart)
             ->whereDate('start_time', '<=', $monthEnd)
-            ->with('project')
-            ->get();
+            ->with('project');
+
+        // تطبيق فلتر المشروع إذا تم تحديده
+        if (request()->has('project_id') && !empty(request('project_id')) && request('project_id') != 'all') {
+            $tasksQuery->where('project_id', request('project_id'));
+        }
+
+        $tasks = $tasksQuery->get();
 
         return view('admin.timesheets.show', compact('timesheet', 'employee', 'tasks'));
     }

@@ -74,10 +74,10 @@
                                 Paid Salaries
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                {{ $paidCount }}
+                                {{ $currencySymbols['DZD'] ?? 'DZ' }} {{ number_format($paidTotal, 2) }}
                             </div>
                             <div class="text-xs font-weight-bold text-info mb-0">
-                                Total: {{ $currencySymbols['DZD'] ?? 'DZ' }} {{ number_format($paidTotal, 2) }}
+                                Count: {{ $paidCount }}
                             </div>
                         </div>
                         <div class="col-auto">
@@ -98,10 +98,10 @@
                                 Unpaid Salaries
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">
-                                {{ $unpaidCount }}
+                                {{ $currencySymbols['DZD'] ?? 'DZ' }} {{ number_format($unPaidTotal, 2) }}
                             </div>
                             <div class="text-xs font-weight-bold text-info mb-0">
-                                Total: {{ $currencySymbols['DZD'] ?? 'DZ' }} {{ number_format($unPaidTotal, 2) }}
+                                Count: {{ $unpaidCount }}
                             </div>
                         </div>
                         <div class="col-auto">
@@ -125,7 +125,7 @@
                                 <span id="selectedCount">0</span>
                             </div>
                             <div class="text-xs font-weight-bold text-info mb-0">
-                                Total: <span id="selectedTotal">{{ $currencySymbols['USD'] ?? '$' }} 0.00</span>
+                                Total: <span id="selectedTotal">{{ $currencySymbols['DZD'] ?? 'DZ' }} 0.00</span>
                             </div>
                         </div>
                         <div class="col-auto">

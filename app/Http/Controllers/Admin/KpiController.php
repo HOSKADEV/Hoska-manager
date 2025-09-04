@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Client;
 use App\Models\Employee;
 use App\Models\Invoice;
 use App\Models\Project;
@@ -161,8 +162,55 @@ class KpiController extends Controller
 
         $annualProfitsInDZD = $annualIncomeInDZD - ($annualExpensesInDZD + $annualSalaries);
 
-        // Customer satisfaction score
-        $csatScore = 85.0;
+        // Customer satisfaction score based on client projects and developments
+        // Get all clients with their projects and developments
+        $clients = Client::with(['projects', 'projects.developments'])->get();
+
+        $totalClients = $clients->count();
+        $repeatClients = 0;
+        $totalProjects = 0;
+        $totalDevelopments = 0;
+        $clientsWithDevelopments = 0;
+
+        foreach ($clients as $client) {
+            $projectCount = $client->projects->count();
+            $totalProjects += $projectCount;
+
+            // Count clients with more than one project (repeat clients)
+            if ($projectCount > 1) {
+                $repeatClients++;
+            }
+
+            // Count developments and clients with developments
+            foreach ($client->projects as $project) {
+                $developmentCount = $project->developments->count();
+                $totalDevelopments += $developmentCount;
+
+                if ($developmentCount > 0) {
+                    $clientsWithDevelopments++;
+                }
+            }
+        }
+
+        // Calculate CSAT score based on:
+        // 1. Percentage of repeat clients (clients with multiple projects)
+        // 2. Percentage of clients with developments
+        // Base score starts at 70, then we add up to 30 points based on the metrics
+
+        $csatScore = 70; // Base score
+
+        if ($totalClients > 0) {
+            // Add up to 15 points for repeat clients percentage
+            $repeatClientPercentage = ($repeatClients / $totalClients) * 100;
+            $csatScore += ($repeatClientPercentage / 100) * 15;
+
+            // Add up to 15 points for clients with developments percentage
+            $developmentsPercentage = ($clientsWithDevelopments / $totalClients) * 100;
+            $csatScore += ($developmentsPercentage / 100) * 15;
+        }
+
+        // Ensure the score doesn't exceed 100
+        $csatScore = min($csatScore, 100.0);
 
         // Monthly data for charts
         $monthsLabels = [];

@@ -352,29 +352,29 @@
             });
 
             // رسم بياني CSAT (دائري)
-            const csatCtx = document.getElementById('csatChart').getContext('2d');
-            new Chart(csatCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Satisfied', 'Unsatisfied'],
-                    datasets: [{
-                        data: [{{ $csatScore }}, {{ 100 - $csatScore }}],
-                        backgroundColor: [
-                            'rgba(111, 66, 193, 0.8)',  // بنفسجي (راضي)
-                            'rgba(200, 200, 200, 0.3)'  // رمادي فاتح (غير راضي)
-                        ],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    cutout: '75%',
-                    responsive: true,
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { enabled: false }
-                    }
-                }
-            });
+            // const csatCtx = document.getElementById('csatChart').getContext('2d');
+            // new Chart(csatCtx, {
+            //     type: 'doughnut',
+            //     data: {
+            //         labels: ['Satisfied', 'Unsatisfied'],
+            //         datasets: [{
+            //             data: [{{ $csatScore }}, {{ 100 - $csatScore }}],
+            //             backgroundColor: [
+            //                 'rgba(111, 66, 193, 0.8)',  // بنفسجي (راضي)
+            //                 'rgba(200, 200, 200, 0.3)'  // رمادي فاتح (غير راضي)
+            //             ],
+            //             borderWidth: 0
+            //         }]
+            //     },
+            //     options: {
+            //         cutout: '75%',
+            //         responsive: true,
+            //         plugins: {
+            //             legend: { display: false },
+            //             tooltip: { enabled: false }
+            //         }
+            //     }
+            // });
 
             // بيانات حقيقية من وحدة التحكم
             const profitsData = @json($monthlyProfitsData);

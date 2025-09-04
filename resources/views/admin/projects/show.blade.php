@@ -508,7 +508,7 @@
                     </button>
                 </div>
                 <div class="card-body">
-                    @if($project->tasks->isNotEmpty())
+                    @if($project->ourTasks->isNotEmpty())
                         <table class="table table-bordered table-striped mb-0" style="font-size: 0.9rem;">
                             <thead>
                                 <tr>
@@ -712,11 +712,11 @@
                             this.reset();
 
                             // Show success message
-                            if (typeof flash !== 'undefined') {
-                                flash().success('Task created successfully');
-                            } else {
-                                alert('Task created successfully');
-                            }
+                            // if (typeof flash !== 'undefined') {
+                            //     flash().success('Task created successfully');
+                            // } else {
+                            //     alert('Task created successfully');
+                            // }
 
                             // Reload page to show new task
                             window.location.reload();
@@ -750,11 +750,11 @@
                             $('#editTaskModal').modal('hide');
 
                             // Show success message
-                            if (typeof flash !== 'undefined') {
-                                flash().success('Task updated successfully');
-                            } else {
-                                alert('Task updated successfully');
-                            }
+                            // if (typeof flash !== 'undefined') {
+                            //     flash().success('Task updated successfully');
+                            // } else {
+                            //     alert('Task updated successfully');
+                            // }
 
                             // Reload page to show updated task
                             window.location.reload();
@@ -819,11 +819,11 @@
                             },
                             success: function(response) {
                                 // Show success message
-                                if (typeof flash !== 'undefined') {
-                                    flash().success('Task deleted successfully');
-                                } else {
-                                    alert('Task deleted successfully');
-                                }
+                                // if (typeof flash !== 'undefined') {
+                                //     flash().success('Task deleted successfully');
+                                // } else {
+                                //     alert('Task deleted successfully');
+                                // }
 
                                 // Reload page to reflect deletion
                                 window.location.reload();

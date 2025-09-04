@@ -38,7 +38,10 @@ class OurTaskRequest extends FormRequest
             'description' => [
                 'nullable',
             ],
-            'project_id' => ['required', 'exists:projects,id'],
+            'project_id' => [
+                'required',
+                'exists:projects,id'
+            ],
         ];
     }
 }

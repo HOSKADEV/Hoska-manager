@@ -19,12 +19,10 @@ class OurTasksController extends Controller
     {
         $data = $request->validated();
 
-        $data['project_id'] = $request->project_id;
-
-        OurTask::create($data);
+        $task = OurTask::create($data);
 
         flash()->success('Task created successfully');
-        return response()->json();
+        return response()->json($task);
     }
 
 
@@ -61,6 +59,7 @@ class OurTasksController extends Controller
         try {
             $task = OurTask::find($id);
             $task->delete();
+            flash()->success('Task deleted successfully');
 
             return response()->json([
                 'id' => $task,
@@ -68,6 +67,8 @@ class OurTasksController extends Controller
                 'message' => 'Task deleted successfully'
             ]);
         } catch (\Exception $e) {
+            flash()->error('Task error on deleted');
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error deleting task: ' . $e->getMessage()

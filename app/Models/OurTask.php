@@ -22,25 +22,14 @@ class OurTask extends Model
 
     /**
      * Calculate the duration in days from the duration text
-     * 
+     *
      * @return int
      */
     public function getDurationInDaysAttribute()
     {
         if (!$this->duration) return 0;
 
-        // Handle different duration formats (e.g., "2 days", "1 week", "3 hours")
-        $duration = strtolower($this->duration);
-
-        if (strpos($duration, 'day') !== false) {
-            return (int) preg_replace('/[^0-9]/', '', $duration);
-        } elseif (strpos($duration, 'week') !== false) {
-            return (int) preg_replace('/[^0-9]/', '', $duration) * 7;
-        } elseif (strpos($duration, 'hour') !== false) {
-            return (int) preg_replace('/[^0-9]/', '', $duration) / 24; // Convert hours to days (approximately)
-        }
-
-        return 0;
+        return $this->duration / 24;
     }
 
     /**
@@ -63,7 +52,7 @@ class OurTask extends Model
 
     /**
      * Update the project delivery date based on task durations
-     * 
+     *
      * @param OurTask $task
      * @return void
      */
@@ -73,7 +62,7 @@ class OurTask extends Model
         if (!$project) return;
 
         // Only update if the project doesn't have a fixed delivery date or is manual
-        if ($project->is_manual) return;
+        // if ($project->is_manual) return;
 
         // Calculate total duration from all tasks
         $totalDays = 0;

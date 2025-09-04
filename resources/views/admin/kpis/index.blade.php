@@ -176,7 +176,7 @@
         </div>
     </div>
     <!-- Customer Satisfaction (CSAT) Example -->
-    <div class="row mb-4">
+    {{-- <div class="row mb-4">
         <div class="col-12">
             <div class="card card-kpi border-csat shadow h-100 py-2">
                 <div class="card-body">
@@ -195,7 +195,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <!-- Customer Satisfaction Components Chart -->
     <div class="row mb-4">

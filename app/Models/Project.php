@@ -15,6 +15,12 @@ class Project extends Model
         // 'is_manual' => 'boolean',
         // 'manual_hours_spent' => 'float',
         // 'manual_cost' => 'float',
+        'delivery_quality' => 'integer',
+        'response_speed' => 'integer',
+        'support_level' => 'integer',
+        'expectations_met' => 'integer',
+        'continuation_intent' => 'integer',
+        'final_satisfaction_score' => 'integer',
     ];
 
     public function user()
@@ -170,5 +176,28 @@ class Project extends Model
             'delivered' => 'table-primary', // الأزرق لحالة تم التسليم
             default => '',
         };
+    }
+
+    /**
+     * حساب رضاء العملاء النهائي
+     * رضاء العملاء النهائي = (جودة التسليم + سرعة الاستجابة + مستوى الدعم + تحقيق التوقعات + نية الاستمرار)
+     */
+    public function calculateFinalSatisfactionScore()
+    {
+        // الحصول على قيم المكونات أو استخدام القيم الافتراضية إذا لم تكن موجودة
+        $deliveryQuality = $this->delivery_quality ?? 0;
+        $responseSpeed = $this->response_speed ?? 0;
+        $supportLevel = $this->support_level ?? 0;
+        $expectationsMet = $this->expectations_met ?? 0;
+        $continuationIntent = $this->continuation_intent ?? 0;
+
+        // حساب متوسط الدرجات
+        $finalScore = ($deliveryQuality + $responseSpeed + $supportLevel + $expectationsMet + $continuationIntent) / 5;
+
+        // تحديث قيمة رضاء العملاء النهائي في قاعدة البيانات
+        $this->final_satisfaction_score = round($finalScore);
+        $this->save();
+
+        return $this->final_satisfaction_score;
     }
 }

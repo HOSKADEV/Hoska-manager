@@ -498,6 +498,90 @@
     @endif
 
     <!-- Tasks Section -->
+    <!-- Customer Satisfaction Section -->
+    <div class="row gy-4 align-items-stretch mt-4">
+        <div class="col-lg-12">
+            <div class="card mb-5 shadow-sm h-100">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Customer Satisfaction</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="mb-3">Satisfaction Components:</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td>جودة التسليم</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" style="width: {{ $project->delivery_quality ?? 0 }}%;" aria-valuenow="{{ $project->delivery_quality ?? 0 }}" aria-valuemin="0" aria-valuemax="100">
+                                                {{ $project->delivery_quality ?? 0 }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>سرعة الاستجابة</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" style="width: {{ $project->response_speed ?? 0 }}%;" aria-valuenow="{{ $project->response_speed ?? 0 }}" aria-valuemin="0" aria-valuemax="100">
+                                                {{ $project->response_speed ?? 0 }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>مستوى الدعم</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" style="width: {{ $project->support_level ?? 0 }}%;" aria-valuenow="{{ $project->support_level ?? 0 }}" aria-valuemin="0" aria-valuemax="100">
+                                                {{ $project->support_level ?? 0 }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>تحقيق التوقعات</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" style="width: {{ $project->expectations_met ?? 0 }}%;" aria-valuenow="{{ $project->expectations_met ?? 0 }}" aria-valuemin="0" aria-valuemax="100">
+                                                {{ $project->expectations_met ?? 0 }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>نية الاستمرار</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar" role="progressbar" style="width: {{ $project->continuation_intent ?? 0 }}%;" aria-valuenow="{{ $project->continuation_intent ?? 0 }}" aria-valuemin="0" aria-valuemax="100">
+                                                {{ $project->continuation_intent ?? 0 }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6 d-flex flex-column justify-content-center align-items-center">
+                            <h6 class="mb-3">Final Customer Satisfaction Score:</h6>
+                            <div class="circular-progress mb-3" style="position: relative; width: 180px; height: 180px;">
+                                <svg viewBox="0 0 36 36" class="circular-progress-bar" style="width: 100%; height: 100%;">
+                                    <path class="circular-progress-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#eee" stroke-width="3"/>
+                                    <path class="circular-progress-fill" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#28a745" stroke-width="3" stroke-dasharray="{{ ($project->final_satisfaction_score ?? 0) }}, 100"/>
+                                </svg>
+                                <div class="circular-progress-text" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 1.5rem; font-weight: bold;">
+                                            {{ $project->final_satisfaction_score ?? 0 }}%
+                                        </div>
+                            </div>
+                            <p class="text-center">رضاء العملاء النهائي = (جودة التسليم + سرعة الاستجابة + مستوى الدعم + تحقيق التوقعات + نية الاستمرار)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasks Section -->
     <div class="row gy-4 align-items-stretch mt-4">
         <div class="col-lg-12">
             <div class="card mb-5 shadow-sm h-100">

@@ -189,8 +189,27 @@
                             <div class="h3 font-weight-bold text-gray-800 mt-2">
                                 {{ number_format($csatScore, 1) }}%
                             </div>
-                            <small class="text-muted">Based on recent surveys</small>
+                            <small class="text-muted">Based on project metrics</small>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Satisfaction Components Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Customer Satisfaction Components</h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="satisfactionComponentsChart"></canvas>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <p class="mb-0"><strong>رضاء العملاء النهائي = (جودة التسليم + سرعة الاستجابة + مستوى الدعم + تحقيق التوقعات + نية الاستمرار) / 5</strong></p>
                     </div>
                 </div>
             </div>
@@ -641,6 +660,49 @@
                 url.searchParams.set('month', this.value);
                 window.location.href = url.toString();
             });
+
+
+
+            // رسم بياني لمكونات رضاء العملاء
+            const satisfactionComponentsCtx = document.getElementById('satisfactionComponentsChart').getContext('2d');
+            new Chart(satisfactionComponentsCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['جودة التسليم', 'سرعة الاستجابة', 'مستوى الدعم', 'تحقيق التوقعات', 'نية الاستمرار'],
+                    datasets: [{
+                        label: 'متوسط مكونات رضاء العملاء',
+                        data: [
+                            {{ $avgDeliveryQuality ?? 0 }},
+                            {{ $avgResponseSpeed ?? 0 }},
+                            {{ $avgSupportLevel ?? 0 }},
+                            {{ $avgExpectationsMet ?? 0 }},
+                            {{ $avgContinuationIntent ?? 0 }}
+                        ],
+                        backgroundColor: 'rgba(111, 66, 193, 0.2)',
+                        borderColor: 'rgba(111, 66, 193, 0.8)',
+                        pointBackgroundColor: 'rgba(111, 66, 193, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(111, 66, 193, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: {
+                                stepSize: 20
+                            }
+                        }
+                    }
+                }
+            });
         </script>
     @endpush
 </x-dashboard>
@@ -830,6 +892,47 @@
                     plugins: {
                         legend: { display: false },
                         tooltip: { enabled: false }
+                    }
+                }
+            });
+
+            // رسم بياني لمكونات رضاء العملاء
+            const satisfactionComponentsCtx = document.getElementById('satisfactionComponentsChart').getContext('2d');
+            new Chart(satisfactionComponentsCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['جودة التسليم', 'سرعة الاستجابة', 'مستوى الدعم', 'تحقيق التوقعات', 'نية الاستمرار'],
+                    datasets: [{
+                        label: 'متوسط مكونات رضاء العملاء',
+                        data: [
+                            {{ $avgDeliveryQuality ?? 85 }},
+                            {{ $avgResponseSpeed ?? 80 }},
+                            {{ $avgSupportLevel ?? 90 }},
+                            {{ $avgExpectationsMet ?? 75 }},
+                            {{ $avgContinuationIntent ?? 70 }}
+                        ],
+                        backgroundColor: 'rgba(111, 66, 193, 0.2)',
+                        borderColor: 'rgba(111, 66, 193, 0.8)',
+                        pointBackgroundColor: 'rgba(111, 66, 193, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(111, 66, 193, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: {
+                                stepSize: 20
+                            }
+                        }
                     }
                 }
             });

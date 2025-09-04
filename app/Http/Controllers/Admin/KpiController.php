@@ -162,55 +162,40 @@ class KpiController extends Controller
 
         $annualProfitsInDZD = $annualIncomeInDZD - ($annualExpensesInDZD + $annualSalaries);
 
-        // Customer satisfaction score based on client projects and developments
-        // Get all clients with their projects and developments
-        $clients = Client::with(['projects', 'projects.developments'])->get();
+        // Customer satisfaction score based on the five components
+        // Get all projects with their satisfaction components
+        $projects = Project::all();
 
-        $totalClients = $clients->count();
-        $repeatClients = 0;
-        $totalProjects = 0;
-        $totalDevelopments = 0;
-        $clientsWithDevelopments = 0;
+        $totalProjects = $projects->count();
+        $totalDeliveryQuality = 0;
+        $totalResponseSpeed = 0;
+        $totalSupportLevel = 0;
+        $totalExpectationsMet = 0;
+        $totalContinuationIntent = 0;
+        $totalSatisfactionScore = 0;
 
-        foreach ($clients as $client) {
-            $projectCount = $client->projects->count();
-            $totalProjects += $projectCount;
-
-            // Count clients with more than one project (repeat clients)
-            if ($projectCount > 1) {
-                $repeatClients++;
+        foreach ($projects as $project) {
+            // Calculate satisfaction score for each project if not already calculated
+            if (!$project->final_satisfaction_score) {
+                $project->calculateFinalSatisfactionScore();
             }
 
-            // Count developments and clients with developments
-            foreach ($client->projects as $project) {
-                $developmentCount = $project->developments->count();
-                $totalDevelopments += $developmentCount;
-
-                if ($developmentCount > 0) {
-                    $clientsWithDevelopments++;
-                }
-            }
+            // Sum up all components
+            $totalDeliveryQuality += $project->delivery_quality ?? 0;
+            $totalResponseSpeed += $project->response_speed ?? 0;
+            $totalSupportLevel += $project->support_level ?? 0;
+            $totalExpectationsMet += $project->expectations_met ?? 0;
+            $totalContinuationIntent += $project->continuation_intent ?? 0;
+            $totalSatisfactionScore += $project->final_satisfaction_score ?? 0;
         }
 
-        // Calculate CSAT score based on:
-        // 1. Percentage of repeat clients (clients with multiple projects)
-        // 2. Percentage of clients with developments
-        // Base score starts at 70, then we add up to 30 points based on the metrics
-
-        $csatScore = 70; // Base score
-
-        if ($totalClients > 0) {
-            // Add up to 15 points for repeat clients percentage
-            $repeatClientPercentage = ($repeatClients / $totalClients) * 100;
-            $csatScore += ($repeatClientPercentage / 100) * 15;
-
-            // Add up to 15 points for clients with developments percentage
-            $developmentsPercentage = ($clientsWithDevelopments / $totalClients) * 100;
-            $csatScore += ($developmentsPercentage / 100) * 15;
-        }
-
-        // Ensure the score doesn't exceed 100
-        $csatScore = min($csatScore, 100.0);
+        // Calculate average scores
+        $csatScore = $totalProjects > 0 ? round($totalSatisfactionScore / $totalProjects) : 80;
+        $avgDeliveryQuality = $totalProjects > 0 ? round($totalDeliveryQuality / $totalProjects) : 85;
+        $avgResponseSpeed = $totalProjects > 0 ? round($totalResponseSpeed / $totalProjects) : 80;
+        $avgSupportLevel = $totalProjects > 0 ? round($totalSupportLevel / $totalProjects) : 90;
+        $avgExpectationsMet = $totalProjects > 0 ? round($totalExpectationsMet / $totalProjects) : 75;
+        $avgContinuationIntent = $totalProjects > 0 ? round($totalContinuationIntent / $totalProjects) : 70;
 
         // Monthly data for charts
         $monthsLabels = [];
@@ -342,6 +327,11 @@ class KpiController extends Controller
             'annualSalaries',
             'annualProfitsInDZD',
             'csatScore',
+            'avgDeliveryQuality',
+            'avgResponseSpeed',
+            'avgSupportLevel',
+            'avgExpectationsMet',
+            'avgContinuationIntent',
             'monthsLabels',
             'monthlyIncomeData',
             'monthlyExpensesData',

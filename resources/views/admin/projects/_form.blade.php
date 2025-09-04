@@ -106,6 +106,72 @@
     <button type="button" class="btn btn-sm btn-primary mt-2" id="add-link">+ Add Link</button>
 </div>
 
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Customer Satisfaction Metrics</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="delivery_quality" class="form-label">جودة التسليم (0-100)</label>
+                <div class="input-group">
+                    <input type="range" class="form-range" id="delivery_quality" name="delivery_quality"
+                           min="0" max="100" value="{{ old('delivery_quality', $satisfactionDefaults['delivery_quality'] ?? 0) }}"
+                           oninput="document.getElementById('delivery_quality_value').textContent = this.value; updatePredictedScore()">
+                    <span class="input-group-text" id="delivery_quality_value">{{ old('delivery_quality', $satisfactionDefaults['delivery_quality'] ?? 0) }}</span>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="response_speed" class="form-label">سرعة الاستجابة (0-100)</label>
+                <div class="input-group">
+                    <input type="range" class="form-range" id="response_speed" name="response_speed"
+                           min="0" max="100" value="{{ old('response_speed', $satisfactionDefaults['response_speed'] ?? 0) }}"
+                           oninput="document.getElementById('response_speed_value').textContent = this.value; updatePredictedScore()">
+                    <span class="input-group-text" id="response_speed_value">{{ old('response_speed', $satisfactionDefaults['response_speed'] ?? 0) }}</span>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="support_level" class="form-label">مستوى الدعم (0-100)</label>
+                <div class="input-group">
+                    <input type="range" class="form-range" id="support_level" name="support_level"
+                           min="0" max="100" value="{{ old('support_level', $satisfactionDefaults['support_level'] ?? 0) }}"
+                           oninput="document.getElementById('support_level_value').textContent = this.value; updatePredictedScore()">
+                    <span class="input-group-text" id="support_level_value">{{ old('support_level', $satisfactionDefaults['support_level'] ?? 0) }}</span>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="expectations_met" class="form-label">تحقيق التوقعات (0-100)</label>
+                <div class="input-group">
+                    <input type="range" class="form-range" id="expectations_met" name="expectations_met"
+                           min="0" max="100" value="{{ old('expectations_met', $satisfactionDefaults['expectations_met'] ?? 0) }}"
+                           oninput="document.getElementById('expectations_met_value').textContent = this.value; updatePredictedScore()">
+                    <span class="input-group-text" id="expectations_met_value">{{ old('expectations_met', $satisfactionDefaults['expectations_met'] ?? 0) }}</span>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="continuation_intent" class="form-label">نية الاستمرار (0-100)</label>
+                <div class="input-group">
+                    <input type="range" class="form-range" id="continuation_intent" name="continuation_intent"
+                           min="0" max="100" value="{{ old('continuation_intent', $satisfactionDefaults['continuation_intent'] ?? 0) }}"
+                           oninput="document.getElementById('continuation_intent_value').textContent = this.value; updatePredictedScore()">
+                    <span class="input-group-text" id="continuation_intent_value">{{ old('continuation_intent', $satisfactionDefaults['continuation_intent'] ?? 0) }}</span>
+                </div>
+            </div>
+            <div class="col-md-12 mb-3">
+                <div class="alert alert-info">
+                    <strong>رضاء العملاء النهائي = (جودة التسليم + سرعة الاستجابة + مستوى الدعم + تحقيق التوقعات + نية الاستمرار) / 5</strong>
+                    <div class="mt-2">
+                        <span>النتيجة المتوقعة: </span>
+                        <span id="predicted_score" class="fw-bold">
+                            {{ round((($satisfactionDefaults['delivery_quality'] ?? 0) + ($satisfactionDefaults['response_speed'] ?? 0) + ($satisfactionDefaults['support_level'] ?? 0) + ($satisfactionDefaults['expectations_met'] ?? 0) + ($satisfactionDefaults['continuation_intent'] ?? 0)) / 5) }}%
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 {{-- <div id="manualFields">
     <div class="mb-3">
@@ -127,6 +193,17 @@
 
 @push('js')
     <script>
+        function updatePredictedScore() {
+            const deliveryQuality = parseInt(document.getElementById('delivery_quality').value) || 0;
+            const responseSpeed = parseInt(document.getElementById('response_speed').value) || 0;
+            const supportLevel = parseInt(document.getElementById('support_level').value) || 0;
+            const expectationsMet = parseInt(document.getElementById('expectations_met').value) || 0;
+            const continuationIntent = parseInt(document.getElementById('continuation_intent').value) || 0;
+
+            const predictedScore = Math.round((deliveryQuality + responseSpeed + supportLevel + expectationsMet + continuationIntent) / 5);
+            document.getElementById('predicted_score').textContent = predictedScore + '%';
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
             const startInput = document.querySelector('input[name="start_date"]');
             const durationInput = document.querySelector('input[name="duration_days"]');

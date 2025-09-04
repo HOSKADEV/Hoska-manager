@@ -167,6 +167,15 @@ class ProjectsController extends Controller
 
         $currencies = ['USD', 'EUR', 'DZD', 'SAR'];
 
+        // Default satisfaction values
+        $satisfactionDefaults = [
+            'delivery_quality' => 0,
+            'response_speed' => 0,
+            'support_level' => 0,
+            'expectations_met' => 0,
+            'continuation_intent' => 0,
+        ];
+
         return view('admin.projects.create', compact(
             'project',
             'users',
@@ -174,7 +183,8 @@ class ProjectsController extends Controller
             'clients',
             'employees',
             'currencies',
-            'clientOptions'  // إضافة خيارات العملاء
+            'clientOptions',  // إضافة خيارات العملاء
+            'satisfactionDefaults' // إضافة قيم رضاء العملاء الافتراضية
         ));
     }
 
@@ -217,7 +227,17 @@ class ProjectsController extends Controller
 
         unset($data['attachment'], $data['employee_id']);
 
+        // Add satisfaction scores
+        $data['delivery_quality'] = $request->input('delivery_quality', 85);
+        $data['response_speed'] = $request->input('response_speed', 80);
+        $data['support_level'] = $request->input('support_level', 90);
+        $data['expectations_met'] = $request->input('expectations_met', 75);
+        $data['continuation_intent'] = $request->input('continuation_intent', 70);
+
         $project = Project::create($data);
+
+        // Calculate final satisfaction score
+        $project->calculateFinalSatisfactionScore();
 
         // if (!$data['is_manual']) {
             $employeeIds = $request->input('employee_id', []);
@@ -374,7 +394,16 @@ class ProjectsController extends Controller
         // تحميل المسوقين (إن وجد دور مسوق)
         $marketers = User::where('is_marketer', true)->get();
 
-        return view('admin.projects.edit', compact('project', 'users', 'clients', 'employees', 'marketers'));
+        // Current satisfaction values
+        $satisfactionValues = [
+            'delivery_quality' => $project->delivery_quality ?? 0,
+            'response_speed' => $project->response_speed ?? 0,
+            'support_level' => $project->support_level ?? 0,
+            'expectations_met' => $project->expectations_met ?? 0,
+            'continuation_intent' => $project->continuation_intent ?? 0,
+        ];
+
+        return view('admin.projects.edit', compact('project', 'users', 'clients', 'employees', 'marketers', 'satisfactionValues'));
     }
 
     /**
@@ -415,7 +444,17 @@ class ProjectsController extends Controller
         }
 
 
+        // Add satisfaction scores
+        $data['delivery_quality'] = $request->input('delivery_quality', 0);
+        $data['response_speed'] = $request->input('response_speed', 0);
+        $data['support_level'] = $request->input('support_level', 0);
+        $data['expectations_met'] = $request->input('expectations_met', 0);
+        $data['continuation_intent'] = $request->input('continuation_intent', 0);
+
         $project->update($data);
+
+        // Calculate final satisfaction score
+        $project->calculateFinalSatisfactionScore();
         // إذا كان المشروع يدوي، حدث عدد الساعات والتكلفة اليدوية
         // if ($project->is_manual) {
         //     $project->update([

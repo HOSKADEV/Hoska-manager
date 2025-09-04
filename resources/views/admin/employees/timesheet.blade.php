@@ -183,11 +183,23 @@
     <div class="container py-4" style="max-width: 900px; margin: auto;">
         <div class="summary-box">
             <p><strong>Employee Name:</strong> {{ $employee->name }}</p>
-            <p><strong>Timesheet Month:</strong> {{ Carbon\Carbon::parse($monthFilter)->format('F Y') }}</p>
+            <p><strong>Timesheet Month:</strong>
+                @if($monthFilter === 'all')
+                    All Months
+                @else
+                    {{ \Carbon\Carbon::parse($monthFilter)->format('F Y') }}
+                @endif
+            </p>
             <p><strong>Total Hours Worked:</strong> {{ number_format($timesheet->hours_worked, 2) }} hours</p>
             <p><strong>Monthly Salary:</strong> {{ number_format($timesheet->month_salary, 2) }} {{ $employee->currency }}</p>
             <p><strong>RIP:</strong> {{ $employee->iban }}</p>
-            <p><strong>Hour Rate:</strong> {{ number_format($employee->rate, 2) }} {{ $employee->currency }}</p>
+            <p><strong>Hour Rate:</strong>
+                @if($monthFilter === 'all')
+                    {{ number_format($employee->rate, 2) }}
+                @else
+                    {{ number_format($timesheet->rate, 2) }}
+                @endif
+            {{ $employee->currency }}</p>
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-3">
@@ -207,6 +219,7 @@
                         <div class="col-md-5 me-2">
                             <label for="month" class="form-label fw-bold text-secondary">📅 Filter by Month</label>
                             <select name="month" id="month" class="form-select select2">
+                                <option value="all" {{ $monthFilter == 'all' ? 'selected' : '' }}>All Months</option>
                                 @foreach ($availableMonths as $month)
                                     <option value="{{ $month['value'] }}" {{ $monthFilter == $month['value'] ? 'selected' : '' }}>
                                         {{ $month['label'] }}

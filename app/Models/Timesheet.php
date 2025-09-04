@@ -12,14 +12,17 @@ class Timesheet extends Model
     protected $guarded = [];
 
     protected $casts = ['work_date' => 'date:Y-m-d', 'hours_worked' => 'decimal:2'];
+
     public function employee()
     {
         return $this->belongsTo(Employee::class);
     }
+
     public function project()
     {
         return $this->belongsTo(Project::class);
     }
+
     public static function updateMonthlyTimesheet($employee_id, $taskDate)
     {
         $monthStart = Carbon::parse($taskDate)->startOfMonth()->toDateString();
@@ -86,6 +89,16 @@ class Timesheet extends Model
         } else {
             Timesheet::create($data);
             Log::info("Created new timesheet for employee {$employee_id} for month {$monthStart}");
+        }
+    }
+
+    public function getRateAttribute() {
+        if ($this->employee->payment_type == 'monthly') {
+            return $this->month_salary;
+        } else if ($this->employee->payment_type == 'hourly') {
+            return $this->month_salary / $this->hours_worked;
+        } else if ($this->employee->payment_type == 'per_project') {
+            return $this->month_salary;
         }
     }
 }

@@ -224,21 +224,31 @@ class EmployeesController extends Controller
      */
     public function timesheet(Employee $employee, Request $request)
     {
-        $monthFilter = $request->input('month', now()->format('Y-m'));
+        $monthFilter = $request->input('month', 'all');
         $projectFilter = $request->input('project_id', 'all');
 
+        $month = null;
+        $monthStart = null;
+        $monthEnd = null;
+
         // Get the employee's timesheet for the selected month
-        $month = Carbon::parse($monthFilter);
-        $monthStart = $month->copy()->startOfMonth();
-        $monthEnd = $month->copy()->endOfMonth();
+        if ($monthFilter !== 'all') {
+            $month = Carbon::parse($monthFilter);
+            $monthStart = $month->copy()->startOfMonth();
+            $monthEnd = $month->copy()->endOfMonth();
+        }
 
         // Find or create a timesheet for this employee for the selected month
-        $timesheet = Timesheet::where('employee_id', $employee->id)
-            ->whereYear('work_date', $month->year)
-            ->whereMonth('work_date', $month->month)
-            ->first();
+        $timesheetQuery = Timesheet::where('employee_id', $employee->id);
 
-        if (!$timesheet) {
+        if ($month) {
+            $timesheetQuery->whereYear('work_date', $month->year)
+                        ->whereMonth('work_date', $month->month);
+        }
+
+        $timesheet = $timesheetQuery->first();
+
+        if (!$timesheet && $month) {
             // Create a new timesheet if it doesn't exist
             $timesheet = new Timesheet();
             $timesheet->employee_id = $employee->id;
@@ -250,12 +260,12 @@ class EmployeesController extends Controller
         }
 
         // Get tasks for this employee in the selected month
-        $tasksQuery = Task::where('employee_id', $employee->id)
-            ->whereDate('start_time', '>=', $monthStart)
-            ->whereDate('start_time', '<=', $monthEnd)
-            ->with('project');
+        $tasksQuery = Task::where('employee_id', $employee->id)->with('project');
 
-        // Apply project filter if selected
+        if ($month) {
+            $tasksQuery->whereBetween('start_time', [$monthStart, $monthEnd]);
+        }
+
         if ($projectFilter !== 'all') {
             $tasksQuery->where('project_id', $projectFilter);
         }

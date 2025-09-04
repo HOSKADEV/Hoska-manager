@@ -35,20 +35,20 @@ class OurTask extends Model
     /**
      * Boot the model.
      */
-    protected static function booted()
-    {
-        static::created(function ($task) {
-            self::updateProjectDeliveryDate($task);
-        });
+    // protected static function booted()
+    // {
+    //     static::created(function ($task) {
+    //         self::updateProjectDeliveryDate($task);
+    //     });
 
-        static::updated(function ($task) {
-            self::updateProjectDeliveryDate($task);
-        });
+    //     static::updated(function ($task) {
+    //         self::updateProjectDeliveryDate($task);
+    //     });
 
-        static::deleted(function ($task) {
-            self::updateProjectDeliveryDate($task);
-        });
-    }
+    //     static::deleted(function ($task) {
+    //         self::updateProjectDeliveryDate($task);
+    //     });
+    // }
 
     /**
      * Update the project delivery date based on task durations
@@ -65,7 +65,7 @@ class OurTask extends Model
         // if ($project->is_manual) return;
 
         // Calculate total duration from all tasks
-        $totalDays = 0;
+        $totalDays = $project->duration_days ?? 0;
         foreach ($project->ourTasks as $task) {
             $totalDays += $task->duration_in_days;
         }

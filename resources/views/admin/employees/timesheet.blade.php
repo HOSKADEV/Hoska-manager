@@ -1,4 +1,5 @@
-<x-dashboard title="Timesheet Details">
+
+<x-dashboard title="Employee Timesheet">
 
     @push('css')
         <style>
@@ -173,18 +174,16 @@
     @endpush
 
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Employee Timesheet</h2>
-        <a href="{{ route('admin.timesheets.index') }}" class="btn btn-info">
-            <i class="fas fa-long-arrow-alt-left"></i> All Timesheets
+        <h2>Employee Timesheet - {{ $employee->name }}</h2>
+        <a href="{{ route('admin.employees.index') }}" class="btn btn-info">
+            <i class="fas fa-long-arrow-alt-left"></i> Back to Employees
         </a>
     </div>
-
-
 
     <div class="container py-4" style="max-width: 900px; margin: auto;">
         <div class="summary-box">
             <p><strong>Employee Name:</strong> {{ $employee->name }}</p>
-            <p><strong>Timesheet Date:</strong> {{ $timesheet->work_date->format('Y-m-d') }}</p>
+            <p><strong>Timesheet Month:</strong> {{ Carbon\Carbon::parse($monthFilter)->format('F Y') }}</p>
             <p><strong>Total Hours Worked:</strong> {{ number_format($timesheet->hours_worked, 2) }} hours</p>
             <p><strong>Monthly Salary:</strong> {{ number_format($timesheet->month_salary, 2) }} {{ $employee->currency }}</p>
             <p><strong>RIP:</strong> {{ $employee->iban }}</p>
@@ -199,24 +198,33 @@
         </div>
 
         @if($tasks->isEmpty())
-            <p>No tasks found for this employee on this date.</p>
+            <p>No tasks found for this employee in the selected month.</p>
         @else
             <div class="d-flex align-items-center mb-3">
-                {{-- فلتر حسب المشروع --}}
-                <form method="GET" action="{{ route('admin.timesheets.show', $timesheet->id) }}" class="mb-4" id="filterForm">
+                {{-- فلتر حسب الشهر والمشروع --}}
+                <form method="GET" action="{{ route('admin.employees.timesheet', $employee->id) }}" class="mb-4" id="filterForm">
                     <div class="row align-items-end">
-                        <div class="">
+                        <div class="col-md-5 me-2">
+                            <label for="month" class="form-label fw-bold text-secondary">📅 Filter by Month</label>
+                            <select name="month" id="month" class="form-select select2">
+                                @foreach ($availableMonths as $month)
+                                    <option value="{{ $month['value'] }}" {{ $monthFilter == $month['value'] ? 'selected' : '' }}>
+                                        {{ $month['label'] }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-5">
                             <label for="project_id" class="form-label fw-bold text-secondary">📅 Filter by Project</label>
                             <select name="project_id" id="project_id" class="form-select select2">
-                                <option value="all" {{ !request('project_id') ? 'selected' : '' }}>All Projects</option>
-                                @foreach ($employee->projects as $project)
-                                    <option value="{{ $project->id }}" {{ request('project_id') == $project->id ? 'selected' : '' }}>
+                                <option value="all" {{ $projectFilter == 'all' ? 'selected' : '' }}>All Projects</option>
+                                @foreach ($projects as $project)
+                                    <option value="{{ $project->id }}" {{ $projectFilter == $project->id ? 'selected' : '' }}>
                                         {{ $project->name }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
-                        
                     </div>
                 </form>
             </div>
@@ -296,8 +304,14 @@
                     width: '100%'
                 });
 
+                $('#month').select2({
+                    placeholder: "Select a month",
+                    allowClear: true,
+                    width: '100%'
+                });
+
                 // استمع لأي تغيير في الفلاتر وأرسل الفورم
-                $('#project_id').on('change', function () {
+                $('#project_id, #month').on('change', function () {
                     $(this).closest('form').submit();
                 });
             });

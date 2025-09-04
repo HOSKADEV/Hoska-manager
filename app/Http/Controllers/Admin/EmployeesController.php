@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EmployeeRequest;
 use App\Models\Employee;
+use App\Models\Task;
+use App\Models\Timesheet;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -214,5 +217,70 @@ class EmployeesController extends Controller
         $status = $employee->user->banned ? 'banned' : 'unbanned';
         flash()->success("Employee has been {$status} successfully.");
         return redirect()->route('admin.employees.index');
+    }
+
+    /**
+     * Display the timesheet for a specific employee.
+     */
+    public function timesheet(Employee $employee, Request $request)
+    {
+        $monthFilter = $request->input('month', now()->format('Y-m'));
+        $projectFilter = $request->input('project_id', 'all');
+
+        // Get the employee's timesheet for the selected month
+        $month = Carbon::parse($monthFilter);
+        $monthStart = $month->copy()->startOfMonth();
+        $monthEnd = $month->copy()->endOfMonth();
+
+        // Find or create a timesheet for this employee for the selected month
+        $timesheet = Timesheet::where('employee_id', $employee->id)
+            ->whereYear('work_date', $month->year)
+            ->whereMonth('work_date', $month->month)
+            ->first();
+
+        if (!$timesheet) {
+            // Create a new timesheet if it doesn't exist
+            $timesheet = new Timesheet();
+            $timesheet->employee_id = $employee->id;
+            $timesheet->work_date = $monthStart;
+            $timesheet->hours_worked = 0;
+            $timesheet->month_salary = 0;
+            $timesheet->is_paid = false;
+            $timesheet->save();
+        }
+
+        // Get tasks for this employee in the selected month
+        $tasksQuery = Task::where('employee_id', $employee->id)
+            ->whereDate('start_time', '>=', $monthStart)
+            ->whereDate('start_time', '<=', $monthEnd)
+            ->with('project');
+
+        // Apply project filter if selected
+        if ($projectFilter !== 'all') {
+            $tasksQuery->where('project_id', $projectFilter);
+        }
+
+        $tasks = $tasksQuery->get();
+
+        // Get available months for this employee
+        $availableMonths = Task::where('employee_id', $employee->id)
+            ->selectRaw('DATE_FORMAT(start_time, "%Y-%m") as value, DATE_FORMAT(start_time, "%M %Y") as label')
+            ->groupBy('value', 'label')
+            ->orderBy('value', 'desc')
+            ->get()
+            ->toArray();
+
+        // Get employee's projects for filter
+        $projects = $employee->projects;
+
+        return view('admin.employees.timesheet', compact(
+            'employee',
+            'timesheet',
+            'tasks',
+            'monthFilter',
+            'projectFilter',
+            'availableMonths',
+            'projects'
+        ));
     }
 }

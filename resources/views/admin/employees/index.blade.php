@@ -145,6 +145,12 @@
                                             </button>
                                         </form>
                                     @endif
+
+                                    {{-- زر عرض سجل الحضور والانصراف --}}
+                                    <a href="{{ route('admin.employees.timesheet', $employee->id) }}" 
+                                        class="btn btn-sm btn-info" title="View Timesheet">
+                                        <i class='fas fa-clock'></i>
+                                    </a>
                                 </td>
                             </tr>
                             <!-- Payment Modal -->

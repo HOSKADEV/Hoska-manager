@@ -205,35 +205,35 @@ class ProjectsController extends Controller
             $data['marketer_commission_percent'] = $request->input('marketer_commission_percent');
         }
 
-        $data['is_manual'] = $request->boolean('is_manual');
+        // $data['is_manual'] = $request->boolean('is_manual');
 
-        if ($data['is_manual']) {
-            $data['manual_hours_spent'] = $request->manual_hours_spent ?? 0;
-            $data['manual_cost'] = $request->manual_cost ?? 0;
-        } else {
-            $data['manual_hours_spent'] = null;
-            $data['manual_cost'] = null;
-        }
+        // if ($data['is_manual']) {
+        //     $data['manual_hours_spent'] = $request->manual_hours_spent ?? 0;
+        //     $data['manual_cost'] = $request->manual_cost ?? 0;
+        // } else {
+            // $data['manual_hours_spent'] = null;
+            // $data['manual_cost'] = null;
+        // }
 
         unset($data['attachment'], $data['employee_id']);
 
         $project = Project::create($data);
 
-        if (!$data['is_manual']) {
+        // if (!$data['is_manual']) {
             $employeeIds = $request->input('employee_id', []);
             if (!empty($employeeIds)) {
                 $project->employees()->sync($employeeIds);
             }
-        }
+        // }
 
         // تسجيل دفعة كاملة تلقائياً إذا المشروع يدوي
-        if ($data['is_manual']) {
-            $project->payments()->create([
-                'amount' => $data['total_amount'],
-                'payment_date' => now(),
-                'invoice_id' => $data['invoice_id'] ?? null,
-            ]);
-        }
+        // if ($data['is_manual']) {
+        //     $project->payments()->create([
+        //         'amount' => $data['total_amount'],
+        //         'payment_date' => now(),
+        //         'invoice_id' => $data['invoice_id'] ?? null,
+        //     ]);
+        // }
 
         if ($request->hasFile('attachment')) {
             foreach ($request->file('attachment') as $file) {
@@ -329,6 +329,9 @@ class ProjectsController extends Controller
             $marketerCommissionAmount = ($project->total_amount * $marketerCommissionPercent) / 100;
         }
 
+        foreach ($project->ourTasks as $task) {
+            $totalHours += $task->duration;
+        }
         return view('admin.projects.show', compact(
             'project',
             'totalHours',
@@ -414,12 +417,12 @@ class ProjectsController extends Controller
 
         $project->update($data);
         // إذا كان المشروع يدوي، حدث عدد الساعات والتكلفة اليدوية
-        if ($project->is_manual) {
-            $project->update([
-                'manual_hours_spent' => $request->input('manual_hours_spent'),
-                'manual_cost' => $request->input('manual_cost'),
-            ]);
-        }
+        // if ($project->is_manual) {
+        //     $project->update([
+        //         'manual_hours_spent' => $request->input('manual_hours_spent'),
+        //         'manual_cost' => $request->input('manual_cost'),
+        //     ]);
+        // }
 
 
         $employeeIds = $request->input('employee_id', []);

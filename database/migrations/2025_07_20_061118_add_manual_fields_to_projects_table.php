@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::table('projects', function (Blueprint $table) {
             // للسماح بإدخال المشاريع القديمة يدوياً
-            $table->unsignedInteger('manual_hours_spent')->nullable();
-            $table->decimal('manual_cost', 15, 2)->nullable();
-            $table->boolean('is_manual')->default(false)->after('manual_cost');
+            // $table->unsignedInteger('manual_hours_spent')->nullable();
+            // $table->decimal('manual_cost', 15, 2)->nullable();
+            // $table->boolean('is_manual')->default(false)->after('manual_cost');
         });
     }
 
@@ -25,7 +25,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('projects', function (Blueprint $table) {
-            $table->dropColumn(['manual_hours_spent', 'manual_cost', 'is_manual']);
+            // $table->dropColumn(['manual_hours_spent', 'manual_cost', 'is_manual']);
         });
     }
 };

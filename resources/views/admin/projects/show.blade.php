@@ -180,16 +180,16 @@
                     </p>
                     <hr>
 
-                    @if((bool) $project->is_manual)
+                    {{-- @if((bool) $project->is_manual)
                         <p><strong>Manual Hours Spent:</strong> {{ number_format($project->manual_hours_spent ?? 0, 2) }}
                             hour(s)</p>
                         <p><strong>Manual Cost:</strong> {{ number_format($project->manual_cost ?? 0, 2) }}
                             {{ $currencySymbols[$project->currency] ?? '' }}
                         </p>
                         <p><strong>Is Manual:</strong> نعم</p>
-                    @else
-                        <p><strong>Is Manual:</strong> لا</p>
-                    @endif
+                    @else --}}
+                        {{-- <p><strong>Is Manual:</strong> لا</p>
+                    @endif --}}
 
                     <hr>
 
@@ -278,14 +278,14 @@
                                 <tr>
                                     <th>Total Worked Hours</th>
                                     <td>
-                                        @if($project->is_manual)
+                                        {{-- @if($project->is_manual)
                                             @php
                                                 $manualHours = $project->manual_hours_spent ?? 0;
                                                 $wholeHours = floor($manualHours);
                                                 $minutes = round(($manualHours - $wholeHours) * 60);
                                             @endphp
                                             {{ $wholeHours }}h {{ $minutes }}m
-                                        @else
+                                        @else --}}
                                             @php
                                                 $wholeHours = floor($totalHours ?? 0);
                                                 $minutes = round((($totalHours ?? 0) - $wholeHours) * 60);
@@ -296,12 +296,12 @@
                                             aria-expanded="false" title="Show details">
                                                 <i class="fas fa-ellipsis-v"></i>
                                             </button>
-                                        @endif
+                                        {{-- @endif --}}
                                     </td>
 
                                 </tr>
 
-                                @if(!$project->is_manual)
+                                {{-- @if(!$project->is_manual) --}}
                                     <tr id="employeeDetailsRow" class="employee-details-row" style="display: none;">
                                         <td colspan="2" class="p-3 bg-light">
                                             <ul class="list-unstyled mb-0">
@@ -353,16 +353,16 @@
                                             });
                                         });
                                     </script>
-                                @endif
+                                {{-- @endif --}}
 
                                 <tr>
                                     <th>Total Cost in DZD</th>
                                     <td>
-                                        @if($project->is_manual)
+                                        {{-- @if($project->is_manual)
                                             {{ number_format($project->manual_cost ?? 0, 2) }} DZ
-                                        @else
+                                        @else --}}
                                             {{ number_format($totalCostDZD ?? 0, 2) }} DZ
-                                        @endif
+                                        {{-- @endif --}}
                                     </td>
                                 </tr>
                             </tbody>

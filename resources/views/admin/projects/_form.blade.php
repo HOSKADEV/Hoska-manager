@@ -107,7 +107,7 @@
 </div>
 
 
-<div id="manualFields">
+{{-- <div id="manualFields">
     <div class="mb-3">
         <x-form.input label="Manual Hours Spent" name="manual_hours_spent" type="text" step="0.1" min="0"
             :oldval="old('manual_hours_spent', $project->manual_hours_spent)" placeholder="Enter manual hours spent" />
@@ -116,13 +116,13 @@
     <div class="mb-3">
         <x-form.input label="Manual Cost" name="manual_cost" type="text" step="0.01" min="0" :oldval="old('manual_cost', $project->manual_cost)" placeholder="Enter manual cost" />
     </div>
-</div>
+</div> --}}
 
-<div class="form-check mb-3">
+{{-- <div class="form-check mb-3">
     <input type="checkbox" id="is_manual" name="is_manual" value="1" {{ old('is_manual', $project->is_manual) ? 'checked' : '' }}>
 
     <label class="form-check-label" for="is_manual">Is Manual</label>
-</div>
+</div> --}}
 
 
 @push('js')
@@ -181,22 +181,22 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const isManualCheckbox = document.getElementById('is_manual');
-            const manualFields = document.getElementById('manualFields');
+            // const isManualCheckbox = document.getElementById('is_manual');
+            // const manualFields = document.getElementById('manualFields');
 
-            function toggleManualFields() {
-                if (isManualCheckbox.checked) {
-                    manualFields.style.display = 'block';
-                } else {
-                    manualFields.style.display = 'none';
-                }
-            }
+            // function toggleManualFields() {
+            //     if (isManualCheckbox.checked) {
+            //         manualFields.style.display = 'block';
+            //     } else {
+            //         manualFields.style.display = 'none';
+            //     }
+            // }
 
             // initial toggle on page load
-            toggleManualFields();
+            // toggleManualFields();
 
             // toggle on checkbox change
-            isManualCheckbox.addEventListener('change', toggleManualFields);
+            // isManualCheckbox.addEventListener('change', toggleManualFields);
         });
     </script>
 

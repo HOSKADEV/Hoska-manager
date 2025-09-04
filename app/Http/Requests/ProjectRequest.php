@@ -48,28 +48,29 @@ class ProjectRequest extends FormRequest
             'links.*.url' => ['nullable', 'url'],
             'links.*.label' => ['nullable', 'string', 'max:255'],
 
-            'is_manual' => 'nullable|boolean',
+            // 'is_manual' => 'nullable|boolean',
 
-            'manual_hours_spent' => [
-                'nullable',
-                'integer',
-                'min:0',
-                function ($attribute, $value, $fail) {
-                    if ($this->input('is_manual') == true && ($value === null || $value === '')) {
-                        $fail('The ' . $attribute . ' field is required when the project is manual.');
-                    }
-                }
-            ],
-            'manual_cost' => [
-                'nullable',
-                'numeric',
-                'min:0',
-                function ($attribute, $value, $fail) {
-                    if ($this->input('is_manual') == true && ($value === null || $value === '')) {
-                        $fail('The ' . $attribute . ' field is required when the project is manual.');
-                    }
-                }
-            ],
+            // 'manual_hours_spent' => [
+            //     'nullable',
+            //     'integer',
+            //     'min:0',
+            //     function ($attribute, $value, $fail) {
+            //         if ($value === null || $value === '') {
+            //         // if ($this->input('is_manual') == true && ($value === null || $value === '')) {
+            //             $fail('The ' . $attribute . ' field is required when the project is manual.');
+            //         }
+            //     }
+            // ],
+            // 'manual_cost' => [
+            //     'nullable',
+            //     'numeric',
+            //     'min:0',
+            //     function ($attribute, $value, $fail) {
+            //         if ($this->input('is_manual') == true && ($value === null || $value === '')) {
+            //             $fail('The ' . $attribute . ' field is required when the project is manual.');
+            //         }
+            //     }
+            // ],
             'marketer_commission_percent' => [
                 'nullable',
                 'numeric',

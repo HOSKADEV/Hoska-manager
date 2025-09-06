@@ -333,6 +333,12 @@ class ProjectsController extends Controller
             $totalCostDZD += $cost * $rateToDZD;
         }
 
+        // if ($project->ourTasks->count() > 0) {
+        //     foreach ($project->ourTasks as $task) {
+        //         $totalHours += $task->duration;
+        //     }
+        // }
+
         // حساب المبالغ المالية للمشروع
         $paidAmount = $project->payments->sum('amount');
         $remainingAmount = $project->total_amount - $paidAmount;
@@ -348,10 +354,12 @@ class ProjectsController extends Controller
         if ($marketer && $marketerCommissionPercent) {
             $marketerCommissionAmount = ($project->total_amount * $marketerCommissionPercent) / 100;
         }
-
-        foreach ($project->ourTasks as $task) {
-            $totalHours += $task->duration;
+        if ($project->ourTasks->count() > 0) {
+            foreach ($project->ourTasks as $task) {
+                $totalCostDZD += $this->convertCurrency($task->cost, $project->currency, 'DZD');
+            }
         }
+
         return view('admin.projects.show', compact(
             'project',
             'totalHours',

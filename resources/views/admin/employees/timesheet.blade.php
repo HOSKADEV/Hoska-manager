@@ -283,6 +283,7 @@
                                     <td>{{ number_format($task->duration_in_hours ?? 0, 2) }}</td>
                                 </tr>
                             @endforeach
+                            
 
                             <tr class="{{ $rowClass }}" style="font-weight: bold;">
                                 <td colspan="5" style="text-align: center;">Total Hours for {{ $date }}:</td>

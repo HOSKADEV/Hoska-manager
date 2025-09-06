@@ -327,6 +327,28 @@
                                                         <hr>
                                                     </li>
                                                 @endforeach
+                                                @if ($project->ourTasks->count() > 0)
+                                                    @foreach($project->ourTasks as $task)
+                                                    @php
+                                                            $currencySymbol = $currencySymbols[$project->currency] ?? '';
+                                                        @endphp
+                                                        <li class="mb-2">
+                                                            <span class="text-primary fw-semibold">Name:</span>
+                                                            <strong>{{ $task->title }}</strong><br>
+
+                                                            @php
+                                                            $wholeHours = floor($task->duration);
+                                                            $minutes = round(($task->duration - $wholeHours) * 60);
+                                                            @endphp
+                                                            <span class="text-primary fw-semibold">Hours:</span>
+                                                            {{ $wholeHours }}h {{ $minutes }}m<br>
+
+                                                            <span class="text-primary fw-semibold">Cost:</span>
+                                                            {{ $currencySymbol }} {{ number_format($task->cost, 2) }}
+                                                            <hr>
+                                                        </li>
+                                                    @endforeach
+                                                @endif
                                             </ul>
                                         </td>
                                     </tr>

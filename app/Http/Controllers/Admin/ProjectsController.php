@@ -333,11 +333,11 @@ class ProjectsController extends Controller
             $totalCostDZD += $cost * $rateToDZD;
         }
 
-        // if ($project->ourTasks->count() > 0) {
-        //     foreach ($project->ourTasks as $task) {
-        //         $totalHours += $task->duration;
-        //     }
-        // }
+        if ($project->ourTasks->count() > 0) {
+            foreach ($project->ourTasks as $task) {
+                $totalHours += $task->duration;
+            }
+        }
 
         // حساب المبالغ المالية للمشروع
         $paidAmount = $project->payments->sum('amount');

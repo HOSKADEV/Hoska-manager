@@ -329,7 +329,7 @@
                                                 @endforeach
                                                 @if ($project->ourTasks->count() > 0)
                                                     @foreach($project->ourTasks as $task)
-                                                    @php
+                                                        @php
                                                             $currencySymbol = $currencySymbols[$project->currency] ?? '';
                                                         @endphp
                                                         <li class="mb-2">

@@ -239,24 +239,41 @@ class EmployeesController extends Controller
         }
 
         // Find or create a timesheet for this employee for the selected month
-        $timesheetQuery = Timesheet::where('employee_id', $employee->id);
+        if ($monthFilter === 'all') {
+            // When "all months" is selected, calculate totals across all months
+            $allTimesheets = Timesheet::where('employee_id', $employee->id)->get();
 
-        if ($month) {
-            $timesheetQuery->whereYear('work_date', $month->year)
-                        ->whereMonth('work_date', $month->month);
-        }
-
-        $timesheet = $timesheetQuery->first();
-
-        if (!$timesheet && $month) {
-            // Create a new timesheet if it doesn't exist
+            // Create a summary timesheet object
             $timesheet = new Timesheet();
             $timesheet->employee_id = $employee->id;
-            $timesheet->work_date = $monthStart;
-            $timesheet->hours_worked = 0;
-            $timesheet->month_salary = 0;
+            $timesheet->work_date = now(); // Current date as reference
+            $timesheet->hours_worked = $allTimesheets->sum('hours_worked');
+            $timesheet->month_salary = $allTimesheets->sum('month_salary');
             $timesheet->is_paid = false;
-            $timesheet->save();
+
+            // If no timesheets exist, set default values
+            if ($allTimesheets->isEmpty()) {
+                $timesheet->hours_worked = 0;
+                $timesheet->month_salary = 0;
+            }
+        } else {
+            // For a specific month
+            $timesheetQuery = Timesheet::where('employee_id', $employee->id)
+                ->whereYear('work_date', $month->year)
+                ->whereMonth('work_date', $month->month);
+
+            $timesheet = $timesheetQuery->first();
+
+            if (!$timesheet) {
+                // Create a new timesheet if it doesn't exist
+                $timesheet = new Timesheet();
+                $timesheet->employee_id = $employee->id;
+                $timesheet->work_date = $monthStart;
+                $timesheet->hours_worked = 0;
+                $timesheet->month_salary = 0;
+                $timesheet->is_paid = false;
+                $timesheet->save();
+            }
         }
 
         // Get tasks for this employee in the selected month

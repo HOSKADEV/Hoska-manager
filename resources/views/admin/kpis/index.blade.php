@@ -176,8 +176,8 @@
         </div>
     </div>
     <!-- Customer Satisfaction (CSAT) Example -->
-    {{-- <div class="row mb-4">
-        <div class="col-12">
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
             <div class="card card-kpi border-csat shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
@@ -195,11 +195,11 @@
                 </div>
             </div>
         </div>
-    </div> --}}
+    {{-- </div>
 
     <!-- Customer Satisfaction Components Chart -->
-    <div class="row mb-4">
-        <div class="col-12">
+    <div class="row mb-4"> --}}
+        <div class="col-md-6">
             <div class="card shadow h-100">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Customer Satisfaction Components</h6>
@@ -352,29 +352,29 @@
             });
 
             // رسم بياني CSAT (دائري)
-            // const csatCtx = document.getElementById('csatChart').getContext('2d');
-            // new Chart(csatCtx, {
-            //     type: 'doughnut',
-            //     data: {
-            //         labels: ['Satisfied', 'Unsatisfied'],
-            //         datasets: [{
-            //             data: [{{ $csatScore }}, {{ 100 - $csatScore }}],
-            //             backgroundColor: [
-            //                 'rgba(111, 66, 193, 0.8)',  // بنفسجي (راضي)
-            //                 'rgba(200, 200, 200, 0.3)'  // رمادي فاتح (غير راضي)
-            //             ],
-            //             borderWidth: 0
-            //         }]
-            //     },
-            //     options: {
-            //         cutout: '75%',
-            //         responsive: true,
-            //         plugins: {
-            //             legend: { display: false },
-            //             tooltip: { enabled: false }
-            //         }
-            //     }
-            // });
+            const csatCtx = document.getElementById('csatChart').getContext('2d');
+            new Chart(csatCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Satisfied', 'Unsatisfied'],
+                    datasets: [{
+                        data: [{{ $csatScore }}, {{ 100 - $csatScore }}],
+                        backgroundColor: [
+                            'rgba(111, 66, 193, 0.8)',  // بنفسجي (راضي)
+                            'rgba(200, 200, 200, 0.3)'  // رمادي فاتح (غير راضي)
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    cutout: '75%',
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    }
+                }
+            });
 
             // بيانات حقيقية من وحدة التحكم
             const profitsData = @json($monthlyProfitsData);

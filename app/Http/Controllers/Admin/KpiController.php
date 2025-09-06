@@ -166,7 +166,15 @@ class KpiController extends Controller
         // Get all projects with their satisfaction components
         $projects = Project::all();
 
-        $totalProjects = $projects->count();
+        $totalProjects = $projects->filter(function ($project) {
+            return
+                ($project->delivery_quality ?? 0) != 0 ||
+                ($project->response_speed ?? 0) != 0 ||
+                ($project->support_level ?? 0) != 0 ||
+                ($project->expectations_met ?? 0) != 0 ||
+                ($project->continuation_intent ?? 0) != 0 ||
+                ($project->final_satisfaction_score ?? 0) != 0;
+        })->count();
         $totalDeliveryQuality = 0;
         $totalResponseSpeed = 0;
         $totalSupportLevel = 0;

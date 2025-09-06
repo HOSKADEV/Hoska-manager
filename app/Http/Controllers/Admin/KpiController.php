@@ -349,7 +349,8 @@ class KpiController extends Controller
             'year',
             'availableYears',
             'projectsWithProfits',
-            'selectedMonth'
+            'selectedMonth',
+            'totalProjects'
         ));
     }
 }

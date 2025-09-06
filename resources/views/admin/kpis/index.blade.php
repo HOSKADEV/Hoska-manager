@@ -187,7 +187,7 @@
                             </div>
                             <canvas id="csatChart" style="max-width: 150px; margin: auto; height: 150px;"></canvas>
                             <div class="h3 font-weight-bold text-gray-800 mt-2">
-                                {{ number_format($csatScore, 1) }}%
+                                {{ number_format($csatScore, 1) }}% <span style="font-size: large;">/ {{ $totalProjects }}</span>
                             </div>
                             <small class="text-muted">Based on project metrics</small>
                         </div>

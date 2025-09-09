@@ -11,10 +11,12 @@
         <a class="nav-link" id="payment-tab" data-toggle="tab" href="#payment" role="tab" aria-controls="payment"
             aria-selected="false">Payment Information</a>
     </li>
-    <li class="nav-item">
-        <a class="nav-link" id="timesheet-tab" data-toggle="tab" href="#timesheet" role="tab" aria-controls="timesheet"
-            aria-selected="false">Timesheet</a>
-    </li>
+    @if($employee->exists)
+        <li class="nav-item">
+            <a class="nav-link" id="timesheet-tab" data-toggle="tab" href="#timesheet" role="tab" aria-controls="timesheet"
+                aria-selected="false">Timesheet</a>
+        </li>
+    @endif
     <li class="nav-item">
         <a class="nav-link" id="login-tab" data-toggle="tab" href="#login" role="tab" aria-controls="login"
             aria-selected="false">Login Information</a>
@@ -109,86 +111,88 @@
         </div>
     </div>
 
-    <!-- Tab 4: Timesheet -->
-    <div class="tab-pane fade" id="timesheet" role="tabpanel" aria-labelledby="timesheet-tab">
-        <div class="card mb-3 border-info">
-            <div class="card-header bg-info text-white">
-                <i class="fas fa-clock"></i> Monthly Timesheet & Payment Information
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped">
-                        <thead class="thead-dark">
-                            <tr>
-                                <th>Year</th>
-                                <th>Month</th>
-                                <th>Hours Worked</th>
-                                <th>Salary</th>
-                                <th>Rate</th>
-                                <th>Payment Type</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @php
-                                // Get employee timesheets
-                                $timesheets = \App\Models\Timesheet::where('employee_id', $employee->id)
-                                    ->orderBy('work_date', 'desc')
-                                    ->take(12) // Show last 12 months
-                                    ->get();
-                            @endphp
-
-                            @if($timesheets->isEmpty())
-                                <tr>
-                                    <td colspan="7" class="text-center">No timesheet records found</td>
-                                </tr>
-                            @else
-                                @foreach($timesheets as $timesheet)
-                                    @php
-                                        $workDate = \Carbon\Carbon::parse($timesheet->work_date);
-                                        $rate = $timesheet->rate;
-                                        $paymentType = $employee->payment_type;
-
-                                        // Determine payment type based on hours worked and salary
-                                        if($paymentType == 'hourly' && $timesheet->hours_worked > 0) {
-                                            $displayType = 'Hourly';
-                                        } else if($paymentType == 'monthly') {
-                                            $displayType = 'Monthly';
-                                        } else if($paymentType == 'per_project') {
-                                            $displayType = 'Per Project';
-                                        } else {
-                                            $displayType = 'Unknown';
-                                        }
-                                    @endphp
-                                    <tr>
-                                        <td>{{ $workDate->format('Y') }}</td>
-                                        <td>{{ $workDate->format('F') }}</td>
-                                        <td>{{ number_format($timesheet->hours_worked, 2) }}</td>
-                                        <td>{{ number_format($timesheet->month_salary, 2) }} {{ $employee->currency ?? 'USD' }}</td>
-                                        <td>{{ number_format($rate, 2) }} {{ $employee->currency ?? 'USD' }}</td>
-                                        <td>{{ $displayType }}</td>
-                                        <td>
-                                            @if($timesheet->is_paid)
-                                                <span class="badge bg-success">Paid</span>
-                                            @else
-                                                <span class="badge bg-warning">Pending</span>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            @endif
-                        </tbody>
-                    </table>
+    @if($employee->exists)
+        <!-- Tab 4: Timesheet -->
+        <div class="tab-pane fade" id="timesheet" role="tabpanel" aria-labelledby="timesheet-tab">
+            <div class="card mb-3 border-info">
+                <div class="card-header bg-info text-white">
+                    <i class="fas fa-clock"></i> Monthly Timesheet & Payment Information
                 </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Month</th>
+                                    <th>Hours Worked</th>
+                                    <th>Salary</th>
+                                    <th>Rate</th>
+                                    <th>Payment Type</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    // Get employee timesheets
+                                    $timesheets = \App\Models\Timesheet::where('employee_id', $employee->id)
+                                        ->orderBy('work_date', 'desc')
+                                        ->take(12) // Show last 12 months
+                                        ->get();
+                                @endphp
 
-                <div class="mt-3">
-                    <a href="{{ route('admin.employees.timesheet', $employee->id) }}" class="btn btn-primary">
-                        <i class="fas fa-calendar-alt"></i> View Full Timesheet
-                    </a>
+                                @if($timesheets->isEmpty())
+                                    <tr>
+                                        <td colspan="7" class="text-center">No timesheet records found</td>
+                                    </tr>
+                                @else
+                                    @foreach($timesheets as $timesheet)
+                                        @php
+                                            $workDate = \Carbon\Carbon::parse($timesheet->work_date);
+                                            $rate = $timesheet->rate;
+                                            $paymentType = $employee->payment_type;
+
+                                            // Determine payment type based on hours worked and salary
+                                            if($paymentType == 'hourly' && $timesheet->hours_worked > 0) {
+                                                $displayType = 'Hourly';
+                                            } else if($paymentType == 'monthly') {
+                                                $displayType = 'Monthly';
+                                            } else if($paymentType == 'per_project') {
+                                                $displayType = 'Per Project';
+                                            } else {
+                                                $displayType = 'Unknown';
+                                            }
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $workDate->format('Y') }}</td>
+                                            <td>{{ $workDate->format('F') }}</td>
+                                            <td>{{ number_format($timesheet->hours_worked, 2) }}</td>
+                                            <td>{{ number_format($timesheet->month_salary, 2) }} {{ $employee->currency ?? 'USD' }}</td>
+                                            <td>{{ number_format($rate, 2) }} {{ $employee->currency ?? 'USD' }}</td>
+                                            <td>{{ $displayType }}</td>
+                                            <td>
+                                                @if($timesheet->is_paid)
+                                                    <span class="badge bg-success">Paid</span>
+                                                @else
+                                                    <span class="badge bg-warning">Pending</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="mt-3">
+                        <a href="{{ route('admin.employees.timesheet', $employee->id) }}" class="btn btn-primary">
+                            <i class="fas fa-calendar-alt"></i> View Full Timesheet
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    @endif
 
     @php
         // فقط إذا كانت هذه عملية تعديل (موجود موظف ومرتبط بمستخدم من نوع employee)

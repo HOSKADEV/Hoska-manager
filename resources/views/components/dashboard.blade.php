@@ -125,7 +125,7 @@
                     <li class="nav-item {{ request()->routeIs('admin.employee-satisfaction.index') ? 'active' : '' }}">
                         <a class="nav-link collapsed" href="{{ route('admin.employee-satisfaction.index') }}">
                             <i class="fas fa-star"></i>
-                            <span>قياس الرضا الوظيفي</span>
+                            <span>Employee Satisfaction</span>
                         </a>
                     </li>
 
@@ -390,7 +390,7 @@
                         <li class="nav-item {{ request()->routeIs('admin.satisfaction.form') ? 'active' : '' }}">
                             <a class="nav-link collapsed" href="{{ route('admin.satisfaction.form') }}">
                                 <i class="fas fa-star"></i>
-                                <span>تقييم الرضا الوظيفي</span>
+                                <span>Add Employee Satisfaction</span>
                             </a>
                         </li>
                     @endif

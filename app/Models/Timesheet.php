@@ -96,7 +96,9 @@ class Timesheet extends Model
         if ($this->employee->payment_type == 'monthly') {
             return $this->month_salary;
         } else if ($this->employee->payment_type == 'hourly') {
-            return $this->month_salary / $this->hours_worked;
+            return $this->hours_worked > 0
+                ? $this->month_salary / $this->hours_worked
+                : 0;
         } else if ($this->employee->payment_type == 'per_project') {
             return $this->month_salary;
         }

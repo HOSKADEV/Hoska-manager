@@ -11,6 +11,8 @@
 
     <title>{{ env("APP_NAME") }}</title>
 
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <!-- Custom fonts for this template-->
     <link rel="shortcut icon" href="{{asset('assets/img/icon')}}" type="image/x-icon">
     <link href="{{ asset('assets/vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">

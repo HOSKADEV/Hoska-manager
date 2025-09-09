@@ -1,6 +1,14 @@
 <x-dashboard title="قياس الرضا الوظيفي">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-gray-800">قياس الرضا الوظيفي</h1>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="forceSatisfactionToggle"
+                   @if(\App\Models\Setting::get('force_employee_satisfaction', false)) checked @endif
+                   onchange="toggleForceSatisfaction(this)">
+            <label class="form-check-label" for="forceSatisfactionToggle">
+                إلزام الموظفين بتقييم الرضا الوظيفي
+            </label>
+        </div>
     </div>
 
     <!-- Filters -->
@@ -237,13 +245,68 @@
             </div>
         </div>
     </div>
-</x-dashboard>
+
 
 @push('js')
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
+        function toggleForceSatisfaction(checkbox) {
+            fetch('{{ route("admin.toggle-force-satisfaction") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    enabled: checkbox.checked
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const message = checkbox.checked
+                        ? 'تم تفعيل إلزام الموظفين بتقييم الرضا الوظيفي'
+                        : 'تم تعطيل إلزام الموظفين بتقييم الرضا الوظيفي';
+
+                    // Show success message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-success alert-dismissible fade show';
+                    alertDiv.setAttribute('role', 'alert');
+                    alertDiv.innerHTML = `
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+
+                    const container = document.querySelector('.container-fluid');
+                    container.insertBefore(alertDiv, container.firstChild);
+
+                    // Auto remove after 3 seconds
+                    setTimeout(() => {
+                        alertDiv.remove();
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+
+                // Show error message
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                alertDiv.setAttribute('role', 'alert');
+                alertDiv.innerHTML = `
+                    حدث خطأ أثناء تحديث الإعدادات
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                `;
+
+                const container = document.querySelector('.container-fluid');
+                container.insertBefore(alertDiv, container.firstChild);
+
+                // Revert the checkbox state
+                checkbox.checked = !checkbox.checked;
+            });
+        }
         document.addEventListener('DOMContentLoaded', function() {
             // Monthly Trend Chart
             const ctx = document.getElementById('satisfactionTrendChart').getContext('2d');
@@ -357,3 +420,4 @@
         });
     </script>
 @endpush
+</x-dashboard>

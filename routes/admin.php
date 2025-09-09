@@ -117,3 +117,8 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth'])->group(function (
     Route::post('satisfaction', [EmployeeSatisfactionController::class, 'employeeSubmit'])->name('satisfaction.submit');
     Route::put('satisfaction', [EmployeeSatisfactionController::class, 'employeeSubmit'])->name('satisfaction.update');
 });
+
+// Toggle force satisfaction rating
+Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group(function () {
+    Route::post('toggle-force-satisfaction', [EmployeeSatisfactionController::class, 'toggleForceSatisfaction'])->name('toggle-force-satisfaction');
+});

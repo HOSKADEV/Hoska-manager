@@ -20,6 +20,17 @@ class AdminController extends Controller
 
     public function index()
     {
+        $user = Auth::user();
+
+        // Check if forcing satisfaction rating is enabled and user is an employee who hasn't submitted yet
+        if ($user->type === 'employee') {
+            $forceSatisfaction = \App\Models\Setting::get('force_employee_satisfaction', false);
+
+            if ($forceSatisfaction && !$user->employee->hasSatisfactionThisMonth()) {
+                return redirect()->route('admin.satisfaction.form');
+            }
+        }
+
         $totalTasks = Task::count();
         $completedTasks = Task::where('status', 'completed')->count();
 
@@ -27,8 +38,6 @@ class AdminController extends Controller
         $totalClients = Client::count();
 
         $monthlyEarnings = 0;
-
-        $user = Auth::user();
 
         if ($user->type === 'employee') {
             $employee = Employee::where('user_id', $user->id)->first();

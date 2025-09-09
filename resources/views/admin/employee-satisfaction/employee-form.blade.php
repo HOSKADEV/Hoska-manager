@@ -1,4 +1,10 @@
-<x-dashboard title="تقييم الرضا الوظيفي">
+@php
+    // Check if forcing satisfaction rating is enabled
+    $forceSatisfaction = \App\Models\Setting::get('force_employee_satisfaction', false);
+    $layout = $forceSatisfaction && !$existing ? 'satisfaction-layout' : 'dashboard';
+@endphp
+
+<x-dynamic-component :component="$layout" title="تقييم الرضا الوظيفي">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 text-gray-800">تقييم الرضا الوظيفي</h1>
     </div>
@@ -45,9 +51,9 @@
                                 <label for="salary_compensation" class="form-label">الراتب والتعويضات 💰 (1-10)</label>
                                 <div class="input-group">
                                     <input type="range" class="form-range" id="salary_compensation" name="salary_compensation" style="width: 75%"
-                                           min="1" max="10" value="{{ $existing ? $existing->salary_compensation : 3 }}"
+                                           min="0" max="10" value="{{ $existing ? $existing->salary_compensation : 0 }}"
                                            oninput="document.getElementById('salary_compensation_value').textContent = this.value; updatePredictedScore()">
-                                    <span class="input-group-text" id="salary_compensation_value">{{ $existing ? $existing->salary_compensation : 3 }}</span>
+                                    <span class="input-group-text" id="salary_compensation_value">{{ $existing ? $existing->salary_compensation : 0 }}</span>
                                 </div>
                                 <div class="form-text">
                                     1 = غير راضٍ تماماً، 10 = راضٍ تماماً
@@ -57,9 +63,9 @@
                                 <label for="work_environment" class="form-label">بيئة العمل 🏢 (1-10)</label>
                                 <div class="input-group">
                                     <input type="range" class="form-range" id="work_environment" name="work_environment" style="width: 75%"
-                                           min="1" max="10" value="{{ $existing ? $existing->work_environment : 3 }}"
+                                           min="0" max="10" value="{{ $existing ? $existing->work_environment : 0 }}"
                                            oninput="document.getElementById('work_environment_value').textContent = this.value; updatePredictedScore()">
-                                    <span class="input-group-text" id="work_environment_value">{{ $existing ? $existing->work_environment : 3 }}</span>
+                                    <span class="input-group-text" id="work_environment_value">{{ $existing ? $existing->work_environment : 0 }}</span>
                                 </div>
                                 <div class="form-text">
                                     1 = غير راضٍ تماماً، 10 = راضٍ تماماً
@@ -70,9 +76,9 @@
                                 <label for="colleagues_relationship" class="form-label">العلاقات مع الزملاء 🤝 (1-10)</label>
                                 <div class="input-group">
                                     <input type="range" class="form-range" id="colleagues_relationship" name="colleagues_relationship" style="width: 75%"
-                                           min="1" max="10" value="{{ $existing ? $existing->colleagues_relationship : 3 }}"
+                                           min="0" max="10" value="{{ $existing ? $existing->colleagues_relationship : 0 }}"
                                            oninput="document.getElementById('colleagues_relationship_value').textContent = this.value; updatePredictedScore()">
-                                    <span class="input-group-text" id="colleagues_relationship_value">{{ $existing ? $existing->colleagues_relationship : 3 }}</span>
+                                    <span class="input-group-text" id="colleagues_relationship_value">{{ $existing ? $existing->colleagues_relationship : 0 }}</span>
                                 </div>
                                 <div class="form-text">
                                     1 = غير راضٍ تماماً، 10 = راضٍ تماماً
@@ -82,9 +88,9 @@
                                 <label for="management_relationship" class="form-label">العلاقة مع الإدارة 👔 (1-10)</label>
                                 <div class="input-group">
                                     <input type="range" class="form-range" id="management_relationship" name="management_relationship" style="width: 75%"
-                                           min="1" max="10" value="{{ $existing ? $existing->management_relationship : 3 }}"
+                                           min="0" max="10" value="{{ $existing ? $existing->management_relationship : 0 }}"
                                            oninput="document.getElementById('management_relationship_value').textContent = this.value; updatePredictedScore()">
-                                    <span class="input-group-text" id="management_relationship_value">{{ $existing ? $existing->management_relationship : 3 }}</span>
+                                    <span class="input-group-text" id="management_relationship_value">{{ $existing ? $existing->management_relationship : 0 }}</span>
                                 </div>
                                 <div class="form-text">
                                     1 = غير راضٍ تماماً، 10 = راضٍ تماماً
@@ -94,9 +100,9 @@
                                 <label for="growth_opportunities" class="form-label">فرص النمو والتطور 📈 (1-10)</label>
                                 <div class="input-group">
                                     <input type="range" class="form-range" id="growth_opportunities" name="growth_opportunities" style="width: 75%"
-                                           min="1" max="10" value="{{ $existing ? $existing->growth_opportunities : 3 }}"
+                                           min="0" max="10" value="{{ $existing ? $existing->growth_opportunities : 0 }}"
                                            oninput="document.getElementById('growth_opportunities_value').textContent = this.value; updatePredictedScore()">
-                                    <span class="input-group-text" id="growth_opportunities_value">{{ $existing ? $existing->growth_opportunities : 3 }}</span>
+                                    <span class="input-group-text" id="growth_opportunities_value">{{ $existing ? $existing->growth_opportunities : 0 }}</span>
                                 </div>
                                 <div class="form-text">
                                     1 = غير راضٍ تماماً، 10 = راضٍ تماماً
@@ -106,9 +112,9 @@
                                 <label for="work_life_balance" class="form-label">التوازن بين العمل والحياة 🕒 (1-10)</label>
                                 <div class="input-group">
                                     <input type="range" class="form-range" id="work_life_balance" name="work_life_balance" style="width: 75%"
-                                           min="1" max="10" value="{{ $existing ? $existing->work_life_balance : 3 }}"
+                                           min="0" max="10" value="{{ $existing ? $existing->work_life_balance : 0 }}"
                                            oninput="document.getElementById('work_life_balance_value').textContent = this.value; updatePredictedScore()">
-                                    <span class="input-group-text" id="work_life_balance_value">{{ $existing ? $existing->work_life_balance : 3 }}</span>
+                                    <span class="input-group-text" id="work_life_balance_value">{{ $existing ? $existing->work_life_balance : 0 }}</span>
                                 </div>
                                 <div class="form-text">
                                     1 = غير راضٍ تماماً، 10 = راضٍ تماماً
@@ -120,7 +126,7 @@
                                     <div class="mt-2">
                                         <span>النتيجة المتوقعة: </span>
                                         <span id="predicted_score" class="fw-bold">
-                                            {{ $existing ? round(($existing->salary_compensation + $existing->work_environment + $existing->colleagues_relationship + $existing->management_relationship + $existing->growth_opportunities + $existing->work_life_balance) / 6, 1) : '3.0' }}/10
+                                            {{ $existing ? round(($existing->salary_compensation + $existing->work_environment + $existing->colleagues_relationship + $existing->management_relationship + $existing->growth_opportunities + $existing->work_life_balance) / 6, 1) : '0.0' }}/10
                                         </span>
                                     </div>
                                 </div>
@@ -130,7 +136,7 @@
                 </div>
 
                 <div class="d-flex justify-content-between">
-                    <button type="submit" class="btn btn-success">{{ $existing ? 'تحديث التقييم' : 'حفظ التقييم' }}</button>
+                    <button type="submit" id="submit_button" class="btn btn-success" disabled>{{ $existing ? 'تحديث التقييم' : 'حفظ التقييم' }}</button>
                 </div>
             </form>
         </div>
@@ -150,7 +156,35 @@
                 const average = total / 6;
 
                 document.getElementById('predicted_score').textContent = average.toFixed(1) + '/10';
+
+                // Check if all inputs have values to enable/disable submit button
+                validateForm();
             }
+
+            function validateForm() {
+                const salary_compensation = parseFloat(document.getElementById('salary_compensation').value);
+                const work_environment = parseFloat(document.getElementById('work_environment').value);
+                const colleagues_relationship = parseFloat(document.getElementById('colleagues_relationship').value);
+                const management_relationship = parseFloat(document.getElementById('management_relationship').value);
+                const growth_opportunities = parseFloat(document.getElementById('growth_opportunities').value);
+                const work_life_balance = parseFloat(document.getElementById('work_life_balance').value);
+
+                // Check if all values are greater than 0
+                const allValuesSet = salary_compensation > 0 &&
+                                     work_environment > 0 &&
+                                     colleagues_relationship > 0 &&
+                                     management_relationship > 0 &&
+                                     growth_opportunities > 0 &&
+                                     work_life_balance > 0;
+
+                // Enable/disable submit button based on validation
+                document.getElementById('submit_button').disabled = !allValuesSet;
+            }
+
+            // Initialize form validation on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                validateForm();
+            });
         </script>
     @endpush
-</x-dashboard>
+</x-dynamic-component>

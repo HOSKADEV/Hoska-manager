@@ -231,4 +231,23 @@ class EmployeeSatisfactionController extends Controller
         return redirect()->route('admin.index')
             ->with('success', $message);
     }
+
+    /**
+     * Toggle the force employee satisfaction setting
+     */
+    public function toggleForceSatisfaction(Request $request)
+    {
+        $request->validate([
+            'enabled' => 'required|boolean'
+        ]);
+
+        \App\Models\Setting::set('force_employee_satisfaction', $request->enabled, 'Force employees to submit satisfaction rating');
+
+        return response()->json([
+            'success' => true,
+            'message' => $request->enabled 
+                ? 'Force satisfaction rating has been enabled.' 
+                : 'Force satisfaction rating has been disabled.'
+        ]);
+    }
 }

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\ClientsController;
 use App\Http\Controllers\Admin\DevelopmentsController;
+use App\Http\Controllers\Admin\EmployeeSatisfactionController;
 use App\Http\Controllers\Admin\EmployeesController;
 use App\Http\Controllers\Admin\InvoicesController;
 use App\Http\Controllers\Admin\KpiController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Admin\WalletTransactionController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Mails\VerficationEmailController;
 use Illuminate\Support\Facades\Route;
+
 
 
 
@@ -101,3 +103,17 @@ Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 // otp
 Route::get('verfactionemail/{token}', [VerficationEmailController::class, 'verficationemailpage'])->name('verficationemailpage');
 Route::post('verify-email', [VerficationEmailController::class, 'verifyemail'])->name('verifyemail');
+
+
+
+Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group(function () {
+    // Employee Satisfaction Management
+    Route::get('employee-satisfaction', [EmployeeSatisfactionController::class, 'index'])->name('employee-satisfaction.index');
+});
+
+// Employee routes (for employees to submit their own satisfaction)
+Route::prefix('admin')->name('admin.')->middleware(['isAuth'])->group(function () {
+    Route::get('satisfaction', [EmployeeSatisfactionController::class, 'employeeForm'])->name('satisfaction.form');
+    Route::post('satisfaction', [EmployeeSatisfactionController::class, 'employeeSubmit'])->name('satisfaction.submit');
+    Route::put('satisfaction', [EmployeeSatisfactionController::class, 'employeeSubmit'])->name('satisfaction.update');
+});

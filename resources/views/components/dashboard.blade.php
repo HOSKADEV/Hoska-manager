@@ -115,7 +115,18 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('admin.kpis.index') }}">
                             <i class="fas fa-fw fa-tachometer-alt"></i>
-                            <span>KPIs</span></a>
+                            <span>KPIs</span>
+                        </a>
+                    </li>
+
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Employee Satisfaction -->
+                    <li class="nav-item {{ request()->routeIs('admin.employee-satisfaction.index') ? 'active' : '' }}">
+                        <a class="nav-link collapsed" href="{{ route('admin.employee-satisfaction.index') }}">
+                            <i class="fas fa-star"></i>
+                            <span>قياس الرضا الوظيفي</span>
+                        </a>
                     </li>
 
                     <!-- Divider -->
@@ -375,7 +386,14 @@
                             <i class="fas fa-fw fa-tachometer-alt"></i>
                             <span>Dashboard</span></a>
                     </li>
-
+                    @if ($user->type == 'employee' && !$user->employee->hasSatisfactionThisMonth())
+                        <li class="nav-item {{ request()->routeIs('admin.satisfaction.form') ? 'active' : '' }}">
+                            <a class="nav-link collapsed" href="{{ route('admin.satisfaction.form') }}">
+                                <i class="fas fa-star"></i>
+                                <span>تقييم الرضا الوظيفي</span>
+                            </a>
+                        </li>
+                    @endif
                     <!-- ✅ إضافة قسم خاص بالعملاء إذا كان المستخدم مسوق -->
                     @if($user->is_marketer)
                         <hr class="sidebar-divider my-0">

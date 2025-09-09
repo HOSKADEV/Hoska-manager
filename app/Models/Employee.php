@@ -31,6 +31,47 @@ class Employee extends Model
         return $this->morphMany(Contact::class, 'contactable');
     }
 
+    /**
+     * Check if employee has submitted satisfaction rating for the current month
+     *
+     * @return bool
+     */
+    public function hasSatisfactionThisMonth()
+    {
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
+
+        return $this->satisfactions()
+            ->where('month', $currentMonth)
+            ->where('year', $currentYear)
+            ->exists();
+    }
+
+    /**
+     * Get the satisfaction rating for the current month if exists
+     *
+     * @return EmployeeSatisfaction|null
+     */
+    public function getSatisfactionThisMonth()
+    {
+        $currentMonth = now()->month;
+        $currentYear = now()->year;
+
+        return $this->satisfactions()
+            ->where('month', $currentMonth)
+            ->where('year', $currentYear)
+            ->first();
+    }
+
+    /**
+     * Relationship with employee satisfaction ratings
+     */
+    public function satisfactions()
+    {
+        return $this->hasMany(EmployeeSatisfaction::class);
+    }
+
+
     protected static function booted()
     {
         static::created(function ($employee) {

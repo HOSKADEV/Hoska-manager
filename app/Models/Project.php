@@ -72,6 +72,11 @@ class Project extends Model
         return $this->hasMany(ProjectLink::class);
     }
 
+    public function contracts()
+    {
+        return $this->morphMany(Contract::class, 'contractable');
+    }
+
     public function getTotalAmountProjectWithDevelopmentsAttribute() {
         $amount = $this->total_amount;
         if ($this->developments) {

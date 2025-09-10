@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\NotesController;
 use App\Http\Controllers\Admin\OurTasksController;
 use App\Http\Controllers\Admin\PaymentsController;
 use App\Http\Controllers\Admin\ProjectsController;
+use App\Http\Controllers\Admin\ContractsController;
 use App\Http\Controllers\Admin\TaskImportController;
 use App\Http\Controllers\Admin\TasksController;
 use App\Http\Controllers\Admin\TimesheetsController;
@@ -34,6 +35,9 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth'])->group(function (
     Route::post('/toggle-boolean', [AdminController::class, 'toggleBoolean'])->name('admin.toggle-boolean');
 
     Route::resource('projects', ProjectsController::class);
+
+    // Contracts Management
+    Route::resource('contracts', ContractsController::class);
 
     Route::resource('tasks', TasksController::class);
     Route::post('tasks/import', [TaskImportController::class, 'import'])->name('tasks.import');

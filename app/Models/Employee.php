@@ -71,6 +71,11 @@ class Employee extends Model
         return $this->hasMany(EmployeeSatisfaction::class);
     }
 
+    public function contracts()
+    {
+        return $this->morphMany(Contract::class, 'contractable');
+    }
+
 
     protected static function booted()
     {

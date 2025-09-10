@@ -359,6 +359,27 @@
                             <i class="fas fa-user-clock"></i>
                             <span>Timesheets</span></a>
                     </li>
+
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Pages Collapse Menu Contracts -->
+                    <li class="nav-item {{ request()->routeIs('admin.contracts.index') || request()->routeIs('admin.contracts.create') ? 'active' : ''}}">
+                        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseContracts"
+                            aria-expanded="true" aria-controls="collapseContracts">
+                            <i class="fas fa-file-contract"></i>
+                            <span>Contracts</span>
+                        </a>
+                        <div id="collapseContracts"
+                            class="collapse {{ request()->routeIs('admin.contracts.index') || request()->routeIs('admin.contracts.create') ? 'show' : ''}}"
+                            aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <a class="collapse-item {{ request()->routeIs('admin.contracts.index') ? 'active' : ''}}"
+                                    href="{{ route('admin.contracts.index') }}">All Contracts</a>
+                                <a class="collapse-item {{ request()->routeIs('admin.contracts.create') ? 'active' : ''}}"
+                                    href="{{ route('admin.contracts.create') }}">Add New</a>
+                            </div>
+                        </div>
+                    </li>
                 @endif
             @endauth
 

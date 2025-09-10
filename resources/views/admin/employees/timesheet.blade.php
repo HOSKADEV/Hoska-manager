@@ -209,38 +209,39 @@
             </button>
         </div>
 
+        <div class="d-flex align-items-center mb-3">
+            {{-- فلتر حسب الشهر والمشروع --}}
+            <form method="GET" action="{{ route('admin.employees.timesheet', $employee->id) }}" class="mb-4" id="filterForm">
+                <div class="row align-items-end">
+                    <div class="col-md-5 me-2">
+                        <label for="month" class="form-label fw-bold text-secondary">📅 Filter by Month</label>
+                        <select name="month" id="month" class="form-select select2">
+                            <option value="all" {{ $monthFilter == 'all' ? 'selected' : '' }}>All Months</option>
+                            @foreach ($availableMonths as $month)
+                                <option value="{{ $month['value'] }}" {{ $monthFilter == $month['value'] ? 'selected' : '' }}>
+                                    {{ $month['label'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-5">
+                        <label for="project_id" class="form-label fw-bold text-secondary">📅 Filter by Project</label>
+                        <select name="project_id" id="project_id" class="form-select select2">
+                            <option value="all" {{ $projectFilter == 'all' ? 'selected' : '' }}>All Projects</option>
+                            @foreach ($projects as $project)
+                                <option value="{{ $project->id }}" {{ $projectFilter == $project->id ? 'selected' : '' }}>
+                                    {{ $project->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+
         @if($tasks->isEmpty())
             <p>No tasks found for this employee in the selected month.</p>
         @else
-            <div class="d-flex align-items-center mb-3">
-                {{-- فلتر حسب الشهر والمشروع --}}
-                <form method="GET" action="{{ route('admin.employees.timesheet', $employee->id) }}" class="mb-4" id="filterForm">
-                    <div class="row align-items-end">
-                        <div class="col-md-5 me-2">
-                            <label for="month" class="form-label fw-bold text-secondary">📅 Filter by Month</label>
-                            <select name="month" id="month" class="form-select select2">
-                                <option value="all" {{ $monthFilter == 'all' ? 'selected' : '' }}>All Months</option>
-                                @foreach ($availableMonths as $month)
-                                    <option value="{{ $month['value'] }}" {{ $monthFilter == $month['value'] ? 'selected' : '' }}>
-                                        {{ $month['label'] }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div class="col-md-5">
-                            <label for="project_id" class="form-label fw-bold text-secondary">📅 Filter by Project</label>
-                            <select name="project_id" id="project_id" class="form-select select2">
-                                <option value="all" {{ $projectFilter == 'all' ? 'selected' : '' }}>All Projects</option>
-                                @foreach ($projects as $project)
-                                    <option value="{{ $project->id }}" {{ $projectFilter == $project->id ? 'selected' : '' }}>
-                                        {{ $project->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                </form>
-            </div>
 
             <div class="table-responsive">
                 <table>
@@ -283,7 +284,7 @@
                                     <td>{{ number_format($task->duration_in_hours ?? 0, 2) }}</td>
                                 </tr>
                             @endforeach
-                            
+
 
                             <tr class="{{ $rowClass }}" style="font-weight: bold;">
                                 <td colspan="5" style="text-align: center;">Total Hours for {{ $date }}:</td>

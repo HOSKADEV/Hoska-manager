@@ -241,38 +241,73 @@ class EmployeesController extends Controller
         // Find or create a timesheet for this employee for the selected month
         if ($monthFilter === 'all') {
             // When "all months" is selected, calculate totals across all months
-            $allTimesheets = Timesheet::where('employee_id', $employee->id)->get();
+            if ($projectFilter !== 'all') {
+                // If project filter is applied, calculate statistics from tasks instead of timesheets
+                $filteredTasks = Task::where('employee_id', $employee->id)
+                    ->where('project_id', $projectFilter)
+                    ->get();
 
-            // Create a summary timesheet object
-            $timesheet = new Timesheet();
-            $timesheet->employee_id = $employee->id;
-            $timesheet->work_date = now(); // Current date as reference
-            $timesheet->hours_worked = $allTimesheets->sum('hours_worked');
-            $timesheet->month_salary = $allTimesheets->sum('month_salary');
-            $timesheet->is_paid = false;
+                // Create a summary timesheet object based on filtered tasks
+                $timesheet = new Timesheet();
+                $timesheet->employee_id = $employee->id;
+                $timesheet->work_date = now(); // Current date as reference
+                $timesheet->hours_worked = $filteredTasks->sum('duration_in_hours');
+                $timesheet->month_salary = $filteredTasks->sum('duration_in_hours') * $employee->rate;
+                $timesheet->is_paid = false;
+                $timesheet->rate = $employee->rate;
+            } else {
+                // No project filter, use all timesheets
+                $allTimesheets = Timesheet::where('employee_id', $employee->id)->get();
 
-            // If no timesheets exist, set default values
-            if ($allTimesheets->isEmpty()) {
-                $timesheet->hours_worked = 0;
-                $timesheet->month_salary = 0;
+                // Create a summary timesheet object
+                $timesheet = new Timesheet();
+                $timesheet->employee_id = $employee->id;
+                $timesheet->work_date = now(); // Current date as reference
+                $timesheet->hours_worked = $allTimesheets->sum('hours_worked');
+                $timesheet->month_salary = $allTimesheets->sum('month_salary');
+                $timesheet->is_paid = false;
+
+                // If no timesheets exist, set default values
+                if ($allTimesheets->isEmpty()) {
+                    $timesheet->hours_worked = 0;
+                    $timesheet->month_salary = 0;
+                }
             }
         } else {
             // For a specific month
-            $timesheetQuery = Timesheet::where('employee_id', $employee->id)
-                ->whereYear('work_date', $month->year)
-                ->whereMonth('work_date', $month->month);
+            if ($projectFilter !== 'all') {
+                // If project filter is applied, calculate statistics from tasks instead of timesheets
+                $filteredTasks = Task::where('employee_id', $employee->id)
+                    ->where('project_id', $projectFilter)
+                    ->whereBetween('start_time', [$monthStart, $monthEnd])
+                    ->get();
 
-            $timesheet = $timesheetQuery->first();
-
-            if (!$timesheet) {
-                // Create a new timesheet if it doesn't exist
+                // Create a summary timesheet object based on filtered tasks
                 $timesheet = new Timesheet();
                 $timesheet->employee_id = $employee->id;
                 $timesheet->work_date = $monthStart;
-                $timesheet->hours_worked = 0;
-                $timesheet->month_salary = 0;
+                $timesheet->hours_worked = $filteredTasks->sum('duration_in_hours');
+                $timesheet->month_salary = $filteredTasks->sum('duration_in_hours') * $employee->rate;
                 $timesheet->is_paid = false;
-                $timesheet->save();
+                $timesheet->rate = $employee->rate;
+            } else {
+                // No project filter, use the regular timesheet
+                $timesheetQuery = Timesheet::where('employee_id', $employee->id)
+                    ->whereYear('work_date', $month->year)
+                    ->whereMonth('work_date', $month->month);
+
+                $timesheet = $timesheetQuery->first();
+
+                if (!$timesheet) {
+                    // Create a new timesheet if it doesn't exist
+                    $timesheet = new Timesheet();
+                    $timesheet->employee_id = $employee->id;
+                    $timesheet->work_date = $monthStart;
+                    $timesheet->hours_worked = 0;
+                    $timesheet->month_salary = 0;
+                    $timesheet->is_paid = false;
+                    $timesheet->save();
+                }
             }
         }
 

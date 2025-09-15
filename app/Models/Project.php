@@ -71,6 +71,11 @@ class Project extends Model
     {
         return $this->hasMany(ProjectLink::class);
     }
+    
+    public function team_manager()
+    {
+        return $this->belongsTo(Employee::class, 'team_manager_id');
+    }
 
     public function contracts()
     {

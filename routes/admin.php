@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\ClientsController;
+use App\Http\Controllers\Admin\ContractsController;
 use App\Http\Controllers\Admin\DevelopmentsController;
 use App\Http\Controllers\Admin\EmployeeSatisfactionController;
 use App\Http\Controllers\Admin\EmployeesController;
@@ -11,15 +12,16 @@ use App\Http\Controllers\Admin\NotesController;
 use App\Http\Controllers\Admin\OurTasksController;
 use App\Http\Controllers\Admin\PaymentsController;
 use App\Http\Controllers\Admin\ProjectsController;
-use App\Http\Controllers\Admin\ContractsController;
 use App\Http\Controllers\Admin\TaskImportController;
 use App\Http\Controllers\Admin\TasksController;
+use App\Http\Controllers\Admin\TeamManagerProjectsController;
 use App\Http\Controllers\Admin\TimesheetsController;
 use App\Http\Controllers\Admin\WalletsController;
 use App\Http\Controllers\Admin\WalletTransactionController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Mails\VerficationEmailController;
 use Illuminate\Support\Facades\Route;
+
 
 
 
@@ -35,6 +37,14 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth'])->group(function (
     Route::post('/toggle-boolean', [AdminController::class, 'toggleBoolean'])->name('admin.toggle-boolean');
 
     Route::resource('projects', ProjectsController::class);
+
+    // Team Manager Projects Routes
+    Route::prefix('team-manager-projects')->name('team-manager-projects.')->group(function () {
+        Route::get('/', [TeamManagerProjectsController::class, 'index'])->name('index');
+        Route::get('/{project}', [TeamManagerProjectsController::class, 'show'])->name('show');
+        Route::get('/{project}/timesheets', [TeamManagerProjectsController::class, 'timesheets'])->name('timesheets');
+        Route::get('/{project}/tasks', [TeamManagerProjectsController::class, 'tasks'])->name('tasks');
+    });
 
     // Contracts Management
     Route::resource('contracts', ContractsController::class);

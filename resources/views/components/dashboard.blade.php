@@ -466,6 +466,15 @@
 
                     <!-- Divider -->
                     <hr class="sidebar-divider my-0">
+                    <!-- Nav Item - Team Manager Projects -->
+                    <li class="nav-item {{ request()->routeIs('admin.team-manager-projects*') ? 'active' : ''}}">
+                        <a class="nav-link" href="{{ route('admin.team-manager-projects.index') }}">
+                            <i class="fas fa-project-diagram"></i>
+                            <span>My Projects</span></a>
+                    </li>
+
+                    <!-- Divider -->
+                    <hr class="sidebar-divider my-0">
                     <li
                         class="nav-item {{ request()->routeIs('admin.tasks.index') || request()->routeIs('admin.tasks.create') ? 'active' : ''}}">
                         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTasks"

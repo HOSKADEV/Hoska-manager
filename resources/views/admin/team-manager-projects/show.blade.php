@@ -119,7 +119,7 @@
                                         <tr>
                                             <td>{{ $timesheet->employee->name ?? 'N/A' }}</td>
                                             <td>{{ \Carbon\Carbon::parse($timesheet->work_date)->format('Y-m-d') }}</td>
-                                            <td>{{ $timesheet->total_hours }}</td>
+                                            <td>{{ number_format($timesheet->total_hours, 2) }}</td>
                                             {{-- <td>{{ $timesheet->month_salary }}</td>
                                             <td>
                                                 @if($timesheet->is_paid)

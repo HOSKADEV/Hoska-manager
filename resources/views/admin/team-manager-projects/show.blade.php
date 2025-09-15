@@ -50,18 +50,18 @@
                                 <thead>
                                     <tr>
                                         <th>Name</th>
-                                        <th>Position</th>
-                                        <th>Rate</th>
-                                        <th>Currency</th>
+                                        {{-- <th>Position</th> --}}
+                                        {{-- <th>Rate</th>
+                                        <th>Currency</th> --}}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($project->employees as $employee)
                                         <tr>
                                             <td>{{ $employee->name }}</td>
-                                            <td>{{ $employee->position ?? 'N/A' }}</td>
-                                            <td>{{ $employee->rate }}</td>
-                                            <td>{{ $employee->currency ?? 'N/A' }}</td>
+                                            {{-- <td>{{ $employee->position ?? 'N/A' }}</td> --}}
+                                            {{-- <td>{{ $employee->rate }}</td>
+                                            <td>{{ $employee->currency ?? 'N/A' }}</td> --}}
                                         </tr>
                                     @endforeach
                                 </tbody>

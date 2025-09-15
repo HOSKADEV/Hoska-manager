@@ -102,7 +102,7 @@
                         </a>
                     </div>
 
-                    @if($project->timesheets->count() > 0)
+                    @if($timesheets->count() > 0)
                         <div class="table-responsive">
                             <table class="table table-bordered" width="100%" cellspacing="0">
                                 <thead>
@@ -110,24 +110,24 @@
                                         <th>Employee</th>
                                         <th>Work Date</th>
                                         <th>Hours Worked</th>
-                                        <th>Salary</th>
-                                        <th>Status</th>
+                                        {{--<th>Salary</th> --}}
+                                        {{-- <th>Status</th> --}}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($project->timesheets as $timesheet)
+                                    @foreach($timesheets as $timesheet)
                                         <tr>
                                             <td>{{ $timesheet->employee->name ?? 'N/A' }}</td>
                                             <td>{{ \Carbon\Carbon::parse($timesheet->work_date)->format('Y-m-d') }}</td>
-                                            <td>{{ $timesheet->hours_worked }}</td>
-                                            <td>{{ $timesheet->month_salary }}</td>
+                                            <td>{{ $timesheet->total_hours }}</td>
+                                            {{-- <td>{{ $timesheet->month_salary }}</td>
                                             <td>
                                                 @if($timesheet->is_paid)
                                                     <span class="badge badge-success">Paid</span>
                                                 @else
                                                     <span class="badge badge-warning">Unpaid</span>
                                                 @endif
-                                            </td>
+                                            </td> --}}
                                         </tr>
                                     @endforeach
                                 </tbody>

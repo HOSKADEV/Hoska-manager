@@ -43,6 +43,8 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth'])->group(function (
         Route::get('/', [TeamManagerProjectsController::class, 'index'])->name('index');
         Route::get('/{project}', [TeamManagerProjectsController::class, 'show'])->name('show');
         Route::get('/{project}/timesheets', [TeamManagerProjectsController::class, 'timesheets'])->name('timesheets');
+        Route::get('/{project}/timesheet-details', [TeamManagerProjectsController::class, 'timesheetDetails'])->name('timesheet-details');
+        Route::get('/{project}/export-timesheets', [TeamManagerProjectsController::class, 'exportTimesheets'])->name('export-timesheets');
         Route::get('/{project}/tasks', [TeamManagerProjectsController::class, 'tasks'])->name('tasks');
     });
 

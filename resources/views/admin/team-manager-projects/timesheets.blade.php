@@ -54,7 +54,7 @@
                                 <th>Employee</th>
                                 <th>Work Date</th>
                                 <th>Hours Worked</th>
-                                <th>Month Salary</th>
+                                {{-- <th>Month Salary</th> --}}
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -64,7 +64,7 @@
                                     <td>{{ $timesheet->employee->name ?? 'N/A' }}</td>
                                     <td>{{ \Carbon\Carbon::parse($timesheet->work_date)->format('Y-m-d') }}</td>
                                     <td>{{ $timesheet->hours_worked }}</td>
-                                    <td>{{ $timesheet->month_salary }}</td>
+                                    {{-- <td>{{ $timesheet->month_salary }}</td> --}}
                                     <td>
                                         @if($timesheet->is_paid)
                                             <span class="badge badge-success">Paid</span>

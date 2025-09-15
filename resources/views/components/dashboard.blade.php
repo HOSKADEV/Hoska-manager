@@ -464,14 +464,19 @@
                         </li>
                     @endif
 
-                    <!-- Divider -->
-                    <hr class="sidebar-divider my-0">
-                    <!-- Nav Item - Team Manager Projects -->
-                    <li class="nav-item {{ request()->routeIs('admin.team-manager-projects*') ? 'active' : ''}}">
-                        <a class="nav-link" href="{{ route('admin.team-manager-projects.index') }}">
-                            <i class="fas fa-project-diagram"></i>
-                            <span>My Projects</span></a>
-                    </li>
+                    @php
+                        $isTeamManager = Auth::user()->employee && \App\Models\Project::where('team_manager_id', Auth::user()->employee->id)->exists();
+                    @endphp
+                    @if($isTeamManager)
+                        <!-- Divider -->
+                        <hr class="sidebar-divider my-0">
+                        <!-- Nav Item - Team Manager Projects -->
+                        <li class="nav-item {{ request()->routeIs('admin.team-manager-projects*') ? 'active' : ''}}">
+                            <a class="nav-link" href="{{ route('admin.team-manager-projects.index') }}">
+                                <i class="fas fa-project-diagram"></i>
+                                <span>My Projects</span></a>
+                        </li>
+                    @endif
 
                     <!-- Divider -->
                     <hr class="sidebar-divider my-0">

@@ -27,7 +27,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-4 mb-3">
+                    {{-- <div class="col-md-4 mb-3">
                         <label for="status" class="form-label">Status</label>
                         <select name="status" id="status" class="form-control">
                             <option value="all" {{ $statusFilter === 'all' ? 'selected' : '' }}>All Statuses</option>
@@ -35,7 +35,7 @@
                             <option value="in_progress" {{ $statusFilter === 'in_progress' ? 'selected' : '' }}>In Progress</option>
                             <option value="pending" {{ $statusFilter === 'pending' ? 'selected' : '' }}>Pending</option>
                         </select>
-                    </div>
+                    </div> --}}
                     <div class="col-md-4 mb-3 d-flex align-items-end">
                         <button type="submit" class="btn btn-primary">Apply Filters</button>
                         <a href="{{ route('admin.team-manager-projects.tasks', $project->id) }}" class="btn btn-secondary ml-2">Reset</a>
@@ -61,7 +61,7 @@
                                 <th>Start Time</th>
                                 <th>End Time</th>
                                 <th>Duration (Hours)</th>
-                                <th>Status</th>
+                                {{-- <th>Status</th> --}}
                             </tr>
                         </thead>
                         <tbody>
@@ -72,11 +72,11 @@
                                     <td>{{ $task->start_time ? \Carbon\Carbon::parse($task->start_time)->format('Y-m-d H:i') : 'N/A' }}</td>
                                     <td>{{ $task->end_time ? \Carbon\Carbon::parse($task->end_time)->format('Y-m-d H:i') : 'N/A' }}</td>
                                     <td>{{ number_format($task->duration_in_hours, 2) }}</td>
-                                    <td>
+                                    {{-- <td>
                                         <span class="badge badge-{{ $task->status === 'completed' ? 'success' : ($task->status === 'in_progress' ? 'info' : 'warning') }}">
                                             {{ ucfirst(str_replace('_', ' ', $task->status)) }}
                                         </span>
-                                    </td>
+                                    </td> --}}
                                 </tr>
                             @endforeach
                         </tbody>

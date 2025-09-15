@@ -78,15 +78,15 @@ class TeamManagerProjectsController extends Controller
         }
 
         $timesheets = $query->with('employee')->get();
-
+        dd($timesheets);
         // Get project employees for filter
         $employees = $project->employees;
 
         return view('admin.team-manager-projects.timesheets', compact(
-            'project', 
-            'timesheets', 
-            'employees', 
-            'employeeFilter', 
+            'project',
+            'timesheets',
+            'employees',
+            'employeeFilter',
             'monthFilter'
         ));
     }
@@ -122,10 +122,10 @@ class TeamManagerProjectsController extends Controller
         $employees = $project->employees;
 
         return view('admin.team-manager-projects.tasks', compact(
-            'project', 
-            'tasks', 
-            'employees', 
-            'employeeFilter', 
+            'project',
+            'tasks',
+            'employees',
+            'employeeFilter',
             'statusFilter'
         ));
     }

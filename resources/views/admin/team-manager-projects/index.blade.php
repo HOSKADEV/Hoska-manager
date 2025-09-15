@@ -1,9 +1,4 @@
-@extends('layouts.app')
-
-@section('title', 'My Projects')
-
-@section('content')
-<div class="container-fluid">
+<x-dashboard title="My Projects">
 
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
@@ -61,5 +56,4 @@
         </div>
     </div>
 
-</div>
-@endsection
+</x-dashboard>

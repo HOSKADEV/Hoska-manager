@@ -164,6 +164,7 @@ class ProjectsController extends Controller
         });
 
         $employees = Employee::all();
+        $teamManagers = Employee::all();
 
         $currencies = ['USD', 'EUR', 'DZD', 'SAR'];
 
@@ -182,6 +183,7 @@ class ProjectsController extends Controller
             'marketers',
             'clients',
             'employees',
+            'teamManagers',
             'currencies',
             'clientOptions',  // إضافة خيارات العملاء
             'satisfactionDefaults' // إضافة قيم رضاء العملاء الافتراضية
@@ -201,6 +203,7 @@ class ProjectsController extends Controller
 
         $data['user_id'] = Auth::id();
         $data['client_id'] = $request->client_id;
+        $data['team_manager_id'] = $request->team_manager_id;
 
         // تحقق إذا العميل عنده مشاريع سابقة
         $clientHasProjects = Project::where('client_id', $data['client_id'])->exists();
@@ -401,6 +404,7 @@ class ProjectsController extends Controller
         $clients = Client::all();
         // تحميل المسوقين (إن وجد دور مسوق)
         $marketers = User::where('is_marketer', true)->get();
+        $teamManagers = Employee::all();
 
         // Current satisfaction values
         $satisfactionValues = [
@@ -411,7 +415,7 @@ class ProjectsController extends Controller
             'continuation_intent' => $project->continuation_intent ?? 0,
         ];
 
-        return view('admin.projects.edit', compact('project', 'users', 'clients', 'employees', 'marketers', 'satisfactionValues'));
+        return view('admin.projects.edit', compact('project', 'users', 'clients', 'employees', 'marketers', 'teamManagers', 'satisfactionValues'));
     }
 
     /**
@@ -432,6 +436,7 @@ class ProjectsController extends Controller
         $data = $request->validated();
         $data['user_id'] = $user->id; // معرف المستخدم الحالي
         $data['client_id'] = $request->client_id;
+        $data['team_manager_id'] = $request->team_manager_id;
 
         unset($data['attachment']);
         unset($data['employee_id']);

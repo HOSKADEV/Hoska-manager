@@ -1,10 +1,4 @@
-@extends('layouts.app')
-
-@section('title', 'Project Details')
-
-@section('content')
-<div class="container-fluid">
-
+<x-dashboard title="Project Details">
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800">{{ $project->name }}</h1>
@@ -27,7 +21,7 @@
                     <p><strong>Client:</strong> {{ $project->client->name ?? 'N/A' }}</p>
                     <p><strong>Start Date:</strong> {{ $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('Y-m-d') : 'N/A' }}</p>
                     <p><strong>Delivery Date:</strong> {{ $project->delivery_date ? \Carbon\Carbon::parse($project->delivery_date)->format('Y-m-d') : 'N/A' }}</p>
-                    <p><strong>Status:</strong> 
+                    <p><strong>Status:</strong>
                         @if($project->delivered_at)
                             <span class="badge badge-primary">Delivered</span>
                         @elseif($project->remaining_days < 0)
@@ -192,5 +186,4 @@
         </div>
     </div>
 
-</div>
-@endsection
+</x-dashboard>

@@ -52,6 +52,11 @@
 </div>
 
 <div class="mb-3">
+    <x-form.select label="Team Manager" name="team_manager_id" :options="$teamManagers" :oldval="$project->team_manager_id"
+        placeholder="Select Team Manager" />
+</div>
+
+<div class="mb-3">
     @php
         $selectedEmployees = optional($project)->employees ? $project->employees->pluck('id')->toArray() : [];
 

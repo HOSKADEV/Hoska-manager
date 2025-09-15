@@ -78,6 +78,7 @@ class ProjectRequest extends FormRequest
                 'max:100',
             ],
             'marketer_id' => 'nullable|exists:users,id',
+            'team_manager_id' => 'nullable|exists:employees,id',
         ];
     }
 }

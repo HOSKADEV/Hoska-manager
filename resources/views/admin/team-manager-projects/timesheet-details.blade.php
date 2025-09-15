@@ -30,7 +30,7 @@
                             @foreach($tasks as $task)
                                 <tr>
                                     <td>{{ \Carbon\Carbon::parse($task->start_time)->format('Y-m-d') }}</td>
-                                    <td>{{ $task->name }}</td>
+                                    <td>{{ $task->title }}</td>
                                     <td>{{ \Carbon\Carbon::parse($task->start_time)->format('H:i') }}</td>
                                     <td>{{ \Carbon\Carbon::parse($task->end_time)->format('H:i') }}</td>
                                     <td>{{ number_format($task->duration_in_hours, 2) }}</td>

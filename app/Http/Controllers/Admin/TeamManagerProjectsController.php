@@ -67,7 +67,7 @@ class TeamManagerProjectsController extends Controller
         $employeeFilter = $request->input('employee_id', 'all');
         $monthFilter = $request->input('month', now()->format('Y-m'));
 
-        $query = Timesheet::where('project_id', $project->id);
+        $query = Timesheet::query();
 
         if ($employeeFilter !== 'all') {
             $query->where('employee_id', $employeeFilter);
@@ -78,7 +78,7 @@ class TeamManagerProjectsController extends Controller
         }
 
         $timesheets = $query->with('employee')->get();
-        dd($timesheets);
+
         // Get project employees for filter
         $employees = $project->employees;
 

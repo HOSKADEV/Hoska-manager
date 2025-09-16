@@ -373,6 +373,10 @@
                                             class="btn btn-sm btn-primary">
                                             <i class='fas fa-edit'></i>
                                         </a>
+                                        <a href="{{ route('projects.client-view', $project->id) }}" class="btn btn-sm btn-success"
+                                            title="Client View" target="_blank">
+                                            <i class="fas fa-globe"></i>
+                                        </a>
                                         <form action="{{ route('admin.projects.destroy', $project->id) }}" method="POST"
                                             style="display: inline-block">
                                             @csrf

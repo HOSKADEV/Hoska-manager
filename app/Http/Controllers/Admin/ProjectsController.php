@@ -576,4 +576,66 @@ class ProjectsController extends Controller
 
         return redirect()->back()->with('success', 'Project marked as delivered.');
     }
+
+    /**
+     * Display project information for clients without authentication
+     */
+    public function clientView(Project $project)
+    {
+        // Load project with necessary relationships
+        $project->load(['tasks.employee', 'ourTasks', 'links', 'client']);
+        
+        // Get all employees for filtering
+        $employees = Employee::all();
+        
+        // Get selected employee filter from request
+        $selectedEmployeeId = request()->input('employee_id', 'all');
+        
+        // Filter tasks by employee if selected
+        $tasks = $project->tasks;
+        if ($selectedEmployeeId !== 'all') {
+            $tasks = $tasks->where('employee_id', $selectedEmployeeId);
+        }
+        
+        // Calculate project statistics
+        $totalHours = 0;
+        foreach ($tasks as $task) {
+            $totalHours += $task->duration_in_hours;
+        }
+        
+        // Calculate remaining days
+        $remainingDays = null;
+        $remainingText = "N/A";
+        $remainingClass = "badge bg-secondary";
+        
+        if ($project->delivery_date) {
+            $remainingDays = \Carbon\Carbon::now()->diffInDays(\Carbon\Carbon::parse($project->delivery_date), false);
+            $remainingDays = floor($remainingDays);
+            if ($remainingDays < 0) {
+                $remainingText = "Overdue " . abs($remainingDays) . " day(s)";
+                $remainingClass = "badge bg-danger";
+            } elseif ($remainingDays == 0) {
+                $remainingText = "Due Today";
+                $remainingClass = "badge bg-warning text-dark";
+            } else {
+                $remainingText = $remainingDays . " day(s)";
+                $remainingClass = "badge bg-success";
+            }
+        }
+        
+        // Currency symbols
+        $currencySymbols = ['USD' => '$', 'EUR' => '€', 'DZD' => 'DZ'];
+        
+        return view('client.project-view', compact(
+            'project',
+            'tasks',
+            'employees',
+            'selectedEmployeeId',
+            'totalHours',
+            'remainingDays',
+            'remainingText',
+            'remainingClass',
+            'currencySymbols'
+        ));
+    }
 }

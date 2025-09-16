@@ -110,6 +110,9 @@ Route::prefix('admin')->name('admin.')->middleware(['isAuth', 'IsAdmin'])->group
 });
 
 
+// Client project view without authentication
+Route::get('/project/{project}/client-view', [ProjectsController::class, 'clientView'])->name('projects.client-view');
+
 Route::get('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/signin', [AuthController::class, 'signin'])->name('signin');
 Route::get('/register', [AuthController::class, 'register'])->name('register');

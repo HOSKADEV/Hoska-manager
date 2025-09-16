@@ -375,7 +375,7 @@
                                         </a>
                                         <a href="{{ route('projects.client-view', $project->id) }}" class="btn btn-sm btn-success"
                                             title="Client View" target="_blank">
-                                            <i class="fas fa-globe"></i>
+                                            <i class="fas fa-copy"></i>
                                         </a>
                                         <form action="{{ route('admin.projects.destroy', $project->id) }}" method="POST"
                                             style="display: inline-block">

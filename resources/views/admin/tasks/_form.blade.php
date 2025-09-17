@@ -68,6 +68,7 @@ $selectedValue = old('status', $task->status ?? '');
         :oldval="$task->start_time ? $task->start_time->format('Y-m-d\TH:i') : (new DateTime())->add(new DateInterval('PT1H'))->format('Y-m-d\TH:i')"
         min="{{ (new DateTime('yesterday'))->add(new DateInterval('PT1H'))->format('Y-m-d\T00:i') }}"
         max="{{ (new DateTime())->add(new DateInterval('PT1H'))->format('Y-m-d\T23:i') }}" required />
+    <small class="form-text text-muted">Note: Maximum task duration is 4 hours.</small>
 </div>
 {{-- @endif --}}
 
@@ -76,6 +77,7 @@ $selectedValue = old('status', $task->status ?? '');
         :oldval="$task->end_time ? $task->end_time->format('Y-m-d\TH:i') : (new DateTime())->add(new DateInterval('PT1H'))->format('Y-m-d\TH:i')"
         min="{{ (new DateTime('yesterday'))->add(new DateInterval('PT1H'))->format('Y-m-d\T00:i') }}"
         max="{{ (new DateTime())->add(new DateInterval('PT1H'))->format('Y-m-d\T23:i') }}" required />
+    <div id="duration-warning" class="alert alert-warning mt-2" style="display: none;"></div>
 </div>
 
 @if(isset($task) && $task->exists)
@@ -160,21 +162,56 @@ $selectedValue = old('status', $task->status ?? '');
         function calculateDuration() {
             const start = document.querySelector('[name="start_time"]').value;
             const end = document.querySelector('[name="end_time"]').value;
+            const durationWarning = document.getElementById('duration-warning');
 
             if (start && end) {
                 const startTime = new Date(start);
                 const endTime = new Date(end);
 
                 if (!isNaN(startTime.getTime()) && !isNaN(endTime.getTime())) {
+                    // Calculate the difference in hours
                     const diffMs = endTime - startTime;
                     const diffHours = diffMs / (1000 * 60 * 60);
-                    const rounded = Math.round(diffHours * 100) / 100;
-                    document.querySelector('[name="duration_in_hours"]').value = rounded >= 0 ? rounded : 0;
+
+                    // Check if duration exceeds 4 hours
+                    if (diffHours > 4) {
+                        // Show warning message
+                        if (durationWarning) {
+                            durationWarning.style.display = 'block';
+                            durationWarning.textContent = 'Duration exceeds 4 hours. End time will be adjusted.';
+                        }
+
+                        // If it exceeds, set end time to exactly 4 hours after start time
+                        const maxEndTime = new Date(startTime.getTime() + (4 * 60 * 60 * 1000));
+                        const formattedMaxEnd = maxEndTime.toISOString().slice(0, 16);
+                        document.querySelector('[name="end_time"]').value = formattedMaxEnd;
+
+                        // Recalculate with the new end time
+                        const newDiffMs = maxEndTime - startTime;
+                        const newDiffHours = newDiffMs / (1000 * 60 * 60);
+                        const rounded = Math.round(newDiffHours * 100) / 100;
+                        document.querySelector('[name="duration_in_hours"]').value = rounded;
+                    } else {
+                        // Hide warning message if it exists
+                        if (durationWarning) {
+                            durationWarning.style.display = 'none';
+                        }
+
+                        // Normal calculation
+                        const rounded = Math.round(diffHours * 100) / 100;
+                        document.querySelector('[name="duration_in_hours"]').value = rounded >= 0 ? rounded : 0;
+                    }
                 } else {
                     document.querySelector('[name="duration_in_hours"]').value = '';
+                    if (durationWarning) {
+                        durationWarning.style.display = 'none';
+                    }
                 }
             } else {
                 document.querySelector('[name="duration_in_hours"]').value = '';
+                if (durationWarning) {
+                    durationWarning.style.display = 'none';
+                }
             }
         }
 

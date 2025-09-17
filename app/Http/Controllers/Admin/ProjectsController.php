@@ -584,30 +584,30 @@ class ProjectsController extends Controller
     {
         // Load project with necessary relationships
         $project->load(['tasks.employee', 'ourTasks', 'links', 'client']);
-        
+
         // Get all employees for filtering
-        $employees = Employee::all();
-        
+        $employees = $project->employees;
+
         // Get selected employee filter from request
         $selectedEmployeeId = request()->input('employee_id', 'all');
-        
+
         // Filter tasks by employee if selected
         $tasks = $project->tasks;
         if ($selectedEmployeeId !== 'all') {
             $tasks = $tasks->where('employee_id', $selectedEmployeeId);
         }
-        
+
         // Calculate project statistics
         $totalHours = 0;
         foreach ($tasks as $task) {
             $totalHours += $task->duration_in_hours;
         }
-        
+
         // Calculate remaining days
         $remainingDays = null;
         $remainingText = "N/A";
         $remainingClass = "badge bg-secondary";
-        
+
         if ($project->delivery_date) {
             $remainingDays = \Carbon\Carbon::now()->diffInDays(\Carbon\Carbon::parse($project->delivery_date), false);
             $remainingDays = floor($remainingDays);
@@ -622,10 +622,10 @@ class ProjectsController extends Controller
                 $remainingClass = "badge bg-success";
             }
         }
-        
+
         // Currency symbols
         $currencySymbols = ['USD' => '$', 'EUR' => '€', 'DZD' => 'DZ'];
-        
+
         return view('client.project-view', compact(
             'project',
             'tasks',

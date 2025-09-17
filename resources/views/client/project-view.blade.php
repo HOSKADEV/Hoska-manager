@@ -212,6 +212,18 @@
                                                 </span>
                                             </div>
                                         </div>
+                                        <div class="d-flex justify-content-between align-items-center mt-3">
+                                            <div>
+                                                <span class="badge bg-secondary">
+                                                    {{ $task->start_time ? $task->start_time->format('D, Y/m/d H:i') : '-' }}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span class="badge bg-secondary">
+                                                    {{ $task->end_time ? $task->end_time->format('D, Y/m/d H:i') : '-' }}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

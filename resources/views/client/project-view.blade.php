@@ -218,6 +218,12 @@
                                                     {{ $task->start_time ? $task->start_time->format('D, Y/m/d H:i') : '-' }}
                                                 </span>
                                             </div>
+
+                                            <!-- أيقونة السهم -->
+                                            <div class="mx-2">
+                                                <i class="fa-solid fa-arrow-right"></i>
+                                            </div>
+
                                             <div>
                                                 <span class="badge bg-secondary">
                                                     {{ $task->end_time ? $task->end_time->format('D, Y/m/d H:i') : '-' }}

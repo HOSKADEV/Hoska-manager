@@ -247,11 +247,11 @@
                                                     {{ number_format($task->duration, 2) }}h
                                                 </span>
                                             </div>
-                                            <div>
+                                            {{-- <div>
                                                 <span class="badge bg-warning text-dark">
                                                     {{ $currencySymbols[$project->currency] ?? '' }}{{ number_format($task->cost, 2) }}
                                                 </span>
-                                            </div>
+                                            </div> --}}
                                         </div>
                                     </div>
                                 </div>

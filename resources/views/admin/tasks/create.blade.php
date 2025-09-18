@@ -8,10 +8,10 @@
 
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('admin.tasks.store') }}" method="POST">
+            <form action="{{ route('admin.tasks.store') }}" method="POST" id="task-form">
                 @csrf
                 @include('admin.tasks._form')
-                <button class='btn btn-success'><i class="fas fa-save"></i> Save</button>
+                <button type="submit" class='btn btn-success' id="save-btn"><i class="fas fa-save"></i> Save</button>
             </form>
         </div>
     </div>
@@ -41,6 +41,26 @@
             flatpickr("#end_time", {
                 enableTime: true,
                 dateFormat: "Y-m-d H:i",
+            });
+
+            // Prevent multiple form submissions
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('task-form');
+                const saveBtn = document.getElementById('save-btn');
+
+                if (form && saveBtn) {
+                    form.addEventListener('submit', function() {
+                        // Disable the save button to prevent multiple clicks
+                        saveBtn.disabled = true;
+                        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+                        // Optional: Re-enable after 5 seconds in case of error
+                        setTimeout(function() {
+                            saveBtn.disabled = false;
+                            saveBtn.innerHTML = '<i class="fas fa-save"></i> Save';
+                        }, 5000);
+                    });
+                }
             });
         </script>
     @endpush

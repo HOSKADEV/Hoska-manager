@@ -71,8 +71,8 @@ class TaskRequest extends FormRequest
 
             // Validate max 4 hours between task creation and start time
             // if ($this->start_time) {
-            //     $start = Carbon::parse($this->start_time);
-            //     $now = Carbon::now();
+            //     $start = Carbon::parse($this->start_time, 'Africa/Algiers');
+            //     $now = Carbon::now('Africa/Algiers'); // أو timezone السيرفر/المستخدم
 
             //     // For new tasks, check against current time
             //     if (!$this->route('task')) {

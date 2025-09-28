@@ -70,37 +70,37 @@ class TaskRequest extends FormRequest
             }
 
             // Validate max 4 hours between task creation and start time
-            // if ($this->start_time) {
-            //     $start = Carbon::parse($this->start_time, 'Africa/Algiers');
-            //     $now = Carbon::now('Africa/Algiers'); // أو timezone السيرفر/المستخدم
+            if ($this->start_time) {
+                $start = Carbon::parse($this->start_time, 'Africa/Algiers');
+                $now = Carbon::now('Africa/Algiers'); // أو timezone السيرفر/المستخدم
 
-            //     // For new tasks, check against current time
-            //     if (!$this->route('task')) {
-            //         $hoursFromCreation = $now->diffInMinutes($start, false) / 60;
+                // For new tasks, check against current time
+                if (!$this->route('task')) {
+                    $hoursFromCreation = $now->diffInMinutes($start, false) / 60;
 
-            //         // If start time is more than 4 hours in the future
-            //         if ($hoursFromCreation > 4) {
-            //             $validator->errors()->add('start_time', 'The start time must be within 4 hours from the current time.');
-            //         }
+                    // If start time is more than 4 hours in the future
+                    if ($hoursFromCreation > 6) {
+                        $validator->errors()->add('start_time', 'The start time must be within 6 hours from the current time.');
+                    }
 
-            //         // If start time is in the past
-            //         if ($hoursFromCreation <= -4) {
-            //             $validator->errors()->add('start_time', 'You cannot create a task that started more than 4 hours ago.');
-            //         }
+                    // If start time is in the past
+                    if ($hoursFromCreation <= -6) {
+                        $validator->errors()->add('start_time', 'You cannot create a task that started more than 6 hours ago.');
+                    }
 
-            //     }
-            //     // For existing tasks, check against created_at time
-            //     else {
-            //         $task = $this->route('task');
-            //         $createdAt = Carbon::parse($task->created_at);
-            //         $hoursFromCreation = $createdAt->diffInMinutes($start, false) / 60;
+                }
+                // For existing tasks, check against created_at time
+                else {
+                    $task = $this->route('task');
+                    $createdAt = Carbon::parse($task->created_at);
+                    $hoursFromCreation = $createdAt->diffInMinutes($start, false) / 60;
 
-            //         // If start time is more than 4 hours after creation
-            //         if ($hoursFromCreation > 4) {
-            //             $validator->errors()->add('start_time', 'The start time must be within 4 hours from the task creation time.');
-            //         }
-            //     }
-            // }
+                    // If start time is more than 6 hours after creation
+                    if ($hoursFromCreation > 6) {
+                        $validator->errors()->add('start_time', 'The start time must be within 6 hours from the task creation time.');
+                    }
+                }
+            }
         });
     }
 }

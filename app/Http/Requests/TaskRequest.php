@@ -56,14 +56,48 @@ class TaskRequest extends FormRequest
                 $start = Carbon::parse($this->start_time);
                 $end = Carbon::parse($this->end_time);
 
+                // Calculate hours between start and end time
                 $hours = $start->diffInMinutes($end) / 60;
 
-                if ($hours > 24) {
-                    $validator->errors()->add('end_time', 'The duration between start and end time must not exceed 24 hours.');
+                // Validate max 4 hours between start and end time
+                if ($hours > 4) {
+                    $validator->errors()->add('end_time', 'The duration between start and end time must not exceed 4 hours.');
                 }
 
                 if ($end->lessThanOrEqualTo($start)) {
                     $validator->errors()->add('end_time', 'End time must be after start time.');
+                }
+            }
+
+            // Validate max 4 hours between task creation and start time
+            if ($this->start_time) {
+                $start = Carbon::parse($this->start_time);
+                $now = Carbon::now();
+
+                // For new tasks, check against current time
+                if (!$this->route('task')) {
+                    $hoursFromCreation = $now->diffInMinutes($start, false) / 60;
+
+                    // If start time is more than 4 hours in the future
+                    if ($hoursFromCreation > 4) {
+                        $validator->errors()->add('start_time', 'The start time must be within 4 hours from the current time.');
+                    }
+
+                    // If start time is in the past
+                    if ($hoursFromCreation < 0) {
+                        $validator->errors()->add('start_time', 'The start time cannot be in the past.');
+                    }
+                } 
+                // For existing tasks, check against created_at time
+                else {
+                    $task = $this->route('task');
+                    $createdAt = Carbon::parse($task->created_at);
+                    $hoursFromCreation = $createdAt->diffInMinutes($start, false) / 60;
+
+                    // If start time is more than 4 hours after creation
+                    if ($hoursFromCreation > 4) {
+                        $validator->errors()->add('start_time', 'The start time must be within 4 hours from the task creation time.');
+                    }
                 }
             }
         });

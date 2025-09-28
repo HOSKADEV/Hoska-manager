@@ -6,6 +6,16 @@
             Tasks</a>
     </div>
 
+    <!-- Time Constraints Notice -->
+    <div class="alert alert-info mb-4">
+        <h5><i class="fas fa-info-circle"></i> Time Constraints</h5>
+        <p>Please note the following time constraints when editing a task:</p>
+        <ul>
+            <li>The start time must be within 4 hours from the task creation time</li>
+            <li>The duration between start time and end time must not exceed 4 hours</li>
+        </ul>
+    </div>
+
     <div class="card">
         <div class="card-body">
             <form action="{{ route('admin.tasks.update', $task->id) }}" method="POST" enctype="multipart/form-data">

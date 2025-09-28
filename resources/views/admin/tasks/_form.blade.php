@@ -68,7 +68,7 @@ $selectedValue = old('status', $task->status ?? '');
         :oldval="$task->start_time ? $task->start_time->format('Y-m-d\TH:i') : (new DateTime())->add(new DateInterval('PT1H'))->format('Y-m-d\TH:i')"
         min="{{ (new DateTime('yesterday'))->add(new DateInterval('PT1H'))->format('Y-m-d\T00:i') }}"
         max="{{ (new DateTime())->add(new DateInterval('PT1H'))->format('Y-m-d\T23:i') }}" required />
-    <small class="form-text text-muted">Note: Maximum task duration is 4 hours.</small>
+    <small class="form-text text-muted">Note: Maximum task duration is 4 hours. Start time must be within 4 hours from task creation.</small>
 </div>
 {{-- @endif --}}
 
